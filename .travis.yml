@@ -1,0 +1,29 @@
+language: cpp
+
+sudo: required
+
+dist: xenial
+
+os: linux
+
+compiler: gcc
+
+before_cache:
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew cleanup; fi
+
+cache:
+  directories:
+    - $HOME/Library/Caches/Homebrew
+
+before_install:
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install libopenblas-dev liblapack-dev; fi
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update; brew install pyenv; brew upgrade pyenv; pyenv install 3.6.7; fi
+  - pyenv global 3.6.7
+
+install:
+  - ./scripts/install_suitesparse.sh
+  - if [ $TRAVIS_OS_NAME = linux ]; then echo $(python-config); fi
+
+script:
+  - cmake -DPYTHON_EXECUTABLE=$(python-config --prefix)/bin/python3.6 -DPYTHON_LIBRARY=$(python-config --prefix)/lib/libpython3.6.dylib -DPYTHON_INCLUDE_DIR=$(python-config --prefix)/include/python3.6 -DCMAKE_BUILD_TYPE=Release .
+  - cmake --build . --target stuka
