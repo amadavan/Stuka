@@ -13,6 +13,8 @@
 #include "LP/base_lp.h"
 #include "LP/base_solver.h"
 #include "LP/lp.h"
+#include "LP/mehrotra_pc.h"
+#include "LP/slack_lp.h"
 
 // Quadratic program
 #include "QP/base_qp.h"

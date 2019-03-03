@@ -13,7 +13,7 @@ namespace stuka {
   struct Options {
     // General options
     Eigen::VectorXd x0;                                 // Initial state value
-    double tol;                                         // Solver tolerance
+    double tol = 1e-8;                                  // Solver tolerance
     size_t max_iter = 0;                                // Maximum number of iterations
 
     // For linear and quadratic programs
