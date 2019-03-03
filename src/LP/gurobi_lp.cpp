@@ -340,3 +340,11 @@ void stuka::LP::GurobiLinearProgram::removeConstrs_eq(const size_t index, const 
   n_con_eq_ -= n_remove;
 
 }
+
+Eigen::VectorXd stuka::LP::GurobiLinearProgram::convertState(const Eigen::VectorXd &x) {
+  return x;
+}
+
+Eigen::VectorXd stuka::LP::GurobiLinearProgram::revertState(const Eigen::VectorXd &x) {
+  return x;
+}

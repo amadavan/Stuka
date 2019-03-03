@@ -62,6 +62,10 @@ namespace stuka { namespace LP {
     virtual void removeConstr_eq(size_t index) = 0;
 
     virtual void removeConstrs_eq(size_t index, size_t n_remove) = 0;
+
+    virtual Eigen::VectorXd convertState(const Eigen::VectorXd &x) = 0;
+
+    virtual Eigen::VectorXd revertState(const Eigen::VectorXd &x) = 0;
   };
 
 }}

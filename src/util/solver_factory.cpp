@@ -14,6 +14,9 @@ stuka::util::createSolver(const LP::LinearProgram &lp, const stuka::Options &opt
     case GUROBI:
       solver = std::make_unique<LP::GurobiSolver>(lp, opts); break;
 #endif
+    case MPC:
+      solver = std::make_unique<LP::MehrotraPC>(lp, opts);
+      break;
     default:
       throw std::runtime_error("createSolver: invalid solver selected");
   }

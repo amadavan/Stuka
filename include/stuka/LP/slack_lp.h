@@ -1,24 +1,18 @@
 //
-// Created by Avinash Madavan on 1/3/19.
+// Created by Avinash Madavan on 2019-03-02.
 //
 
-#ifndef STUKA_LP_GUROBI_LP_H
-#define STUKA_LP_GUROBI_LP_H
+#ifndef STUKA_LP_SLACK_LP_H
+#define STUKA_LP_SLACK_LP_H
 
-#include <algorithm>
+#include <vector>
 
-#include <gurobi_c++.h>
-
-#include "lp.h"
 #include "base_lp.h"
-#include "../constants.h"
 
 namespace stuka { namespace LP {
-  class GurobiLinearProgram : public BaseLinearProgram {
+  class SlackLinearProgram : public BaseLinearProgram {
   public:
-    ~GurobiLinearProgram() override;
-
-    explicit GurobiLinearProgram(const LinearProgram &prog);
+    explicit SlackLinearProgram(const LinearProgram &prog);
 
     void setObjective(const std::shared_ptr<Eigen::VectorXd> &c) override;
 
@@ -26,16 +20,11 @@ namespace stuka { namespace LP {
 
     void setBounds(const std::shared_ptr<Eigen::VectorXd> &lb, const std::shared_ptr<Eigen::VectorXd> &ub) override;
 
-    void addVar(double c,
-                std::shared_ptr<Eigen::VectorXd> a_ub,
-                std::shared_ptr<Eigen::VectorXd> a_eq,
-                double lb,
+    void addVar(double c, std::shared_ptr<Eigen::VectorXd> a_ub, std::shared_ptr<Eigen::VectorXd> a_eq, double lb,
                 double ub) override;
 
-    void addVars(std::shared_ptr<Eigen::VectorXd> c,
-                 std::shared_ptr<Eigen::SparseMatrix<double>> A_ub,
-                 std::shared_ptr<Eigen::SparseMatrix<double>> A_eq,
-                 std::shared_ptr<Eigen::VectorXd> lb,
+    void addVars(std::shared_ptr<Eigen::VectorXd> c, std::shared_ptr<Eigen::SparseMatrix<double>> A_ub,
+                 std::shared_ptr<Eigen::SparseMatrix<double>> A_eq, std::shared_ptr<Eigen::VectorXd> lb,
                  std::shared_ptr<Eigen::VectorXd> ub) override;
 
     void removeVar(size_t var) override;
@@ -67,23 +56,31 @@ namespace stuka { namespace LP {
     Eigen::VectorXd revertState(const Eigen::VectorXd &x) override;
 
   private:
-    GRBEnv env_;
-    GRBModel model_;
-
-    GRBVar *vars_;
-    GRBConstr *eqconstr_;
-    GRBConstr *ubconstr_;
+    std::shared_ptr<Eigen::VectorXd> c_;
+    std::shared_ptr<Eigen::SparseMatrix<double>> A_;
+    std::shared_ptr<Eigen::VectorXd> b_;
 
     long n_dim_;
-    long n_con_ub_;
-    long n_con_eq_;
+    long n_con_;
+    long n_slack_;
 
-    long n_alloc_;                // Number of allocated variables (to prevent unnecessary copies)
-    long n_alloc_ub_;             // Number of allocated ub constraints (to prevent unnecessary copies)
-    long n_alloc_eq_;             // Number of allocated eq constraints (to prevent unnecessary copies)
+    long n_split_;
+    long n_const_;
+    long n_add_;
 
-    friend class GurobiSolver;
+    enum StateType {
+      NORMAL,
+      NEGATIVE,
+      UNBOUNDED,
+      CONSTANT,
+      COMPACT
+    };
+
+    std::vector<StateType> x_type_;
+    Eigen::VectorXd x_shift_;
+
+    friend class MehrotraPC;
   };
 }}
 
-#endif //STUKA_LP_GUROBI_LP_H
+#endif //STUKA_SLACK_LP_H

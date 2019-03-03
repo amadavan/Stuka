@@ -17,6 +17,8 @@ set(STUKA_SOURCES
         ../include/stuka/LP/base_lp.h
         ../include/stuka/LP/base_solver.h
         ../include/stuka/LP/lp.h
+        ../include/stuka/LP/mehrotra_pc.h
+        ../include/stuka/LP/slack_lp.h
         ../include/stuka/QP/base_qp.h
         ../include/stuka/QP/base_solver.h
         ../include/stuka/QP/qp.h
@@ -37,6 +39,8 @@ set(STUKA_SOURCES
         ../include/stuka/base_solver.h
         ../include/stuka/optimize_state.h
         ../include/stuka/options.h
+        LP/slack_lp.cpp
+        LP/mehrotra_pc.cpp
         dLP/cre.cpp
         dLP/cre_subproblem.cpp
         dLP/critical_region.cpp
