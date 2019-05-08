@@ -15,13 +15,12 @@
 #include "options.h"
 #include "optimize_state.h"
 
-#include <iostream>
 
 namespace stuka {
 
   class BaseSolver {
   public:
-    explicit BaseSolver(const Options &opts) : n_max_iter_(opts.max_iter) {
+    explicit BaseSolver(const Options &opts) : opts_(opts), n_max_iter_(opts.max_iter) {
       if (opts.max_iter == 0)
         n_max_iter_ = DEFAULT_MAX_ITER;
     }
@@ -51,9 +50,10 @@ namespace stuka {
      * Iterate until the termination criterion is met or the maximum number of iterations has been reached.
      */
     virtual const OptimizeState solve() {
-      size_t nit = 0;
+      unsigned int nit = 0;
       do {
         iterate();
+        if (opts_.callback) opts_.callback->callback(this->getState());
       } while (++nit < n_max_iter_ && !terminate());
 
       OptimizeState res = getState();
@@ -64,6 +64,7 @@ namespace stuka {
 
   private:
     size_t n_max_iter_;
+    const Options &opts_;
   };
 
 }

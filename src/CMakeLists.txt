@@ -31,9 +31,10 @@ set(STUKA_SOURCES
         ../include/stuka/dLP/benders.h
         ../include/stuka/dLP/benders_cut.h
         ../include/stuka/dLP/benders_subproblem.h
+        ../include/stuka/util/callbacks.h
+        ../include/stuka/util/functions.h
         ../include/stuka/util/solver_factory.h
         ../include/stuka/util/timer.h
-        ../include/stuka/util/functions.h
         ../include/stuka/stuka.h
         ../include/stuka/constants.h
         ../include/stuka/base_solver.h
@@ -48,7 +49,7 @@ set(STUKA_SOURCES
         dLP/benders.cpp
         util/solver_factory.cpp
         util/timer.cpp
-        util/functions.cpp)
+        util/functions.cpp ../include/stuka/callback/base_callback.h)
 
 add_library(stuka SHARED ${STUKA_SOURCES} ${GUROBI_SOURCES})
 target_link_libraries(stuka PRIVATE ${GUROBI_LIBRARIES} ${SPQR_LIBRARIES})

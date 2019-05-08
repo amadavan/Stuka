@@ -5,9 +5,12 @@
 #ifndef STUKA_OPTIONS_H
 #define STUKA_OPTIONS_H
 
+#include <functional>
+
 #include <Eigen/Core>
 
 #include "constants.h"
+#include "callback/base_callback.h"
 
 namespace stuka {
   struct Options {
@@ -24,6 +27,9 @@ namespace stuka {
     stuka::Solver lp_solver = DEFAULT_LP_SOLVER;        // Solver to use for linear programs
     stuka::Solver qp_solver = DEFAULT_QP_SOLVER;        // Solver to use for quadratic programs
     stuka::Solver dlp_solver = DEFAULT_DLP_SOLVER;      // Solver to use for decomposed linear programs
+
+    // Callbacks
+    std::unique_ptr<callback::BaseCallback> callback;   // Callback after each iteration
 
     // Hack for cleaner python implementation
     virtual std::string name() { return "Options"; }
