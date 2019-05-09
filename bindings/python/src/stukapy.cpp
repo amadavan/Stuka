@@ -15,6 +15,7 @@
 #include "dlp.h"
 #include "lp.h"
 #include "qp.h"
+#include "callbacks.h"
 
 namespace py = pybind11;
 
@@ -78,10 +79,12 @@ PYBIND11_MODULE(stukapy, m) {
       .def_readwrite("dual_eq0", &stuka::Options::dual_eq0)
       .def_readwrite("lp_solver", &stuka::Options::lp_solver)
       .def_readwrite("qp_solver", &stuka::Options::qp_solver)
-      .def_readwrite("dlp_solver", &stuka::Options::dlp_solver);
+      .def_readwrite("dlp_solver", &stuka::Options::dlp_solver)
+      .def_readwrite("callback", &stuka::Options::callback);
 
   init_lp(m);
   init_qp(m);
+  init_callbacks(m);
 
   py::class_<stuka::dLP::DecomposedLinearProgram, stuka::dLP::PyDecomposedLinearProgram>(m, "DecomposedLinearProgram")
       .def(

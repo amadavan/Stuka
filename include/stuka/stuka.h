@@ -37,6 +37,17 @@
 #include "util/solver_factory.h"
 #include "util/timer.h"
 
+// Callback functions
+#include "util/callback/base_callback.h"
+#include "util/callback/function.h"
+
+// HDF5
+#ifdef BUILD_HDF5
+
+#include "util/callback/save_hdf5.h"
+
+#endif
+
 // Gurobi
 #ifdef BUILD_GUROBI
 #include "LP/gurobi.h"

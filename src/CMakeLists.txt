@@ -1,5 +1,4 @@
 if (GUROBI_FOUND)
-    add_definitions(-DBUILD_GUROBI)
     set(GUROBI_SOURCES
             ../include/stuka/LP/gurobi.h
             ../include/stuka/LP/gurobi_lp.h
@@ -11,6 +10,14 @@ if (GUROBI_FOUND)
             QP/gurobi_qp.cpp)
 else ()
     set(GUROBI_LIBRARIES "")
+endif ()
+
+if (HDF5_FOUND)
+    set(HDF5_SOURCES
+            ../include/stuka/util/callback/save_hdf5.h
+            util/callback/save_hdf5.cpp)
+else ()
+    set(HDF5_LIBRARIES "")
 endif ()
 
 set(STUKA_SOURCES
@@ -31,9 +38,11 @@ set(STUKA_SOURCES
         ../include/stuka/dLP/benders.h
         ../include/stuka/dLP/benders_cut.h
         ../include/stuka/dLP/benders_subproblem.h
+        ../include/stuka/util/functions.h
         ../include/stuka/util/solver_factory.h
         ../include/stuka/util/timer.h
-        ../include/stuka/util/functions.h
+        ../include/stuka/util/callback/base_callback.h
+        ../include/stuka/util/callback/function.h
         ../include/stuka/stuka.h
         ../include/stuka/constants.h
         ../include/stuka/base_solver.h
@@ -48,10 +57,11 @@ set(STUKA_SOURCES
         dLP/benders.cpp
         util/solver_factory.cpp
         util/timer.cpp
-        util/functions.cpp)
+        util/functions.cpp
+        util/callback/function.cpp)
 
-add_library(stuka SHARED ${STUKA_SOURCES} ${GUROBI_SOURCES})
-target_link_libraries(stuka PRIVATE ${GUROBI_LIBRARIES} ${SPQR_LIBRARIES})
+add_library(stuka SHARED ${STUKA_SOURCES} ${GUROBI_SOURCES} ${HDF5_SOURCES})
+target_link_libraries(stuka PRIVATE ${GUROBI_LIBRARIES} ${SPQR_LIBRARIES} PUBLIC ${HDF5_LIBRARIES})
 
 set(STUKA_EXAMPLE_SOURCES
         example/simple_lp.h
