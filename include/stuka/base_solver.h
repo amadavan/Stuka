@@ -20,7 +20,7 @@ namespace stuka {
 
   class BaseSolver {
   public:
-    explicit BaseSolver(const Options &opts) : opts_(opts), n_max_iter_(opts.max_iter) {
+    explicit BaseSolver(const Options &opts) : cb_(opts.callback), n_max_iter_(opts.max_iter) {
       if (opts.max_iter == 0)
         n_max_iter_ = DEFAULT_MAX_ITER;
     }
@@ -51,12 +51,13 @@ namespace stuka {
      */
     virtual const OptimizeState solve() {
       unsigned int nit = 0;
+      if (cb_) cb_->initialize(this->getState());
       do {
         iterate();
-        if (opts_.callback) {
+        if (cb_) {
           OptimizeState state = this->getState();
           state.nit = nit;
-          opts_.callback->callback(state);
+          cb_->callback(state);
         }
       } while (++nit < n_max_iter_ && !terminate());
 
@@ -68,7 +69,7 @@ namespace stuka {
 
   private:
     size_t n_max_iter_;
-    const Options &opts_;
+    const std::shared_ptr<stuka::util::callback::BaseCallback> cb_;
   };
 
 }

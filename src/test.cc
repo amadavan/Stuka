@@ -42,7 +42,7 @@ int main() {
   for (stuka::example::LinearProgramExample *ex : ex_lp) {
     std::cout << print_header(ex->name()) << std::endl;
     stuka::Options opts;
-    for (std::pair<std::string, stuka::Solver> solver : solvers_lp) {
+    for (const std::pair<std::string, stuka::Solver> solver : solvers_lp) {
       std::cout << print_header(solver.first, '-') << std::endl;
       opts.lp_solver = solver.second;
       res = stuka::util::linprog(ex->gen(), opts);
@@ -53,7 +53,7 @@ int main() {
   for (stuka::example::QuadraticProgramExample *ex : ex_qp) {
     std::cout << print_header(ex->name()) << std::endl;
     stuka::Options opts;
-    for (std::pair<std::string, stuka::Solver> solver : solvers_qp) {
+    for (const std::pair<std::string, stuka::Solver> solver : solvers_qp) {
       std::cout << print_header(solver.first, '-') << std::endl;
       opts.qp_solver = solver.second;
       res = stuka::util::quadprog(ex->gen(), opts);
@@ -68,7 +68,7 @@ int main() {
     std::cout << res.x.transpose() << "\t\tRuntime: " << res.runtime << std::endl;
 
     stuka::Options opts;
-    for (std::pair<std::string, stuka::Solver> solver : solvers_dlp) {
+    for (const std::pair<std::string, stuka::Solver> solver : solvers_dlp) {
       std::cout << print_header(solver.first, '-') << std::endl;
       opts.dlp_solver = solver.second;
       try {
@@ -79,5 +79,14 @@ int main() {
       }
     }
   }
+
+  std::cout << print_header("Verify callbacks") << std::endl;
+  stuka::Options opts;
+  opts.max_iter = 10;
+  opts.callback = std::make_shared<stuka::util::callback::SaveHDF5>("test.h5", 10);
+  opts.lp_solver = stuka::MPC;
+  stuka::util::linprog(ex_lp[0]->gen(), opts);
+  std::cout << "HDF5 completed" << std::endl;
+
 
 }

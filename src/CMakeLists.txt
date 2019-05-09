@@ -61,7 +61,7 @@ set(STUKA_SOURCES
         util/callback/function.cpp)
 
 add_library(stuka SHARED ${STUKA_SOURCES} ${GUROBI_SOURCES} ${HDF5_SOURCES})
-target_link_libraries(stuka PRIVATE ${GUROBI_LIBRARIES} ${SPQR_LIBRARIES} ${HDF5_LIBRARIES})
+target_link_libraries(stuka PRIVATE ${GUROBI_LIBRARIES} ${SPQR_LIBRARIES} PUBLIC ${HDF5_LIBRARIES})
 
 set(STUKA_EXAMPLE_SOURCES
         example/simple_lp.h

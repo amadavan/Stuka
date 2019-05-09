@@ -4,8 +4,10 @@
 
 #include <stuka/util/callback/save_hdf5.h>
 
-stuka::util::callback::SaveHDF5::SaveHDF5(const std::string &filename, const size_t n_entries) :
-    file_(H5::H5File(filename, H5F_ACC_TRUNC)), n_entries_(n_entries) {}
+stuka::util::callback::SaveHDF5::SaveHDF5(const std::string &filename, const size_t n_entries) : n_entries_(n_entries) {
+//  H5std_string file(filename);
+  file_ = H5::H5File(filename, H5F_ACC_TRUNC);
+}
 
 void stuka::util::callback::SaveHDF5::initialize(const stuka::OptimizeState state) {
   x_dim_ = (hsize_t) state.x.size();
@@ -39,15 +41,15 @@ void stuka::util::callback::SaveHDF5::callback(const stuka::OptimizeState state)
   dim_mem[1] = dual_ub_dim_;
   d_mem = H5::DataSpace(2, dim_mem);
 
-  H5::DataSpace dual_ub = ds_x_.getSpace();
+  H5::DataSpace dual_ub = ds_dual_ub_.getSpace();
   dual_ub.selectHyperslab(H5S_SELECT_SET, count, offset, nullptr, nullptr);
-  ds_dual_ub_.write(state.x.data(), H5::PredType::NATIVE_DOUBLE, d_mem, dual_ub);
+  ds_dual_ub_.write(state.dual_ub.data(), H5::PredType::NATIVE_DOUBLE, d_mem, dual_ub);
 
   count[1] = dual_eq_dim_;
   dim_mem[1] = dual_eq_dim_;
   d_mem = H5::DataSpace(2, dim_mem);
 
-  H5::DataSpace dual_eq = ds_x_.getSpace();
+  H5::DataSpace dual_eq = ds_dual_eq_.getSpace();
   dual_eq.selectHyperslab(H5S_SELECT_SET, count, offset, nullptr, nullptr);
-  ds_dual_eq_.write(state.x.data(), H5::PredType::NATIVE_DOUBLE, d_mem, dual_eq);
+  ds_dual_eq_.write(state.dual_eq.data(), H5::PredType::NATIVE_DOUBLE, d_mem, dual_eq);
 }

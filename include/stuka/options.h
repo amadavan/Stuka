@@ -29,7 +29,7 @@ namespace stuka {
     stuka::Solver dlp_solver = DEFAULT_DLP_SOLVER;      // Solver to use for decomposed linear programs
 
     // Callback
-    std::unique_ptr<util::callback::BaseCallback> callback = nullptr;
+    std::shared_ptr<util::callback::BaseCallback> callback = nullptr;
 
     // Hack for cleaner python implementation
     virtual std::string name() { return "Options"; }
