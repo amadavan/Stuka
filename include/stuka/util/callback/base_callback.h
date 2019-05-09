@@ -5,15 +5,17 @@
 #ifndef STUKA_CALLBACK_BASE_CALLBACK_H
 #define STUKA_CALLBACK_BASE_CALLBACK_H
 
-#include "../optimize_state.h"
+#include "stuka/optimize_state.h"
 
-namespace stuka { namespace callback {
+namespace stuka { namespace util { namespace callback {
   class BaseCallback {
   public:
     virtual ~BaseCallback() = default;
 
-    virtual void callback(OptimizeState state) = 0;
+    virtual void initialize(const OptimizeState state) {};
+
+    virtual void callback(const OptimizeState state) = 0;
   };
-}}
+}}}
 
 #endif //STUKA_CALLBACK_BASE_CALLBACK_H

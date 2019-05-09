@@ -53,7 +53,11 @@ namespace stuka {
       unsigned int nit = 0;
       do {
         iterate();
-        if (opts_.callback) opts_.callback->callback(this->getState());
+        if (opts_.callback) {
+          OptimizeState state = this->getState();
+          state.nit = nit;
+          opts_.callback->callback(state);
+        }
       } while (++nit < n_max_iter_ && !terminate());
 
       OptimizeState res = getState();

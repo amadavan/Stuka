@@ -25,9 +25,15 @@ if (GUROBI_FOUND)
     add_definitions(-DBUILD_GUROBI)
 endif()
 
-find_package(CHOLMOD)
-find_package(SPQR)
+find_package(CHOLMOD REQUIRED)
+find_package(SPQR REQUIRED)
 include_directories(${SPQR_INCLUDES})
+
+find_package(HDF5 COMPONENTS CXX C)
+if (HDF5_FOUND)
+    include_directories(${HDF5_INCLUDE_DIRS})
+    add_definitions(-DBUILD_HDF5)
+endif ()
 
 add_subdirectory(src)
 add_subdirectory(bindings)
