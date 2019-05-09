@@ -6,6 +6,7 @@
 #define STUKA_OPTIONS_H
 
 #include <functional>
+#include <memory>
 
 #include <Eigen/Core>
 

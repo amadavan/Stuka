@@ -9,6 +9,8 @@
 #define DEFAULT_MAX_ITER 100
 #endif
 
+#include <memory>
+
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
 
@@ -69,7 +71,7 @@ namespace stuka {
 
   private:
     size_t n_max_iter_;
-    const std::shared_ptr<stuka::util::callback::BaseCallback> cb_;
+    const std::shared_ptr<util::callback::BaseCallback> cb_;
   };
 
 }
