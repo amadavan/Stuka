@@ -39,13 +39,13 @@
 
 // Callback functions
 #include "util/callback/base_callback.h"
+#include "util/callback/composite.h"
 #include "util/callback/function.h"
+#include "util/callback/progress.h"
 
 // HDF5
 #ifdef BUILD_HDF5
-
 #include "util/callback/save_hdf5.h"
-
 #endif
 
 // Gurobi

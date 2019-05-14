@@ -9,6 +9,8 @@
 #include <stuka/util/callback/base_callback.h>
 #include <stuka/util/callback/function.h>
 #include <stuka/util/callback/save_hdf5.h>
+#include <stuka/util/callback/composite.h>
+#include <stuka/util/callback/progress.h>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/functional.h>
