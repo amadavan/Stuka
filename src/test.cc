@@ -81,12 +81,19 @@ int main() {
   }
 
   std::cout << print_header("Verify callbacks") << std::endl;
+  std::cout << print_header("Save HDF5", '-') << std::endl;
   stuka::Options opts;
   opts.max_iter = 10;
   opts.callback = std::make_shared<stuka::util::callback::SaveHDF5>("test.h5", 10);
   opts.lp_solver = stuka::MPC;
   stuka::util::linprog(ex_lp[0]->gen(), opts);
-  std::cout << "HDF5 completed" << std::endl;
+  std::cout << print_header("Function", '-') << std::endl;
+  opts.max_iter = 10;
+  opts.callback = std::make_shared<stuka::util::callback::Function>([](const stuka::OptimizeState state){std::cout << state.nit << std::endl;});
+  opts.lp_solver = stuka::MPC;
+  stuka::util::linprog(ex_lp[0]->gen(), opts);
+
+
 
 
 }

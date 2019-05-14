@@ -4,8 +4,12 @@
 
 #include <string>
 #include <memory>
+#include <variant>
+#include <iostream>
+#include <iomanip>
 
 #include <pybind11/pybind11.h>
+#include <pybind11/functional.h>
 #include <pybind11/chrono.h>
 #include <pybind11/eigen.h>
 #include <pybind11/stl.h>
@@ -19,34 +23,18 @@
 
 namespace py = pybind11;
 
-namespace pybind11 { namespace detail {
-  template<>
-  struct type_caster<stuka::OptimizeState> {
-  public:
-  PYBIND11_TYPE_CASTER(stuka::OptimizeState, _("OptimizeState"));
-
-    bool load(handle src, bool) {
-      return false;
-    }
-
-    static handle cast(stuka::OptimizeState res, return_value_policy /* policy */, handle /* parent */) {
-      py::dict ret = py::dict(
-          "x"_a = res.x,
-          "dual_ub"_a = res.dual_ub,
-          "dual_eq"_a = res.dual_eq,
-          "fun"_a = res.fun,
-          "error"_a = res.error,
-          "status"_a = res.status,
-          "nit"_a = res.nit,
-          "nit_sub"_a = res.nit_sub,
-          "runtime"_a = res.runtime
-      );
-
-      return ret.release();
-    }
-  };
-
-}}
+std::ostream& operator<<(std::ostream& os, const stuka::OptimizeState& state) {
+  os << std::right << std::setw(8) << std::setfill(' ') << "x" << ": " << std::left << state.x.transpose() << std::endl;
+  os << std::right << std::setw(8) << std::setfill(' ') << "dual_ub" << ": " << std::left << state.dual_ub.transpose() << std::endl;
+  os << std::right << std::setw(8) << std::setfill(' ') << "dual_eq" << ": " << std::left << state.dual_eq.transpose() << std::endl;
+  os << std::right << std::setw(8) << std::setfill(' ') << "fun" << ": " << std::left << state.fun << std::endl;
+  os << std::right << std::setw(8) << std::setfill(' ') << "error" << ": " << std::left << state.error << std::endl;
+  os << std::right << std::setw(8) << std::setfill(' ') << "status" << ": " << std::left << state.status << std::endl;
+  os << std::right << std::setw(8) << std::setfill(' ') << "nit" << ": " << std::left << state.nit << std::endl;
+  os << std::right << std::setw(8) << std::setfill(' ') << "nit_sub" << ": " << std::left << state.nit_sub << std::endl;
+  os << std::right << std::setw(8) << std::setfill(' ') << "runtime" << ": " << std::left << state.runtime << std::endl;
+  return os;
+}
 
 PYBIND11_MODULE(stukapy, m) {
   m.doc() = R"pbdoc(
@@ -59,6 +47,7 @@ PYBIND11_MODULE(stukapy, m) {
 
 //  py::module mlp = m.def_submodule("lp", "linear programming submodule");
 //  py::module mqp = m.def_submodule("qp", "quadratic programming submodule");
+  py::module mcallback = m.def_submodule("callback", "callbacks submodule");
 
   m.attr("inf") = stuka::INF;
 
@@ -69,6 +58,37 @@ PYBIND11_MODULE(stukapy, m) {
       .value("BENDER", stuka::Solver::BENDER)
       .value("CRE", stuka::Solver::CRE)
       .value("MPC", stuka::Solver::MPC);
+
+  py::class_<stuka::OptimizeState>(m, "OptimizeState")
+      .def(py::init<>())
+      .def_readonly("x", &stuka::OptimizeState::x)
+      .def_readonly("dual_ub", &stuka::OptimizeState::dual_ub)
+      .def_readonly("dual_eq", &stuka::OptimizeState::dual_eq)
+      .def_readonly("fun", &stuka::OptimizeState::fun)
+      .def_readonly("error", &stuka::OptimizeState::error)
+      .def_readonly("status", &stuka::OptimizeState::status)
+      .def_readonly("nit", &stuka::OptimizeState::nit)
+      .def_readonly("nit_sub", &stuka::OptimizeState::nit_sub)
+      .def_readonly("runtime", &stuka::OptimizeState::runtime)
+      .def("__repr__", [](const stuka::OptimizeState &state){
+        std::stringstream ss;
+        ss << state << std::endl;
+        return ss.str();
+      })
+      .def("__getitem__", [](const stuka::OptimizeState &state, const std::string &key){
+        std::variant<Eigen::VectorXd, double, unsigned int, int, std::string> ret = "Key not found.";;
+        if (key == "x") ret = state.x;
+        if (key == "dual_ub") ret = state.dual_ub;
+        if (key == "dual_eq") ret = state.dual_eq;
+        if (key == "fun") ret = state.fun;
+        if (key == "error") ret = state.error;
+        if (key == "status") ret = state.status;
+        if (key == "nit") ret = state.nit;
+        if (key == "nit_sub") ret = state.nit_sub;
+        if (key == "runtime") ret = state.runtime;
+        return ret;
+        }, py::is_operator());
+
 
   py::class_<stuka::Options>(m, "Options")
       .def(py::init<>())
@@ -84,7 +104,7 @@ PYBIND11_MODULE(stukapy, m) {
 
   init_lp(m);
   init_qp(m);
-  init_callbacks(m);
+  init_callbacks(mcallback);
 
   py::class_<stuka::dLP::DecomposedLinearProgram, stuka::dLP::PyDecomposedLinearProgram>(m, "DecomposedLinearProgram")
       .def(

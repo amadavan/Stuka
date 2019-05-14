@@ -10,12 +10,12 @@
 namespace stuka { namespace util { namespace callback {
   class Function : public BaseCallback {
   public:
-    Function(const std::function<void(const OptimizeState)> &func);
+    Function(const std::function<void(const OptimizeState)> func);
 
     void callback(const OptimizeState state) override;
 
   private:
-    const std::function<void(const OptimizeState state)> &func_;
+    const std::function<void(const OptimizeState state)> func_;
   };
 }}}
 
