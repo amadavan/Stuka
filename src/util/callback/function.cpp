@@ -4,8 +4,8 @@
 
 #include <stuka/util/callback/function.h>
 
-stuka::util::callback::Function::Function(const std::function<void(OptimizeState)> &func) : func_(func) {};
+stuka::util::callback::Function::Function(const std::function<void(OptimizeState)> func) : func_(func) {};
 
-void stuka::util::callback::Function::callback(const stuka::OptimizeState state) {
+void stuka::util::callback::Function::callback(stuka::OptimizeState state) {
   return func_(state);
 }
