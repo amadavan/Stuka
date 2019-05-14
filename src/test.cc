@@ -81,18 +81,21 @@ int main() {
   }
 
   std::cout << print_header("Verify callbacks") << std::endl;
-  std::cout << print_header("Save HDF5", '-') << std::endl;
   stuka::Options opts;
   opts.max_iter = 10;
-  opts.callback = std::make_shared<stuka::util::callback::SaveHDF5>("test.h5", 10);
-  opts.lp_solver = stuka::MPC;
-  stuka::util::linprog(ex_lp[0]->gen(), opts);
-  std::cout << print_header("Function", '-') << std::endl;
-  opts.max_iter = 10;
-  opts.callback = std::make_shared<stuka::util::callback::Function>([](const stuka::OptimizeState state){std::cout << state.nit << std::endl;});
+  std::shared_ptr<stuka::util::callback::BaseCallback> hdf5 = std::make_shared<stuka::util::callback::SaveHDF5>(
+      "test.h5", 10);
+  std::shared_ptr<stuka::util::callback::BaseCallback> function = std::make_shared<stuka::util::callback::Function>(
+      [](const stuka::OptimizeState state) { std::cout << state.nit << std::endl; });
+  std::shared_ptr<stuka::util::callback::BaseCallback> progress = std::make_shared<stuka::util::callback::Progress>(10);
+  std::vector<const std::shared_ptr<stuka::util::callback::BaseCallback>> cbs = {hdf5, function, progress};
+  std::shared_ptr<stuka::util::callback::BaseCallback> composite = std::make_shared<stuka::util::callback::Composite>(
+      cbs);
+  opts.callback = composite;
   opts.lp_solver = stuka::MPC;
   stuka::util::linprog(ex_lp[0]->gen(), opts);
 
+  std::cout << print_header("", '=') << std::endl;
 
 
 

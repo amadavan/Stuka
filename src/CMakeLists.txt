@@ -58,7 +58,7 @@ set(STUKA_SOURCES
         util/solver_factory.cpp
         util/timer.cpp
         util/functions.cpp
-        util/callback/function.cpp)
+        util/callback/function.cpp ../include/stuka/util/callback/composite.h util/callback/composite.cpp ../include/stuka/util/callback/progress.h util/callback/progress.cpp)
 
 add_library(stuka SHARED ${STUKA_SOURCES} ${GUROBI_SOURCES} ${HDF5_SOURCES})
 target_link_libraries(stuka PRIVATE ${GUROBI_LIBRARIES} ${SPQR_LIBRARIES} PUBLIC ${HDF5_LIBRARIES})
