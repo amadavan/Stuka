@@ -10,7 +10,7 @@ void init_callbacks(py::module &m) {
 
   py::class_<stuka::util::callback::Composite, stuka::util::callback::BaseCallback,
       std::shared_ptr<stuka::util::callback::Composite>>(m, "Composite")
-      .def(py::init<const std::vector<const std::shared_ptr<stuka::util::callback::BaseCallback>> &>(),
+      .def(py::init<const std::vector<std::shared_ptr<stuka::util::callback::BaseCallback>> &>(),
            py::arg("callbacks"));
 
   py::class_<stuka::util::callback::Function, stuka::util::callback::BaseCallback,
