@@ -12,7 +12,7 @@
 namespace stuka { namespace util { namespace callback {
   class SaveHDF5 : public BaseCallback {
   public:
-    SaveHDF5(const std::string &filename, const size_t n_entries = 0);
+    SaveHDF5(const std::string &filename, const size_t n_entries = 0, const bool compress = false);
 
     void callback(const OptimizeState state) override;
 
@@ -24,6 +24,8 @@ namespace stuka { namespace util { namespace callback {
     size_t n_entries_;
 
     hsize_t x_dim_, dual_ub_dim_, dual_eq_dim_;
+
+    bool compress_;
   };
 }}}
 

@@ -84,7 +84,7 @@ int main() {
   stuka::Options opts;
   opts.max_iter = 10;
   std::shared_ptr<stuka::util::callback::BaseCallback> hdf5 = std::make_shared<stuka::util::callback::SaveHDF5>(
-      "test.h5", 10);
+      "test.h5", 10, true);
   std::shared_ptr<stuka::util::callback::BaseCallback> function = std::make_shared<stuka::util::callback::Function>(
       [](const stuka::OptimizeState state) { std::cout << state.nit << std::endl; });
   std::shared_ptr<stuka::util::callback::BaseCallback> progress = std::make_shared<stuka::util::callback::Progress>(10);
