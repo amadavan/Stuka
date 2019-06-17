@@ -10,7 +10,7 @@ stuka::util::createSolver(const LP::LinearProgram &lp, const stuka::Options &opt
   std::unique_ptr<LP::BaseLPSolver> solver;
 
   switch (opts.lp_solver) {
-#ifdef BUILD_GUROBI
+#ifdef ENABLE_GUROBI
     case GUROBI:
       solver = std::make_unique<LP::GurobiSolver>(lp, opts); break;
 #endif
@@ -29,7 +29,7 @@ stuka::util::createSolver(const stuka::QP::QuadraticProgram &qp, const stuka::Op
   std::unique_ptr<QP::BaseQPSolver> solver;
 
   switch (opts.qp_solver) {
-#ifdef BUILD_GUROBI
+#ifdef ENABLE_GUROBI
     case GUROBI:
       solver = std::make_unique<QP::GurobiSolver>(qp, opts); break;
 #endif

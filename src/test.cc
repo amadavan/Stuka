@@ -88,7 +88,7 @@ int main() {
   std::shared_ptr<stuka::util::callback::BaseCallback> function = std::make_shared<stuka::util::callback::Function>(
       [](const stuka::OptimizeState state) { std::cout << state.nit << std::endl; });
   std::shared_ptr<stuka::util::callback::BaseCallback> progress = std::make_shared<stuka::util::callback::Progress>(10);
-  std::vector<const std::shared_ptr<stuka::util::callback::BaseCallback>> cbs = {hdf5, function, progress};
+  std::vector <std::shared_ptr<stuka::util::callback::BaseCallback>> cbs = {hdf5, function, progress};
   std::shared_ptr<stuka::util::callback::BaseCallback> composite = std::make_shared<stuka::util::callback::Composite>(
       cbs);
   opts.callback = composite;

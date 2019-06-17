@@ -14,7 +14,7 @@
 #include "../dLP/decomposed_lp.h"
 #include "../dLP/base_solver.h"
 
-#ifdef BUILD_GUROBI
+#ifdef ENABLE_GUROBI
 
 #include "../LP/gurobi.h"
 #include "../QP/gurobi.h"

@@ -7,7 +7,7 @@
 
 // Define default LP solver
 #ifndef DEFAULT_LP_SOLVER
-#ifdef BUILD_GUROBI
+#ifdef ENABLE_GUROBI
 #define DEFAULT_LP_SOLVER GUROBI
 #else
 #define DEFAULT_LP_SOLVER MPC
@@ -16,7 +16,7 @@
 
 // Define default QP solver
 #ifndef DEFAULT_QP_SOLVER
-#ifdef BUILD_GUROBI
+#ifdef ENABLE_GUROBI
 #define DEFAULT_QP_SOLVER GUROBI
 #else
 #define DEFAULT_QP_SOLVER MPC
@@ -35,7 +35,7 @@ namespace stuka {
   constexpr double INF = std::numeric_limits<double>::infinity();
 
   enum Solver {
-#ifdef BUILD_GUROBI
+#ifdef ENABLE_GUROBI
     GUROBI,
 #endif
     BENDER,

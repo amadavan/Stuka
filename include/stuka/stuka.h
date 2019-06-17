@@ -42,14 +42,10 @@
 #include "util/callback/composite.h"
 #include "util/callback/function.h"
 #include "util/callback/progress.h"
-
-// HDF5
-#ifdef BUILD_HDF5
 #include "util/callback/save_hdf5.h"
-#endif
 
 // Gurobi
-#ifdef BUILD_GUROBI
+#ifdef ENABLE_GUROBI
 #include "LP/gurobi.h"
 #include "LP/gurobi_lp.h"
 #include "QP/gurobi.h"

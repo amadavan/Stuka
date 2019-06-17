@@ -22,7 +22,7 @@ list(APPEND LIB_INSTALL_DIR "${CMAKE_SOURCE_DIR}/lib")
 find_package(GUROBI)
 if (GUROBI_FOUND)
     include_directories(${GUROBI_INCLUDE_DIRS})
-    add_definitions(-DBUILD_GUROBI)
+    add_definitions(-DENABLE_GUROBI)
 endif()
 
 find_package(CHOLMOD REQUIRED)

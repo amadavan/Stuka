@@ -1,0 +1,12 @@
+build --compilation_mode=opt
+
+build --apple_platform_type=macos
+
+build --spawn_strategy=standalone
+build --strategy=Genrule=standalone
+
+build --cxxopt=-std=c++17
+
+build:gurobi --define=enable_gurobi=true
+
+build --output_filter='^//third_party/:'

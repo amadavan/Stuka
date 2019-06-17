@@ -52,7 +52,7 @@ PYBIND11_MODULE(stukapy, m) {
   m.attr("inf") = stuka::INF;
 
   py::enum_<stuka::Solver>(m, "solver")
-#ifdef BUILD_GUROBI
+#ifdef ENABLE_GUROBI
       .value("GUROBI", stuka::Solver::GUROBI)
 #endif
       .value("BENDER", stuka::Solver::BENDER)

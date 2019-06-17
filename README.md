@@ -4,7 +4,7 @@
 
 # Requirements
 - C++14 compiler (gcc >= 5 or clang >= 3.5)
-- [CMake](https://cmake.org/download/) (version >= 3.11)
+- [CMake](https://cmake.org/download/) (version >= 3.11) or [Bazel](https://github.com/bazelbuild/bazel/releases)
 - [SuiteSparse](http://faculty.cse.tamu.edu/davis/suitesparse.html)
 - [Gurobi optimizer](http://www.gurobi.com/downloads/download-center)
 
@@ -33,7 +33,7 @@ cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
 cmake --build . --target stuka
 ```
-This should create a shared library in the `build/lib` folder.
+This should create a shared library in the `build/lib` directory.
 
 #### Python bindings
 Building the python library is as simple running

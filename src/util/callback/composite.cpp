@@ -5,7 +5,7 @@
 #include <stuka/util/callback/composite.h>
 
 stuka::util::callback::Composite::Composite(
-    const std::vector<std::shared_ptr<stuka::util::callback::BaseCallback>> &cbs_) : cbs_(cbs_) {}
+    const std::vector <std::shared_ptr<stuka::util::callback::BaseCallback>> &cbs) : cbs_(cbs) {}
 
 void stuka::util::callback::Composite::initialize(const stuka::OptimizeState state) {
   for (std::vector<std::shared_ptr<stuka::util::callback::BaseCallback>>::const_iterator it = cbs_.begin();
