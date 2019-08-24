@@ -18,7 +18,7 @@ namespace stuka { namespace LP {
   public:
     ~GurobiLinearProgram() override;
 
-    explicit GurobiLinearProgram(const LinearProgram &prog);
+    GurobiLinearProgram();
 
     void setObjective(const std::shared_ptr<Eigen::VectorXd> &c) override;
 
@@ -65,6 +65,8 @@ namespace stuka { namespace LP {
     Eigen::VectorXd convertState(const Eigen::VectorXd &x) override;
 
     Eigen::VectorXd revertState(const Eigen::VectorXd &x) override;
+
+    void initialize(const LinearProgram &prog) override;
 
   private:
     GRBEnv env_;

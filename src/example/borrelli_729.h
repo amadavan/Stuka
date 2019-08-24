@@ -2,8 +2,8 @@
 // Created by Avinash Madavan on 7/16/18.
 //
 
-#ifndef MNOPT_EXAMPLE_BORRELLI_729_H
-#define MNOPT_EXAMPLE_BORRELLI_729_H
+#ifndef STUKA_EXAMPLE_BORRELLI_729_H
+#define STUKA_EXAMPLE_BORRELLI_729_H
 
 #include "example.h"
 
@@ -22,4 +22,4 @@ namespace stuka { namespace example {
 }}
 
 
-#endif //MNOPT_EXAMPLE_BORRELLI_729_H
+#endif //STUKA_EXAMPLE_BORRELLI_729_H

@@ -38,7 +38,7 @@ namespace stuka { namespace dLP {
     long n_dim_master_;
     size_t n_active_;
     size_t n_visit_;
-    unsigned int n_sub_calls_;
+    size_t n_sub_calls_;
     bool first_run_;
 
     Eigen::VectorXd a_opt_;                                       // Residual vector

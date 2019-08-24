@@ -35,8 +35,6 @@ stuka::dLP::BendersCut stuka::dLP::BendersSubproblem::getBendersCut(const Eigen:
   try {
     res = solver_->solve();
   } catch (std::exception &e) {
-//    std::cout << "Failed to solve subproblem: " << e.getMessage() << std::endl;
-//    std::cout << e.getErrorCode() << std::endl;
     throw std::runtime_error("getBendersCut: unable to solve subproblem");
   }
   if (res.status != 2) {

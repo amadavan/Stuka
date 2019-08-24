@@ -10,6 +10,7 @@ if (GUROBI_FOUND)
             QP/gurobi_qp.cpp)
 else ()
     set(GUROBI_LIBRARIES "")
+    set(GUROBI_INCLUDE_DIRS "")
 endif ()
 
 if (HDF5_FOUND)
@@ -26,6 +27,13 @@ set(STUKA_SOURCES
         ../include/stuka/LP/lp.h
         ../include/stuka/LP/mehrotra_pc.h
         ../include/stuka/LP/slack_lp.h
+        ../include/stuka/LP/preconditioned_lp.h
+        ../include/stuka/LP/standard_lp.h
+        ../include/stuka/LP/preconditioner/base_preconditioner.h
+        ../include/stuka/LP/preconditioner/bounds_dedicated.h
+        ../include/stuka/LP/preconditioner/bounds_zero.h
+        ../include/stuka/LP/preconditioner/constant_folding.h
+        ../include/stuka/LP/preconditioner/slack_preconditioner.h
         ../include/stuka/QP/base_qp.h
         ../include/stuka/QP/base_solver.h
         ../include/stuka/QP/qp.h
@@ -38,11 +46,16 @@ set(STUKA_SOURCES
         ../include/stuka/dLP/benders.h
         ../include/stuka/dLP/benders_cut.h
         ../include/stuka/dLP/benders_subproblem.h
+        ../include/stuka/stochastic/program.h
+        ../include/stuka/stochastic/base_solver.h
+        ../include/stuka/stochastic/stochastic_pd.h
         ../include/stuka/util/functions.h
         ../include/stuka/util/solver_factory.h
         ../include/stuka/util/timer.h
         ../include/stuka/util/callback/base_callback.h
+        ../include/stuka/util/callback/composite.h
         ../include/stuka/util/callback/function.h
+        ../include/stuka/util/callback/progress.h
         ../include/stuka/stuka.h
         ../include/stuka/constants.h
         ../include/stuka/base_solver.h
@@ -50,18 +63,33 @@ set(STUKA_SOURCES
         ../include/stuka/options.h
         LP/slack_lp.cpp
         LP/mehrotra_pc.cpp
+        LP/standard_lp.cpp
+        LP/preconditioner/slack_preconditioner.cpp
+        LP/preconditioner/constant_folding.cpp
+        LP/preconditioner/bounds_dedicated.cpp
+        LP/preconditioner/bounds_zero.cpp
         dLP/cre.cpp
         dLP/cre_subproblem.cpp
         dLP/critical_region.cpp
         dLP/benders_subproblem.cpp
         dLP/benders.cpp
+        stochastic/stochastic_pd.cpp
         util/solver_factory.cpp
         util/timer.cpp
         util/functions.cpp
-        util/callback/function.cpp ../include/stuka/util/callback/composite.h util/callback/composite.cpp ../include/stuka/util/callback/progress.h util/callback/progress.cpp)
+        util/callback/composite.cpp
+        util/callback/function.cpp
+        util/callback/progress.cpp
+        ../include/stuka/stochastic/stochastic_pd2.h
+        stochastic/stochastic_pd2.cpp ../include/stuka/LP/preconditioner/composite_preconditioner.h ../include/stuka/LP/preconditioner/dummy_preconditioner.h ../include/stuka/util/compose.h)
 
 add_library(stuka SHARED ${STUKA_SOURCES} ${GUROBI_SOURCES} ${HDF5_SOURCES})
 target_link_libraries(stuka PRIVATE ${GUROBI_LIBRARIES} ${SPQR_LIBRARIES} PUBLIC ${HDF5_LIBRARIES})
+target_include_directories(stuka PUBLIC ${CMAKE_INCLUDE_PATH} ${EIGEN_INCLUDES} ${SPQR_INCLUDES} ${GUROBI_INCLUDE_DIRS} ${HDF5_INCLUDE_DIRS})
+
+if (GUROBI_FOUND)
+    target_compile_definitions(stuka PUBLIC ENABLE_GUROBI)
+endif ()
 
 set(STUKA_EXAMPLE_SOURCES
         example/simple_lp.h

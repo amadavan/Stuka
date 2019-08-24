@@ -5,6 +5,12 @@
 #ifndef STUKA_PYTHON_DLP_H
 #define STUKA_PYTHON_DLP_H
 
+#include <stuka/dLP/decomposed_lp.h>
+
+#include <pybind11/pybind11.h>
+#include <pybind11/eigen.h>
+#include <pybind11/stl.h>
+
 namespace stuka { namespace dLP {
 
   class PyDecomposedLinearProgram : public DecomposedLinearProgram {
@@ -57,5 +63,9 @@ namespace stuka { namespace dLP {
   };
 
 }}
+
+namespace py = pybind11;
+
+void init_dlp(py::module &);
 
 #endif //STUKA_PYTHON_DLP_H

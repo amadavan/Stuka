@@ -238,9 +238,9 @@ stuka::dLP::CRE::computeResidualFirst(const OptimizeState &res) {
   xub_activity.setConstant(false);
   for (size_t i = 0; i < n_dim_master_; ++i) {
     if (master_lp_.lb && master_lp_.lb->coeff(i) != -INF && abs(master_lp_.lb->coeff(i) - res.x[i]) < 1e-8)
-      xlb_activity[i] = true;
+      xlb_activity.coeffRef(i) = true;
     if (master_lp_.ub && master_lp_.ub->coeff(i) != INF && abs(master_lp_.ub->coeff(i) - res.x[i]) < 1e-8)
-      xub_activity[i] = true;
+      xub_activity.coeffRef(i) = true;
   }
 //  Eigen::Matrix<bool, Eigen::Dynamic, 1> xlb_activity = res.dual_x_lb.array() > 0;
 //  Eigen::Matrix<bool, Eigen::Dynamic, 1> xub_activity = res.dual_x_ub.array() > 0;
@@ -279,11 +279,11 @@ stuka::dLP::CRE::computeResidualFirst(const OptimizeState &res) {
       for (Eigen::SparseMatrix<double>::InnerIterator it(*master_lp_.A_ub, i); it; ++it)
         if (ub_activity.coeff(it.row()))
           A_active.insertBack(n_eq + active_count_ub.coeff(it.row()), i) = it.value();
-    if (xlb_activity[i]) {
+    if (xlb_activity.coeff(i)) {
       A_active.insertBack(n_eq + n_ub + n_xbound, i) = -1;
       n_xbound++;
     }
-    if (xub_activity[i]) {
+    if (xub_activity.coeff(i)) {
       A_active.insertBack(n_eq + n_ub + n_xbound, i) = 1;
       n_xbound++;
     }

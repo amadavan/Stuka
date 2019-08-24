@@ -37,3 +37,15 @@ stuka::util::linprog(const stuka::dLP::DecomposedLinearProgram &dlp, const stuka
 
   return res;
 }
+
+const stuka::OptimizeState
+stuka::util::stochastic_cvar(const stuka::stochastic::Program &prog, const stuka::Options &opts) {
+  Timer timer;
+
+  timer.start();
+  std::unique_ptr<stochastic::BaseStochasticSolver> solver = createSolver(prog, opts);
+  OptimizeState res = solver->solve();
+  res.runtime = timer.elapsed().count();
+
+  return res;
+}

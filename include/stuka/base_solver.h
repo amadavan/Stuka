@@ -52,7 +52,7 @@ namespace stuka {
      * Iterate until the termination criterion is met or the maximum number of iterations has been reached.
      */
     virtual const OptimizeState solve() {
-      unsigned int nit = 0;
+      size_t nit = 0;
       if (cb_) cb_->initialize(this->getState());
       do {
         iterate();
@@ -65,6 +65,7 @@ namespace stuka {
 
       OptimizeState res = getState();
       res.nit = nit;
+      if (cb_) cb_->finish(res);
 
       return res;
     }

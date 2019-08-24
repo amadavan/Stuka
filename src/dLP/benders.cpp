@@ -92,7 +92,7 @@ void stuka::dLP::BendersDecomposition::iterate() {
   for (size_t i = 0; i < n_sub_; ++i) {
     n_sub_calls_++;
     cuts[i] = subproblems_[i].getBendersCut(x);
-    subproblem_values_[i] = subproblems_[i].getValue();
+    subproblem_values_.coeffRef(i) = subproblems_[i].getValue();
   }
 
   OptimizeState res = solveMasterProblem(cuts);
@@ -128,7 +128,7 @@ stuka::dLP::BendersDecomposition::solveMasterProblem(const std::vector<stuka::dL
     A_ub->startVec(i);
     for (size_t j = 0; j < n_sub_; ++j)
       if (abs(cuts[j].a[i]) > 1e-16)
-        A_ub->insertBack(j, i) = cuts[j].a[i];
+        A_ub->insertBack(j, i) = cuts[j].a.coeff(i);
   }
 
   for (size_t i = 0; i < n_sub_; ++i) {

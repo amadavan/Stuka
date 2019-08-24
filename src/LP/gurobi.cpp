@@ -5,7 +5,9 @@
 #include <stuka/LP/gurobi.h>
 
 stuka::LP::GurobiSolver::GurobiSolver(const stuka::LP::LinearProgram &lp, const stuka::Options &opts) :
-    BaseLPSolver(lp, opts), prog_(lp) {}
+    BaseLPSolver(lp, opts), prog_() {
+  prog_.initialize(lp);
+}
 
 stuka::LP::BaseLinearProgram &stuka::LP::GurobiSolver::getLP() {
   return prog_;
@@ -53,9 +55,9 @@ const stuka::OptimizeState stuka::LP::GurobiSolver::getState() {
 
     for (size_t i = 0; i < prog_.n_dim_; ++i) {
       if (rc[i] < -1e-9)
-        state.dual_x_ub.coeffRef(i) = -rc[i];
+        state.dual_x_ub.coeffRef(i) = -rc.coeff(i);
       else if (rc[i] > 1e-9)
-        state.dual_x_lb.coeffRef(i) = rc[i];
+        state.dual_x_lb.coeffRef(i) = rc.coeff(i);
     }
   } else {
     state.fun = INF;

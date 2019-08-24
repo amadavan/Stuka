@@ -6,7 +6,7 @@
 
 #include <iostream>
 
-stuka::LP::SlackLinearProgram::SlackLinearProgram(const stuka::LP::LinearProgram &prog) : BaseLinearProgram(prog) {
+void stuka::LP::SlackLinearProgram::initialize(const stuka::LP::LinearProgram &prog) {
   long n_dim = prog.c->size();
   long n_con_ub = (prog.b_ub) ? prog.b_ub->size() : 0;
   long n_con_eq = (prog.b_eq) ? prog.b_eq->size() : 0;
@@ -24,7 +24,7 @@ stuka::LP::SlackLinearProgram::SlackLinearProgram(const stuka::LP::LinearProgram
     x_type_ = std::vector<StateType>(n_dim, StateType::UNBOUNDED);
   } else if (!prog.ub) {
     x_type_ = std::vector<StateType>(n_dim, StateType::NORMAL);
-    // No upper bound given (assumed infty)
+    // No upper bound given (assumed infinity)
     for (size_t i = 0; i < n_dim; ++i) {
       if (prog.lb->coeff(i) == -INF) {
         n_split_++;
@@ -35,7 +35,7 @@ stuka::LP::SlackLinearProgram::SlackLinearProgram(const stuka::LP::LinearProgram
     }
   } else if (!prog.lb) {
     x_type_ = std::vector<StateType>(n_dim, StateType::NEGATIVE);
-    // No lower bound given (assumed -infty)
+    // No lower bound given (assumed -infinity)
     for (size_t i = 0; i < n_dim; ++i) {
       if (prog.ub->coeff(i) == INF) {
         n_split_++;
@@ -60,14 +60,14 @@ stuka::LP::SlackLinearProgram::SlackLinearProgram(const stuka::LP::LinearProgram
         // Compact
         n_add_++;
         x_type_[i] = StateType::COMPACT;
-        x_shift_[i] = prog.lb->coeff(i);
+        x_shift_.coeffRef(i) = prog.lb->coeff(i);
       } else if (prog.lb->coeff(i) != -INF) {
         // No upper bound
-        x_shift_[i] = prog.lb->coeff(i);
+        x_shift_.coeffRef(i) = prog.lb->coeff(i);
       } else if (prog.ub->coeff(i) != INF) {
         // No lower bound
         x_type_[i] = StateType::NEGATIVE;
-        x_shift_[i] = -prog.ub->coeff(i);
+        x_shift_.coeffRef(i) = -prog.ub->coeff(i);
       } else {
         // This code should never be reached (the above cases should be exhaustive)
         throw std::runtime_error("LP::SlackLinearProgram something is seriously wrong with the provided bounds.");
@@ -247,16 +247,16 @@ Eigen::VectorXd stuka::LP::SlackLinearProgram::convertState(const Eigen::VectorX
     switch (x_type_[i]) {
       case StateType::COMPACT:
       case StateType::NORMAL:
-        x_slack[i + current_shift] = x[i] + x_shift_[i];
+        x_slack.coeffRef(i + current_shift) = x.coeff(i) + x_shift_.coeff(i);
         break;
       case StateType::NEGATIVE:
-        x_slack[i + current_shift] = -x[i] + x_shift_[i];
+        x_slack.coeffRef(i + current_shift) = -x.coeff(i) + x_shift_.coeff(i);
         break;
       case StateType::UNBOUNDED:
-        if (x[i] > 0)
-          x_slack[i + current_shift] = x[i] + x_shift_[i];
+        if (x.coeff(i) > 0)
+          x_slack.coeffRef(i + current_shift) = x.coeff(i) + x_shift_.coeff(i);
         else
-          x_slack[i + current_shift + 1] = -x[i] + x_shift_[i];
+          x_slack.coeffRef(i + current_shift + 1) = -x.coeff(i) + x_shift_.coeff(i);
         current_shift++;
         break;
       case StateType::CONSTANT:
@@ -276,16 +276,16 @@ Eigen::VectorXd stuka::LP::SlackLinearProgram::revertState(const Eigen::VectorXd
     switch (x_type_[i]) {
       case StateType::COMPACT:
       case StateType::NORMAL:
-        x[i] += x_slack[i + current_shift];
+        x.coeffRef(i) += x_slack.coeff(i + current_shift);
         break;
       case StateType::NEGATIVE :
-        x[i] -= x_slack[i + current_shift];
+        x.coeffRef(i) -= x_slack.coeff(i + current_shift);
         break;
       case StateType::CONSTANT :
         current_shift -= 1;
         break;
       case StateType::UNBOUNDED :
-        x[i] += x_slack[i + current_shift] - x_slack[i + current_shift + 1];
+        x.coeffRef(i) += x_slack.coeff(i + current_shift) - x_slack[i + current_shift + 1];
         current_shift += 1;
         break;
     }

@@ -11,12 +11,12 @@ stuka::LP::GurobiLinearProgram::~GurobiLinearProgram() {
 }
 
 // TODO: use asserts to check for invalid inputs
-stuka::LP::GurobiLinearProgram::GurobiLinearProgram(const stuka::LP::LinearProgram &lp)
-    : BaseLinearProgram(lp), env_(), model_(env_) {
+stuka::LP::GurobiLinearProgram::GurobiLinearProgram() : env_(), model_(env_) {}
 
-  n_dim_ = lp.c->size();
-  n_con_ub_ = lp.b_ub ? lp.b_ub->size() : 0;
-  n_con_eq_ = lp.b_eq ? lp.b_eq->size() : 0;
+void stuka::LP::GurobiLinearProgram::initialize(const stuka::LP::LinearProgram &prog) {
+  n_dim_ = prog.c->size();
+  n_con_ub_ = prog.b_ub ? prog.b_ub->size() : 0;
+  n_con_eq_ = prog.b_eq ? prog.b_eq->size() : 0;
 
   n_alloc_ = n_dim_;
   n_alloc_ub_ = n_con_ub_;
@@ -25,30 +25,30 @@ stuka::LP::GurobiLinearProgram::GurobiLinearProgram(const stuka::LP::LinearProgr
   // Set bounds
   Eigen::VectorXd lb(n_dim_);
   Eigen::VectorXd ub(n_dim_);
-  if (lp.lb == nullptr)
+  if (prog.lb == nullptr)
     lb.setConstant(-GRB_INFINITY);
   else
     for (size_t i = 0; i < n_dim_; ++i)
-      lb.coeffRef(i) = (lp.lb->coeff(i) == -INF) ? -GRB_INFINITY : lp.lb->coeff(i);
+      lb.coeffRef(i) = (prog.lb->coeff(i) == -INF) ? -GRB_INFINITY : prog.lb->coeff(i);
 
-  if (lp.ub == nullptr)
+  if (prog.ub == nullptr)
     ub.setConstant(GRB_INFINITY);
   else
     for (size_t i = 0; i < n_dim_; ++i)
-      ub.coeffRef(i) = (lp.ub->coeff(i) == INF) ? GRB_INFINITY : lp.ub->coeff(i);
+      ub.coeffRef(i) = (prog.ub->coeff(i) == INF) ? GRB_INFINITY : prog.ub->coeff(i);
 
   // Create variables
-  vars_ = model_.addVars(lb.data(), ub.data(), lp.c->data(), nullptr, nullptr, n_dim_);
+  vars_ = model_.addVars(lb.data(), ub.data(), prog.c->data(), nullptr, nullptr, n_dim_);
 
   // Create inequality constraints
   if (n_con_ub_ > 0) {
     ubconstr_ = model_.addConstrs((int) n_con_ub_);
     for (size_t i = 0; i < n_con_ub_; ++i) {
       (ubconstr_ + i)->set(GRB_CharAttr_Sense, '<');
-      (ubconstr_ + i)->set(GRB_DoubleAttr_RHS, lp.b_ub->coeff(i));
+      (ubconstr_ + i)->set(GRB_DoubleAttr_RHS, prog.b_ub->coeff(i));
     }
     for (size_t i = 0; i < n_dim_; ++i) {
-      for (Eigen::SparseMatrix<double>::InnerIterator it_ub(*lp.A_ub, i); it_ub; ++it_ub)
+      for (Eigen::SparseMatrix<double>::InnerIterator it_ub(*prog.A_ub, i); it_ub; ++it_ub)
         model_.chgCoeff(*(ubconstr_ + it_ub.row()), *(vars_ + i), it_ub.value());
     }
   }
@@ -61,10 +61,10 @@ stuka::LP::GurobiLinearProgram::GurobiLinearProgram(const stuka::LP::LinearProgr
     eqconstr_ = model_.addConstrs((int) n_con_eq_);
     for (size_t i = 0; i < n_con_eq_; ++i) {
       (eqconstr_ + i)->set(GRB_CharAttr_Sense, '=');
-      (eqconstr_ + i)->set(GRB_DoubleAttr_RHS, lp.b_eq->coeff(i));
+      (eqconstr_ + i)->set(GRB_DoubleAttr_RHS, prog.b_eq->coeff(i));
     }
     for (size_t i = 0; i < n_dim_; ++i) {
-      for (Eigen::SparseMatrix<double>::InnerIterator it_eq(*lp.A_eq, i); it_eq; ++it_eq)
+      for (Eigen::SparseMatrix<double>::InnerIterator it_eq(*prog.A_eq, i); it_eq; ++it_eq)
         model_.chgCoeff(*(eqconstr_ + it_eq.row()), *(vars_ + i), it_eq.value());
     }
   }

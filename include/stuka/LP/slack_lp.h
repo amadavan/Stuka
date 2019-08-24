@@ -12,7 +12,7 @@
 namespace stuka { namespace LP {
   class SlackLinearProgram : public BaseLinearProgram {
   public:
-    explicit SlackLinearProgram(const LinearProgram &prog);
+    void initialize(const LinearProgram &prog) override;
 
     void setObjective(const std::shared_ptr<Eigen::VectorXd> &c) override;
 

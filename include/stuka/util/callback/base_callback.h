@@ -15,6 +15,8 @@ namespace stuka { namespace util { namespace callback {
     virtual void initialize(const OptimizeState state) {};
 
     virtual void callback(const OptimizeState state) = 0;
+
+    virtual void finish(const OptimizeState state) {};
   };
 }}}
 

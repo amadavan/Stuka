@@ -19,8 +19,8 @@ namespace stuka {
     double fun = 0;
     double error = 0;
     int status = 0;
-    unsigned int nit = 0;
-    unsigned int nit_sub = 0;
+    size_t nit = 0;
+    size_t nit_sub = 0;
 
     double runtime = 0;
   };

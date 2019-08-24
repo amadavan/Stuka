@@ -52,9 +52,9 @@ const stuka::OptimizeState stuka::QP::GurobiSolver::getState() {
 
     for (size_t i = 0; i < prog_.n_dim_; ++i) {
       if (rc[i] < -1e-9)
-        state.dual_x_ub.coeffRef(i) = -rc[i];
+        state.dual_x_ub.coeffRef(i) = -rc.coeff(i);
       else if (rc[i] > 1e-9)
-        state.dual_x_lb.coeffRef(i) = rc[i];
+        state.dual_x_lb.coeffRef(i) = rc.coeff(i);
     }
   } else {
     state.fun = INF;

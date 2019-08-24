@@ -19,7 +19,9 @@ namespace stuka { namespace LP {
   public:
     virtual ~BaseLinearProgram() = default;
 
-    explicit BaseLinearProgram(const LinearProgram &prog) {}
+    explicit BaseLinearProgram() {}
+
+    virtual void initialize(const LinearProgram &prog) = 0;
 
     virtual void setObjective(const std::shared_ptr<Eigen::VectorXd> &c) = 0;
 

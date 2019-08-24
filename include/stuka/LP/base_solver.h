@@ -19,7 +19,7 @@ namespace stuka { namespace LP {
 
   class BaseLPSolver : public BaseSolver {
   public:
-    BaseLPSolver(const LinearProgram &lp, const Options &opts) : BaseSolver(opts) {}
+    BaseLPSolver(const LinearProgram &lp, const Options &opts) : BaseLPSolver(opts) {}
 
     virtual ~BaseLPSolver() override = default;
 
@@ -30,6 +30,9 @@ namespace stuka { namespace LP {
      * trigger any updates that may be necessary due to changes in the LP.
      */
     virtual BaseLinearProgram &getLP() = 0;
+
+  private:
+    explicit BaseLPSolver(const Options &opts) : BaseSolver(opts) {}
   };
 
 }}

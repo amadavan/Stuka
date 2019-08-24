@@ -16,9 +16,10 @@
 
 #include <stuka/stuka.h>
 
-#include "dlp.h"
 #include "lp.h"
 #include "qp.h"
+#include "dlp.h"
+#include "stochastic.h"
 #include "callbacks.h"
 
 namespace py = pybind11;
@@ -76,7 +77,7 @@ PYBIND11_MODULE(stukapy, m) {
         return ss.str();
       })
       .def("__getitem__", [](const stuka::OptimizeState &state, const std::string &key){
-        std::variant<Eigen::VectorXd, double, unsigned int, int, std::string> ret = "Key not found.";;
+        std::variant<Eigen::VectorXd, double, size_t, int, std::string> ret = "Key not found.";;
         if (key == "x") ret = state.x;
         if (key == "dual_ub") ret = state.dual_ub;
         if (key == "dual_eq") ret = state.dual_eq;
@@ -95,6 +96,7 @@ PYBIND11_MODULE(stukapy, m) {
       .def_readwrite("x0", &stuka::Options::x0)
       .def_readwrite("tol", &stuka::Options::tol)
       .def_readwrite("max_iter", &stuka::Options::max_iter)
+      .def_readwrite("step", &stuka::Options::step)
       .def_readwrite("dual_ub0", &stuka::Options::dual_ub0)
       .def_readwrite("dual_eq0", &stuka::Options::dual_eq0)
       .def_readwrite("lp_solver", &stuka::Options::lp_solver)
@@ -104,16 +106,9 @@ PYBIND11_MODULE(stukapy, m) {
 
   init_lp(m);
   init_qp(m);
+  init_dlp(m);
+  init_stochastic(m);
   init_callbacks(mcallback);
-
-  py::class_<stuka::dLP::DecomposedLinearProgram, stuka::dLP::PyDecomposedLinearProgram>(m, "DecomposedLinearProgram")
-      .def(
-          py::init<std::vector<Eigen::VectorXd>, std::vector<Eigen::SparseMatrix<double>>, std::vector<Eigen::VectorXd>,
-              std::vector<Eigen::SparseMatrix<double>>, std::vector<Eigen::SparseMatrix<double>>,
-              std::vector<Eigen::VectorXd>, std::vector<Eigen::SparseMatrix<double>>, std::vector<Eigen::VectorXd>,
-              std::vector<Eigen::VectorXd>>(),
-          py::arg("c"), py::arg("A_ub"), py::arg("b_ub"), py::arg("C_ub"), py::arg("A_eq"), py::arg("b_eq"),
-          py::arg("C_eq"), py::arg("lb"), py::arg("ub"));
 
   m.def("linprog", py::overload_cast<const stuka::LP::LinearProgram &, const stuka::Options &>(&stuka::util::linprog),
         R"pbdoc( solve a linear program )pbdoc", py::arg("LinearProgram"), py::arg("Options") = stuka::Options());
@@ -125,6 +120,9 @@ PYBIND11_MODULE(stukapy, m) {
         py::overload_cast<const stuka::dLP::DecomposedLinearProgram &, const stuka::Options &>(&stuka::util::linprog),
         R"pbdoc( solve a decomposed linear program )pbdoc",
         py::arg("DecomposedLinearProgram"), py::arg("Options") = stuka::Options());
+
+  m.def("stochasticCVaR", &stuka::util::stochastic_cvar, R"pbdoc( solve a CVaR-stochastic convex problem )pbdoc",
+        py::arg("Program"), py::arg("Options") = stuka::Options());
 
 #ifdef VERSION_INFO
   m.attr("__version__") = VERSION_INFO;

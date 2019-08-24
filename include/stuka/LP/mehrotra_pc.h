@@ -8,7 +8,11 @@
 #include <Eigen/SparseCholesky>
 
 #include "base_solver.h"
-#include "slack_lp.h"
+#include "preconditioned_lp.h"
+#include "standard_lp.h"
+#include "preconditioner/composite_preconditioner.h"
+#include "preconditioner/bounds_zero.h"
+#include "preconditioner/slack_preconditioner.h"
 
 namespace stuka { namespace LP {
   class MehrotraPC : public BaseLPSolver {
@@ -31,7 +35,8 @@ namespace stuka { namespace LP {
 
     std::tuple<double, double> computeStepSize(Eigen::VectorXd dx, Eigen::VectorXd ds, double scale = 1.);
 
-    SlackLinearProgram prog_;
+    PreconditionedLinearProgram<StandardLinearProgram, CompositePreconditioner<BoundsZero, SlackPreconditioner>> prog_;
+//    SlackLinearProgram prog_;
 
     double bc_;
     Eigen::VectorXd e_;

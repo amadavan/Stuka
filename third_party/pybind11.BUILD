@@ -19,7 +19,7 @@ cc_library(
     ],
     includes = ["include"],
     deps = [
-        "//third_party/python_runtime:headers",
+        "@stuka//third_party/python_runtime:headers",
     ],
     visibility = ["//visibility:public"],
 )

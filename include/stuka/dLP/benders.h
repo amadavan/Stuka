@@ -31,7 +31,7 @@ namespace stuka { namespace dLP {
     Eigen::VectorXd x_;                                                 // Current iterate
     size_t n_sub_;
     size_t n_dim_master_;
-    unsigned int n_sub_calls_;
+    size_t n_sub_calls_;
 
     std::unique_ptr<LP::BaseLPSolver> master_solver_;                   // Solver for master problem
     std::vector<BendersSubproblem> subproblems_;                        // Subproblems

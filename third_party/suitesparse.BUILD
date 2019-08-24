@@ -1,6 +1,8 @@
 
 licenses(["notice"])
 
+load("@stuka//third_party/mkl:build_defs.bzl", "if_mkl", "mkl_deps")
+
 cc_library(
     name = "metis",
     srcs = glob(["metis-5.1.0/libmetis/*.c", "metis-5.1.0/GKlib/*.c"]),
@@ -179,7 +181,10 @@ cc_library(
 
 cc_library(
     name = "cholmod",
-    deps = [":cholmod_i", ":cholmod_l", "@openblas//:openblas"],
+    deps = [":cholmod_i",
+            ":cholmod_l"]
+            + ["@openblas//:openblas"],
+#    + mkl_deps() + if_mkl([], ["@openblas//:openblas"]),
     visibility = ["//visibility:public"],
 )
 
@@ -187,15 +192,16 @@ cc_library(
     name = "umfpack",
     srcs = glob(["UMFPACK/Source/*.c"]),
     hdrs = glob(["UMFPACK/Include/*.h", "UMFPACK/Source/*.h"]),
-#    strip_include_prefix = "UMFPACK/Include",
+    strip_include_prefix = "UMFPACK/Include",
     includes = ["UMFPACK/Include"],
     copts = ["-fPIC"],
     deps = [
         ":suitesparse_config",
         ":amd",
         ":cholmod",
-        "@openblas//:openblas",
-    ],
+    ]
+            + ["@openblas//:openblas"],
+#    + mkl_deps() + if_mkl([], ["@openblas//:openblas"]),
     visibility = ["//visibility:public"],
 )
 
@@ -210,7 +216,8 @@ cc_library(
         ":amd",
         ":colamd",
         ":cholmod",
-        "@openblas//:openblas",
-    ],
+    ]
+            + ["@openblas//:openblas"],
+#    + mkl_deps() + if_mkl([], ["@openblas//:openblas"]),
     visibility = ["//visibility:public"],
 )

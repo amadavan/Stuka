@@ -3,7 +3,7 @@ licenses(["notice"])
 
 genrule(
     name = "configure_szip",
-    srcs = glob(["**/*"]),
+    srcs = glob(["**/*"], exclude=["src/SZconfig.h"]),
     outs = ["src/SZconfig.h"],
     cmd = "pushd external/szip/; workdir=$$(mktemp -d -t tmp.XXXXXXXXXX); cp -r * $$workdir; pushd $$workdir; ./configure; popd; popd; cp $$workdir/src/SZconfig.h $(@D)/SZconfig.h; rm -rf $$workdir;",
     tools = ["configure"],

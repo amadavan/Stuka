@@ -2,11 +2,18 @@ build --compilation_mode=opt
 
 build --apple_platform_type=macos
 
+build --define=PREFIX=/usr
+build --define=LIBDIR=$(PREFIX)/lib
+build --define=INCLUDEDIR=$(PREFIX)/include
+
 build --spawn_strategy=standalone
 build --strategy=Genrule=standalone
 
 build --cxxopt=-std=c++17
 
 build:gurobi --define=enable_gurobi=true
+build:mkl --define=enable_mkl=true
+build:blis --define=enable_blis=true
+build:flame --define=enable_flame=true
 
 build --output_filter='^//third_party/:'

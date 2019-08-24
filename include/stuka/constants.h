@@ -28,6 +28,11 @@
 #define DEFAULT_DLP_SOLVER BENDER
 #endif
 
+// Define default stochastic solver
+#ifndef DEFAULT_STOCHASTIC_SOLVER
+#define DEFAULT_STOCHASTIC_SOLVER PDSS
+#endif
+
 #include <limits>
 
 namespace stuka {
@@ -35,12 +40,16 @@ namespace stuka {
   constexpr double INF = std::numeric_limits<double>::infinity();
 
   enum Solver {
-#ifdef ENABLE_GUROBI
     GUROBI,
-#endif
     BENDER,
     CRE,
-    MPC
+    MPC,
+    PDSS,
+    PDSS2,
+  };
+
+  enum Status {
+
   };
 
 }

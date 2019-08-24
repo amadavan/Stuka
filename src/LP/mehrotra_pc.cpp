@@ -5,26 +5,28 @@
 #include <stuka/LP/mehrotra_pc.h>
 
 stuka::LP::MehrotraPC::MehrotraPC(const stuka::LP::LinearProgram &lp, const stuka::Options &opts)
-    : BaseLPSolver(lp, opts), prog_(lp), eps_(opts.tol) {
+    : BaseLPSolver(lp, opts), prog_(), eps_(opts.tol) {
+
+  prog_.initialize(lp);
 
   // Useful vectors
-  double bnorm = prog_.b_->norm(), cnorm = prog_.c_->norm();
+  double bnorm = prog_.lp->b_eq->norm(), cnorm = prog_.lp->c->norm();
   bc_ = (bnorm > cnorm) ? bnorm + 1. : cnorm + 1.;
 
-  e_ = Eigen::VectorXd(prog_.n_dim_);
+  e_ = Eigen::VectorXd(prog_.lp->n_dim_);
   e_.setOnes();
 
   // Construct AAt
-  Eigen::SparseMatrix<double> M = *prog_.A_ * prog_.A_->transpose();
+  Eigen::SparseMatrix<double> M = *prog_.lp->A_eq * prog_.lp->A_eq->transpose();
   solver_.analyzePattern(M);
   solver_.factorize(M);
 
-  // min norm(x) s.t. Ax = b
-  x_ = prog_.A_->transpose() * solver_.solve(*prog_.b_);
+  // min norm(x) s.t. Ax = b_eq
+  x_ = prog_.lp->A_eq->transpose() * solver_.solve(*prog_.lp->b_eq);
 
   // min norm(s) s.t. A'y + s = c
-  y_ = solver_.solve((*prog_.A_) * (*prog_.c_));
-  s_ = *prog_.c_ - prog_.A_->transpose() * y_;
+  y_ = solver_.solve((*prog_.lp->A_eq) * (*prog_.lp->c));
+  s_ = *prog_.lp->c - prog_.lp->A_eq->transpose() * y_;
 
   double dx = -1.5 * x_.minCoeff();
   double ds = -1.5 * s_.minCoeff();
@@ -34,8 +36,8 @@ stuka::LP::MehrotraPC::MehrotraPC(const stuka::LP::LinearProgram &lp, const stuk
   ds = (ds > 0) ? ds : 0;
 
   double pdct = 0.5 * (x_ + dx * e_).dot(s_ + ds * e_);
-  double dx_c = dx + pdct / (s_.sum() + prog_.n_dim_ * ds);
-  double ds_c = ds + pdct / (x_.sum() + prog_.n_dim_ * dx);
+  double dx_c = dx + pdct / (s_.sum() + prog_.lp->n_dim_ * ds);
+  double ds_c = ds + pdct / (x_.sum() + prog_.lp->n_dim_ * dx);
 
   // Compute initial point
   x_ += dx_c * e_;
@@ -47,16 +49,16 @@ void stuka::LP::MehrotraPC::iterate() {
   Eigen::VectorXd dx, dy, ds;
   double alpha_p, alpha_d;
 
-  mu_ = x_.dot(s_) / prog_.n_dim_;
-  Rc_ = *prog_.c_ - prog_.A_->transpose() * y_ - s_;
-  Rb_ = *prog_.b_ - *prog_.A_ * x_;
+  mu_ = x_.dot(s_) / prog_.lp->n_dim_;
+  Rc_ = *prog_.lp->c - prog_.lp->A_eq->transpose() * y_ - s_;
+  Rb_ = *prog_.lp->b_eq - *prog_.lp->A_eq * x_;
   Rxs_ = -x_.cwiseProduct(s_);
 
   // Compute the affine predictor step
   std::tie(dx, dy, ds) = solveKKT(Rc_, Rb_, Rxs_, true);
   std::tie(alpha_p, alpha_d) = computeStepSize(dx, ds, 1.);
 
-  double mu_aff = 1. / prog_.n_dim_ * (x_ + alpha_p * dx).dot(s_ + alpha_d * ds);
+  double mu_aff = 1. / prog_.lp->n_dim_ * (x_ + alpha_p * dx).dot(s_ + alpha_d * ds);
   double sigma = pow(mu_aff / mu_, 3);
 
   // Compute the corrector step
@@ -94,13 +96,13 @@ stuka::LP::MehrotraPC::solveKKT(Eigen::VectorXd Rc, Eigen::VectorXd Rb, Eigen::V
   Eigen::DiagonalMatrix<double, Eigen::Dynamic> xdiag = x_.asDiagonal();
 
   if (resolve) {
-    solver_.factorize((*prog_.A_) * sdiag_inv * xdiag * prog_.A_->transpose());
+    solver_.factorize((*prog_.lp->A_eq) * sdiag_inv * xdiag * prog_.lp->A_eq->transpose());
   }
 
-  Eigen::VectorXd rhs_y = *prog_.A_ * sdiag_inv * xdiag * Rc + Rb - *prog_.A_ * sdiag_inv * Rxs;
+  Eigen::VectorXd rhs_y = *prog_.lp->A_eq * sdiag_inv * xdiag * Rc + Rb - *prog_.lp->A_eq * sdiag_inv * Rxs;
 
   Eigen::VectorXd dy = solver_.solve(rhs_y);
-  Eigen::VectorXd ds = Rc - prog_.A_->transpose() * dy;
+  Eigen::VectorXd ds = Rc - prog_.lp->A_eq->transpose() * dy;
   Eigen::VectorXd dx = sdiag_inv * (Rxs - x_.cwiseProduct(ds));
 
   return std::make_tuple(dx, dy, ds);

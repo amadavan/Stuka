@@ -13,11 +13,13 @@
 namespace stuka { namespace util { namespace callback {
   class Composite : public BaseCallback {
   public:
-    Composite(const std::vector <std::shared_ptr<BaseCallback>> &cbs);
+    Composite(const std::vector<std::shared_ptr<BaseCallback>> &cbs);
 
     void initialize(const OptimizeState state) override;
 
     void callback(const OptimizeState state) override;
+
+    void finish(const OptimizeState state) override;
 
   public:
 

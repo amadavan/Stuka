@@ -97,10 +97,10 @@ stuka::dLP::CriticalRegion stuka::dLP::CRESubproblem::computeCriticalRegion(cons
       for (Eigen::SparseMatrix<double>::InnerIterator it(*sub_.A_ub, i); it; ++it)
         if (ub_activity.coeff(it.row()))
           A_active.insertBack(n_eq + active_count_ub.coeff(it.row()), i) = it.value();
-    if (xlb_activity[i]) {
+    if (xlb_activity.coeff(i)) {
       A_active.insertBack(n_eq + n_ub_active + n_xbound, i) = -1;
       n_xbound++;
-    } else if (xub_activity[i]) {
+    } else if (xub_activity.coeff(i)) {
       A_active.insertBack(n_eq + n_ub_active + n_xbound, i) = 1;
       n_xbound++;
     }
