@@ -3,7 +3,6 @@
 //
 
 #include <stuka/util/callback/save_hdf5.h>
-#include <iostream>
 
 stuka::util::callback::SaveHDF5::SaveHDF5(const std::string &filename, const size_t n_iter, const bool compress)
     : compress_(compress) {
@@ -18,8 +17,8 @@ stuka::util::callback::SaveHDF5::SaveHDF5(const std::string &filename, const siz
   H5Pset_cache(fprops, 0, 512, HDF5_CHUNK_CACHE * sizeof(double) * 3, w0);
   H5Pclose(fprops);
 
-  n_p_ = ((size_t) (n_iter / 10000) > 0) ? (n_iter / 10000) : 1;
-  n_entries_ = ((size_t) (n_iter / 10000) > 0) ? 10001 : n_iter + 1;
+  n_p_ = ((size_t) (n_iter / 10000) > 0) ? n_iter / 10000 : 1;
+  n_entries_ = ((size_t) (n_iter / 10000) > 0) ? 10001 + ceill((n_iter/10000. - n_iter/10000) * 10000/n_p_): n_iter + 1;
   index_ = 0;
 }
 
