@@ -5,6 +5,8 @@
 #ifndef STUKA_CONSTANTS_H
 #define STUKA_CONSTANTS_H
 
+#include <stddef.h>
+
 // Define default LP solver
 #ifndef DEFAULT_LP_SOLVER
 #ifdef ENABLE_GUROBI

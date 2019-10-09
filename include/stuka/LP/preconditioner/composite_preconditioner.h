@@ -5,8 +5,6 @@
 #ifndef STUKA_LP_COMPOSITE_PRECONDITIONER_H
 #define STUKA_LP_COMPOSITE_PRECONDITIONER_H
 
-//#include "../../util/compose.h"
-
 #include "../base_lp.h"
 #include "base_preconditioner.h"
 
