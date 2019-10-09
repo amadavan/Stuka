@@ -5,6 +5,8 @@
 #ifndef STUKA_OPTIONS_H
 #define STUKA_OPTIONS_H
 
+#include <stddef.h>
+
 #include <functional>
 #include <memory>
 
