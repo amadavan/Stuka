@@ -5,8 +5,6 @@
 #ifndef STUKA_UTIL_CONSTRAINT_REDUCTION_H_
 #define STUKA_UTIL_CONSTRAINT_REDUCTION_H_
 
-#include <stddef.h>
-
 #include <Eigen/Core>
 #include <Eigen/SparseCore>
 
@@ -16,7 +14,7 @@ namespace stuka { namespace LP {
 
 class ConstraintReduction {
  public:
-  static void bounds(const LinearProgram &prog);
+  static LinearProgram bounds(LinearProgram &prog);
 };
 
 }}

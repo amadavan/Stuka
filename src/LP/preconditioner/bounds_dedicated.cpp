@@ -145,8 +145,7 @@ void stuka::LP::BoundsDedicated::addVar(double c, std::shared_ptr<Eigen::VectorX
                                         std::shared_ptr<Eigen::VectorXd> a_eq, double lb, double ub) {
   if (lb == INF && ub == INF) {
     next()->addVar(c, a_ub, a_eq, lb, ub);
-  }
-  else {
+  } else {
     next()->addVar(c, a_ub, a_eq, lb, ub);
 
   }
@@ -160,7 +159,8 @@ void stuka::LP::BoundsDedicated::addVar(double c, std::shared_ptr<Eigen::VectorX
 void stuka::LP::BoundsDedicated::addVars(const std::shared_ptr<Eigen::VectorXd> c,
                                          const std::shared_ptr<Eigen::SparseMatrix<double>> A_ub,
                                          const std::shared_ptr<Eigen::SparseMatrix<double>> A_eq,
-                                         const std::shared_ptr<Eigen::VectorXd> lb, const std::shared_ptr<Eigen::VectorXd> ub) {
+                                         const std::shared_ptr<Eigen::VectorXd> lb,
+                                         const std::shared_ptr<Eigen::VectorXd> ub) {
 
   size_t
       n_add = (c) ? c->size() : (lb) ? lb->size() : (ub) ? ub->size() : (A_ub) ? A_ub->cols() : (A_eq) ? A_eq->cols()

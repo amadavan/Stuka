@@ -9,13 +9,12 @@
 
 namespace stuka { namespace example {
 
-    class SimpleLP : public LinearProgramExample {
-    public:
-        stuka::LP::LinearProgram gen() override;
-        std::string name() override {return "Simple LP Example";}
-    };
+class SimpleLP : public LinearProgramExample {
+ public:
+  stuka::LP::LinearProgram gen() override;
+  std::string name() override { return "Simple LP Example"; }
+};
 
 }}
-
 
 #endif //SWITCHBACK_EXAMPLE_SIMPLE_LP_H

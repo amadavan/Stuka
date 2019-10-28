@@ -13,12 +13,12 @@
 #include "decomposed_lp.h"
 
 namespace stuka { namespace dLP {
-  class BaseDLPSolver : public BaseSolver {
-  public:
-    BaseDLPSolver(const DecomposedLinearProgram &dlp, const Options &opts) : BaseSolver(opts) {}
+class BaseDLPSolver : public BaseSolver {
+ public:
+  BaseDLPSolver(const DecomposedLinearProgram &dlp, const Options &opts) : BaseSolver(opts) {}
 
-    virtual ~BaseDLPSolver() override = default;
-  };
+  virtual ~BaseDLPSolver() override = default;
+};
 }}
 
 #endif //STUKA_dLP_BASE_SOLVER_H

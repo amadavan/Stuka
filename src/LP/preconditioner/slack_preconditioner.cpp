@@ -9,8 +9,8 @@ stuka::LP::SlackPreconditioner::SlackPreconditioner(const std::shared_ptr<stuka:
 
 void stuka::LP::SlackPreconditioner::initialize(const stuka::LP::LinearProgram &prog) {
   n_dim_ = prog.c->size();
-  n_ub_ = (prog.b_ub) ? prog.b_ub->size(): 0;
-  n_eq_ = (prog.b_eq) ? prog.b_eq->size(): 0;
+  n_ub_ = (prog.b_ub) ? prog.b_ub->size() : 0;
+  n_eq_ = (prog.b_eq) ? prog.b_eq->size() : 0;
 
   A_ub_ = prog.A_ub;
   b_ub_ = prog.b_ub;
@@ -20,14 +20,14 @@ void stuka::LP::SlackPreconditioner::initialize(const stuka::LP::LinearProgram &
 
   if (n_ub_ == 0) {
     next()->initialize(prog);
-  }
-  else {
+  } else {
     LinearProgram lp_next;
     lp_next.c = std::make_shared<Eigen::VectorXd>(n_dim_ + n_ub_);
     lp_next.c->head(n_dim_) = *prog.c;
 
     lp_next.A_eq = std::make_shared<Eigen::SparseMatrix<double>>(n_eq_ + n_ub_, n_dim_ + n_ub_);
-    lp_next.A_eq->reserve(n_ub_ + ((n_eq_ > 0) ? prog.A_eq->nonZeros() : 0) + ((n_ub_ > 0) ? prog.A_ub->nonZeros() : 0));
+    lp_next.A_eq->reserve(
+        n_ub_ + ((n_eq_ > 0) ? prog.A_eq->nonZeros() : 0) + ((n_ub_ > 0) ? prog.A_ub->nonZeros() : 0));
     for (size_t i = 0; i < n_dim_; ++i) {
       lp_next.A_eq->startVec(i);
       if (n_eq_ > 0)

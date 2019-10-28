@@ -8,10 +8,10 @@
 #include <Eigen/Core>
 
 namespace stuka { namespace dLP {
-  struct BendersCut {
-    Eigen::VectorXd a;
-    double b;
-  };
+struct BendersCut {
+  Eigen::VectorXd a;
+  double b;
+};
 }}
 
 #endif //STUKA_dLP_BENDERS_CUT_H

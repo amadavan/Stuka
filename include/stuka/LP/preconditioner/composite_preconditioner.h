@@ -64,12 +64,12 @@ class CompositePreconditioner : public BasePreconditioner {
   Eigen::VectorXd revertState(const Eigen::VectorXd &x) override { return next()->revertState(x); }
 
  private:
-  template <typename T>
+  template<typename T>
   std::shared_ptr<BasePreconditioner> compose(const std::shared_ptr<BaseLinearProgram> &lp) {
     return std::make_shared<T>(lp);
   }
 
-  template <typename T, typename T2, typename ...Ts>
+  template<typename T, typename T2, typename ...Ts>
   std::shared_ptr<BasePreconditioner> compose(const std::shared_ptr<BaseLinearProgram> &lp) {
     return std::make_shared<T>(compose<T2, Ts...>(lp));
   }

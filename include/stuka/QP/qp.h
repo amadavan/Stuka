@@ -11,19 +11,19 @@
 #include <Eigen/SparseCore>
 
 namespace stuka { namespace QP {
-  struct QuadraticProgram {
-    std::shared_ptr<Eigen::SparseMatrix<double>> Q;
-    std::shared_ptr<Eigen::VectorXd> c;
-    std::shared_ptr<Eigen::SparseMatrix<double>> A_ub;
-    std::shared_ptr<Eigen::VectorXd> b_ub;
-    std::shared_ptr<Eigen::SparseMatrix<double>> A_eq;
-    std::shared_ptr<Eigen::VectorXd> b_eq;
-    std::shared_ptr<Eigen::VectorXd> lb;
-    std::shared_ptr<Eigen::VectorXd> ub;
+struct QuadraticProgram {
+  std::shared_ptr<Eigen::SparseMatrix<double>> Q;
+  std::shared_ptr<Eigen::VectorXd> c;
+  std::shared_ptr<Eigen::SparseMatrix<double>> A_ub;
+  std::shared_ptr<Eigen::VectorXd> b_ub;
+  std::shared_ptr<Eigen::SparseMatrix<double>> A_eq;
+  std::shared_ptr<Eigen::VectorXd> b_eq;
+  std::shared_ptr<Eigen::VectorXd> lb;
+  std::shared_ptr<Eigen::VectorXd> ub;
 
-    // Hack for cleaner python implementation
-    virtual std::string name() { return "QuadraticProgram"; }
-  };
+  // Hack for cleaner python implementation
+  virtual std::string name() { return "QuadraticProgram"; }
+};
 }}
 
 #endif //STUKA_QP_QP_H

@@ -615,7 +615,8 @@ struct meta_floor_log2<n, lower, upper, meta_floor_log2_bogus>
 template<typename Scalar>
 struct random_default_impl<Scalar, false, true>
 {
-  static inline Scalar run(const Scalar& x, const Scalar& y) {
+  static inline Scalar run(const Scalar& x, const Scalar& y)
+  {
     if (y <= x)
       return x;
     // ScalarU is the unsigned counterpart of Scalar, possibly Scalar itself.
@@ -633,7 +634,7 @@ struct random_default_impl<Scalar, false, true>
     ScalarX multiplier = 1;
     const unsigned rand_max = RAND_MAX;
     if (range <= rand_max) divisor = (rand_max + 1) / (range + 1);
-    else multiplier = 1 + range / (rand_max + 1);
+    else                   multiplier = 1 + range / (rand_max + 1);
     // Rejection sampling.
     do {
       offset = (unsigned(std::rand()) * multiplier) / divisor;

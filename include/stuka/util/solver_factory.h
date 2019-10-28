@@ -24,14 +24,14 @@
 #endif
 
 namespace stuka { namespace util {
-  std::unique_ptr<LP::BaseLPSolver> createSolver(const LP::LinearProgram &lp, const Options &opts = Options());
+std::unique_ptr<LP::BaseLPSolver> createSolver(const LP::LinearProgram &lp, const Options &opts = Options());
 
-  std::unique_ptr<QP::BaseQPSolver> createSolver(const QP::QuadraticProgram &qp, const Options &opts = Options());
+std::unique_ptr<QP::BaseQPSolver> createSolver(const QP::QuadraticProgram &qp, const Options &opts = Options());
 
-  std::unique_ptr<dLP::BaseDLPSolver>
-  createSolver(const dLP::DecomposedLinearProgram &dlp, const Options &opts = Options());
+std::unique_ptr<dLP::BaseDLPSolver>
+createSolver(const dLP::DecomposedLinearProgram &dlp, const Options &opts = Options());
 
-  std::unique_ptr<stochastic::BaseStochasticSolver>
-  createSolver(const stochastic::Program &prog, const Options &opts = Options());
+std::unique_ptr<stochastic::BaseStochasticSolver>
+createSolver(const stochastic::Program &prog, const Options &opts = Options());
 }}
 #endif //STUKA_UTIL_SOLVER_FACTORY_H

@@ -34,7 +34,7 @@ auto operator+(compose_t<Lhs> lhs, compose_t<Rhs> rhs) {
 template<class F>
 compose_t<F> compose(F f) { return {std::forward<F>(f)}; }
 
-template <class T>
+template<class T>
 auto toShared() {
   return [](auto &&...args) {
     return std::make_shared<T>(decltype(args)(args)...);

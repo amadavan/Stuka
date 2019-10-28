@@ -51,8 +51,7 @@ void stuka::LP::GurobiLinearProgram::initialize(const stuka::LP::LinearProgram &
       for (Eigen::SparseMatrix<double>::InnerIterator it_ub(*prog.A_ub, i); it_ub; ++it_ub)
         model_.chgCoeff(*(ubconstr_ + it_ub.row()), *(vars_ + i), it_ub.value());
     }
-  }
-  else {
+  } else {
     ubconstr_ = nullptr;
   }
 
@@ -67,8 +66,7 @@ void stuka::LP::GurobiLinearProgram::initialize(const stuka::LP::LinearProgram &
       for (Eigen::SparseMatrix<double>::InnerIterator it_eq(*prog.A_eq, i); it_eq; ++it_eq)
         model_.chgCoeff(*(eqconstr_ + it_eq.row()), *(vars_ + i), it_eq.value());
     }
-  }
-  else {
+  } else {
     eqconstr_ = nullptr;
   }
 
@@ -277,7 +275,6 @@ void stuka::LP::GurobiLinearProgram::removeConstrs_ub(const size_t index, const 
 
 }
 
-
 void stuka::LP::GurobiLinearProgram::addConstr_eq(const std::shared_ptr<Eigen::VectorXd> &a, const double &b) {
 
   if (n_con_eq_ + 1 > n_alloc_eq_) {
@@ -299,7 +296,7 @@ void stuka::LP::GurobiLinearProgram::addConstr_eq(const std::shared_ptr<Eigen::V
 }
 
 void stuka::LP::GurobiLinearProgram::addConstrs_eq(const std::shared_ptr<Eigen::SparseMatrix<double>> &A,
-                                                      const std::shared_ptr<Eigen::VectorXd> &b) {
+                                                   const std::shared_ptr<Eigen::VectorXd> &b) {
 
   size_t n_add = b->size();
 

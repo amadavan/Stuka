@@ -51,7 +51,6 @@ stuka::stochastic::StochasticPrimalDual::StochasticPrimalDual(const stuka::stoch
 
 void stuka::stochastic::StochasticPrimalDual::iterate() {
   Eigen::VectorXd wk = prog_.sample();
-
   x_ -= step_ * df_(x_, wk);
   if (prog_.g) x_ -= step_ * dg_(x_, wk) * z_.head(m_g_);
   if (prog_.h) x_ -= step_ * prog_.dh(x_) * z_.tail(m_h_);

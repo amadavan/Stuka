@@ -8,10 +8,10 @@
 #include "measure.h"
 
 namespace stuka { namespace stochastic {
-  class ExpectedValue : public MeasurableProgram {
-   public:
-    ExpectedValue(const Program &prog) : MeasurableProgram(prog) {}
-  };
+class ExpectedValue : public MeasurableProgram {
+ public:
+  ExpectedValue(const Program &prog) : MeasurableProgram(prog) {}
+};
 }}
 
 #endif //STUKA_STOCHASTIC_MEASURE_EXPECTED_VALUE_H_

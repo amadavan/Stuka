@@ -212,12 +212,13 @@ void stuka::LP::ConstantFolding::addVars(std::shared_ptr<Eigen::VectorXd> c,
 
 void stuka::LP::ConstantFolding::removeVar(size_t var) {
   if (b_ub_) {
-    std::shared_ptr<Eigen::SparseMatrix<double>> A_ub = std::make_shared<Eigen::SparseMatrix<double>>(n_ub_, n_dim_ - 1);
+    std::shared_ptr<Eigen::SparseMatrix<double>>
+        A_ub = std::make_shared<Eigen::SparseMatrix<double>>(n_ub_, n_dim_ - 1);
     A_ub->reserve(A_ub_->nonZeros());
     for (size_t i = 0; i < n_dim_; ++i) {
       if (i == var) {
         if (is_constant_[i])
-          b_ub_shift_ -=A_ub_->col(i) * constant_value_.coeff(i);
+          b_ub_shift_ -= A_ub_->col(i) * constant_value_.coeff(i);
         continue;
       }
       size_t col = (i > var) ? i - 1 : i;
@@ -230,12 +231,13 @@ void stuka::LP::ConstantFolding::removeVar(size_t var) {
   }
 
   if (b_eq_) {
-    std::shared_ptr<Eigen::SparseMatrix<double>> A_eq = std::make_shared<Eigen::SparseMatrix<double>>(n_eq_, n_dim_ - 1);
+    std::shared_ptr<Eigen::SparseMatrix<double>>
+        A_eq = std::make_shared<Eigen::SparseMatrix<double>>(n_eq_, n_dim_ - 1);
     A_eq->reserve(A_eq_->nonZeros());
     for (size_t i = 0; i < n_dim_; ++i) {
       if (i == var) {
         if (is_constant_[i])
-          b_eq_shift_ -=A_eq_->col(i) * constant_value_.coeff(i);
+          b_eq_shift_ -= A_eq_->col(i) * constant_value_.coeff(i);
         continue;
       }
       size_t col = (i > var) ? i - 1 : i;
@@ -258,7 +260,6 @@ void stuka::LP::ConstantFolding::removeVar(size_t var) {
   } else {
     next()->removeVar(var);
   }
-
 
   is_constant_.erase(is_constant_.begin() + var);
   Eigen::VectorXd constant_value(n_dim_ - 1);
@@ -352,7 +353,8 @@ void stuka::LP::ConstantFolding::addConstrs_ub(const std::shared_ptr<Eigen::Spar
       }
     }
     A_next->finalize();
-    std::shared_ptr<Eigen::VectorXd> b_next = std::make_shared<Eigen::VectorXd>(b_ub_->tail(n_add) - b_ub_shift_.tail(n_add));
+    std::shared_ptr<Eigen::VectorXd>
+        b_next = std::make_shared<Eigen::VectorXd>(b_ub_->tail(n_add) - b_ub_shift_.tail(n_add));
     next()->addConstrs_ub(A_next, b_next);
   }
 
@@ -492,7 +494,8 @@ void stuka::LP::ConstantFolding::addConstrs_eq(const std::shared_ptr<Eigen::Spar
       }
     }
     A_next->finalize();
-    std::shared_ptr<Eigen::VectorXd> b_next = std::make_shared<Eigen::VectorXd>(b_eq_->tail(n_add) - b_eq_shift_.tail(n_add));
+    std::shared_ptr<Eigen::VectorXd>
+        b_next = std::make_shared<Eigen::VectorXd>(b_eq_->tail(n_add) - b_eq_shift_.tail(n_add));
     next()->addConstrs_eq(A_next, b_next);
   }
 

@@ -12,20 +12,20 @@
 #include "../timer.h"
 
 namespace stuka { namespace util { namespace callback {
-  class Progress : public BaseCallback {
-  public:
-    Progress(size_t n_max_);
+class Progress : public BaseCallback {
+ public:
+  Progress(size_t n_max_);
 
-    void callback(const OptimizeState state) override;
+  void callback(const OptimizeState state) override;
 
-    void finish(const OptimizeState state) override;
+  void finish(const OptimizeState state) override;
 
-  private:
-    size_t n_max_;
-    size_t n_p_;
+ private:
+  size_t n_max_;
+  size_t n_p_;
 
-    Timer timer_;
-  };
+  Timer timer_;
+};
 }}}
 
 #endif //STUKA_CALLBACK_PROGRESS_H

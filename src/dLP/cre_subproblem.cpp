@@ -4,7 +4,7 @@
 
 #include <stuka/dLP/cre_subproblem.h>
 
-stuka::dLP::CRESubproblem::CRESubproblem(const stuka::dLP::Subproblem sub) : sub_(sub) {
+stuka::dLP::CRESubproblem::CRESubproblem(const stuka::dLP::Subproblem sub, const stuka::Options opts) : sub_(sub) {
 
   n_dim_ = sub_.c->size();
   n_dim_master_ = (sub_.C_ub) ? sub_.C_ub->cols() : (sub_.C_eq) ? sub_.C_eq->cols() : 0;
@@ -24,8 +24,7 @@ stuka::dLP::CRESubproblem::CRESubproblem(const stuka::dLP::Subproblem sub) : sub
   lp.lb = sub_.lb;
   lp.ub = sub_.ub;
 
-  // TODO: use solver selected by options
-  solver_ = util::createSolver(lp);
+  solver_ = util::createSolver(lp, opts);
 }
 
 stuka::dLP::CriticalRegion stuka::dLP::CRESubproblem::computeCriticalRegion(const Eigen::VectorXd &x) const {
@@ -234,12 +233,10 @@ stuka::dLP::CriticalRegion stuka::dLP::CRESubproblem::computeCriticalRegion(cons
     cr.A = C_inactive - E * U1P;
     cr.b = b_inactive - E * U1q;
 
-//    cr.c_add = (c_->transpose() * active_solver.colsPermutation()).tail(cr.n_add);
     cr.A_add = F - E * U1U2;
 
     cr.A_add.prune(1e-8);
-  }
-  else {
+  } else {
     Eigen::SparseMatrix<double> U1 = active_solver.matrixR().topLeftCorner(n_rank, n_rank);
 
     Eigen::VectorXd Qtb_active = (active_solver.matrixQ().transpose() * b_active).head(n_rank);

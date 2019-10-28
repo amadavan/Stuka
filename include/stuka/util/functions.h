@@ -22,13 +22,13 @@
 #include "solver_factory.h"
 
 namespace stuka { namespace util {
-  const OptimizeState linprog(const LP::LinearProgram &lp, const Options &opts = Options());
+const OptimizeState linprog(const LP::LinearProgram &lp, const Options &opts = Options());
 
-  const OptimizeState quadprog(const QP::QuadraticProgram &qp, const Options &opts = Options());
+const OptimizeState quadprog(const QP::QuadraticProgram &qp, const Options &opts = Options());
 
-  const OptimizeState linprog(const dLP::DecomposedLinearProgram &lp, const Options &opts = Options());
+const OptimizeState linprog(const dLP::DecomposedLinearProgram &lp, const Options &opts = Options());
 
-  const OptimizeState stochastic_cvar(const stochastic::Program &prog, const Options &opts = Options());
+const OptimizeState stochastic_cvar(const stochastic::Program &prog, const Options &opts = Options());
 }}
 
 #endif //STUKA_UTIL_FUNCTIONS_H

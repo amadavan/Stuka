@@ -19,20 +19,20 @@
 #include "critical_region.h"
 
 namespace stuka { namespace dLP {
-  class CRESubproblem {
-  public:
-    explicit CRESubproblem(Subproblem sub);
+class CRESubproblem {
+ public:
+  explicit CRESubproblem(Subproblem sub, const Options = Options());
 
-    CriticalRegion computeCriticalRegion(const Eigen::VectorXd &x) const;
-  private:
-    std::unique_ptr<LP::BaseLPSolver> solver_;
+  CriticalRegion computeCriticalRegion(const Eigen::VectorXd &x) const;
+ private:
+  std::unique_ptr<LP::BaseLPSolver> solver_;
 
-    long n_dim_;
-    long n_dim_master_;
-    long n_bounds_;
+  long n_dim_;
+  long n_dim_master_;
+  long n_bounds_;
 
-    const Subproblem sub_;
-  };
+  const Subproblem sub_;
+};
 }}
 
 #endif //STUKA_dLP_CRE_SUBPROBLEM_H

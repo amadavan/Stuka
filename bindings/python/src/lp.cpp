@@ -8,10 +8,14 @@ void init_lp(py::module &m) {
 
   py::class_<stuka::LP::LinearProgram, stuka::LP::PyLinearProgram>(m, "LinearProgram")
       .def(py::init<Eigen::VectorXd, Eigen::SparseMatrix<double>, Eigen::VectorXd,
-               Eigen::SparseMatrix<double>, Eigen::VectorXd, Eigen::VectorXd, Eigen::VectorXd>(),
-           py::arg("c") = Eigen::VectorXd(0), py::arg("A_ub") = Eigen::SparseMatrix<double>(0, 0), py::arg("b_ub") = Eigen::VectorXd(0),
-           py::arg("A_eq") = Eigen::SparseMatrix<double>(0, 0), py::arg("b_eq") = Eigen::VectorXd(0),
-           py::arg("lb") = Eigen::VectorXd(0), py::arg("ub") = Eigen::VectorXd(0))
+                    Eigen::SparseMatrix<double>, Eigen::VectorXd, Eigen::VectorXd, Eigen::VectorXd>(),
+           py::arg("c") = Eigen::VectorXd(0),
+           py::arg("A_ub") = Eigen::SparseMatrix<double>(0, 0),
+           py::arg("b_ub") = Eigen::VectorXd(0),
+           py::arg("A_eq") = Eigen::SparseMatrix<double>(0, 0),
+           py::arg("b_eq") = Eigen::VectorXd(0),
+           py::arg("lb") = Eigen::VectorXd(0),
+           py::arg("ub") = Eigen::VectorXd(0))
       .def_property("c",
                     [](stuka::LP::LinearProgram &self) {
                       return (self.c) ? py::cast<Eigen::VectorXd>(*self.c) : py::cast<py::none>(Py_None);
@@ -68,5 +72,8 @@ void init_lp(py::module &m) {
                     },
                     py::cpp_function([](stuka::LP::LinearProgram &self,
                                         Eigen::VectorXd ub_) { self.ub = std::make_shared<Eigen::VectorXd>(ub_); },
-                                     py::keep_alive<1, 2>()));
+                                     py::keep_alive<1, 2>()))
+      .def("reduceConstraints",
+           &stuka::LP::LinearProgram::reduceConstraints,
+           py::arg("method") = stuka::ConstraintReductionMethods::BOUNDS);
 }

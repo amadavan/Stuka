@@ -29,8 +29,8 @@ class gEntropicRisk : public MeasurableProgram {
 
     f = [this, prog, func, divergence](const Eigen::VectorXd &x_ent, const Eigen::VectorXd &xi) {
       Eigen::VectorXd x = x_ent.head(n_);
-      Eigen::VectorXd u0 = x_ent.coeff(n_);
-      Eigen::VectorXd t0 = x_ent.coeff(n_ + m_g_);
+      double u0 = x_ent.coeff(n_);
+      double t0 = x_ent.coeff(n_ + m_g_);
 
       return u0 + t0 * func.g((prog.f(x, xi) - u0) / t0 + divergence);
     };
@@ -52,8 +52,8 @@ class gEntropicRisk : public MeasurableProgram {
 
     df = [this, prog, func, divergence](const Eigen::VectorXd &x_ent, const Eigen::VectorXd &xi) {
       Eigen::VectorXd x = x_ent.head(n_);
-      Eigen::VectorXd u0 = x_ent.coeff(n_);
-      Eigen::VectorXd t0 = x_ent.coeff(n_ + 1 + m_g_);
+      double u0 = x_ent.coeff(n_);
+      double t0 = x_ent.coeff(n_ + 1 + m_g_);
 
       Eigen::VectorXd df = Eigen::VectorXd(x_ent.size());
       df.setZero();

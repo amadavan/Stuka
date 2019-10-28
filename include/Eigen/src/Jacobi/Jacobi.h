@@ -65,12 +65,11 @@ template<typename Scalar> class JacobiRotation
     bool makeJacobi(const MatrixBase<Derived>&, Index p, Index q);
     bool makeJacobi(const RealScalar& x, const Scalar& y, const RealScalar& z);
 
-    void makeGivens(const Scalar &p, const Scalar &q, Scalar *r = 0);
+    void makeGivens(const Scalar& p, const Scalar& q, Scalar* r=0);
 
   protected:
-    void makeGivens(const Scalar &p, const Scalar &q, Scalar *r, internal::true_type);
-
-    void makeGivens(const Scalar &p, const Scalar &q, Scalar *r, internal::false_type);
+    void makeGivens(const Scalar& p, const Scalar& q, Scalar* r, internal::true_type);
+    void makeGivens(const Scalar& p, const Scalar& q, Scalar* r, internal::false_type);
 
     Scalar m_c, m_s;
 };
@@ -146,9 +145,9 @@ inline bool JacobiRotation<Scalar>::makeJacobi(const MatrixBase<Derived>& m, Ind
   * \sa MatrixBase::applyOnTheLeft(), MatrixBase::applyOnTheRight()
   */
 template<typename Scalar>
-  void JacobiRotation<Scalar>::makeGivens(const Scalar &p, const Scalar &q, Scalar *r) {
-    makeGivens(p, q, r,
-               typename internal::conditional<NumTraits<Scalar>::IsComplex, internal::true_type, internal::false_type>::type());
+void JacobiRotation<Scalar>::makeGivens(const Scalar& p, const Scalar& q, Scalar* r)
+{
+  makeGivens(p, q, r, typename internal::conditional<NumTraits<Scalar>::IsComplex, internal::true_type, internal::false_type>::type());
 }
 
 

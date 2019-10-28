@@ -15,23 +15,23 @@
 
 namespace stuka { namespace QP {
 
-  class GurobiSolver : public BaseQPSolver {
-  public:
-    explicit GurobiSolver(const QuadraticProgram &qp, const Options &opts = Options());
+class GurobiSolver : public BaseQPSolver {
+ public:
+  explicit GurobiSolver(const QuadraticProgram &qp, const Options &opts = Options());
 
-    ~GurobiSolver() override = default;
+  ~GurobiSolver() override = default;
 
-    BaseQuadraticProgram &getQP() override;
+  BaseQuadraticProgram &getQP() override;
 
-    void iterate() override;
+  void iterate() override;
 
-    bool terminate() override;
+  bool terminate() override;
 
-    const stuka::OptimizeState getState() override;
+  const stuka::OptimizeState getState() override;
 
-  private:
-    GurobiQuadraticProgram prog_;
-  };
+ private:
+  GurobiQuadraticProgram prog_;
+};
 
 }}
 

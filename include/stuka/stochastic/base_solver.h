@@ -17,12 +17,12 @@
 
 namespace stuka { namespace stochastic {
 
-  class BaseStochasticSolver : public BaseSolver {
-  public:
-    BaseStochasticSolver(const Program &prog, const Options &opts) : BaseSolver(opts) {}
+class BaseStochasticSolver : public BaseSolver {
+ public:
+  BaseStochasticSolver(const Program &prog, const Options &opts) : BaseSolver(opts) {}
 
-    virtual ~BaseStochasticSolver() override = default;
-  };
+  virtual ~BaseStochasticSolver() override = default;
+};
 
 }}
 
