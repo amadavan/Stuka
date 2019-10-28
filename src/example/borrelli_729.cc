@@ -29,7 +29,8 @@ stuka::dLP::DecomposedLinearProgram stuka::example::Borrelli729::gen() {
   dlp.c[0] = std::make_shared<Eigen::VectorXd>(4);
   *dlp.c[0] << 1, 1, 0, 0;
 
-  dlp.A_ub[0] = std::make_shared<Eigen::SparseMatrix<double>>(8, 4);
+  dlp.A_ub[0] = std::make_shared<Eigen::SparseMatrix < double>>
+  (8, 4);
   std::vector<T> A_ub1_triplet(16);
   A_ub1_triplet.emplace_back(T(0, 0, -1.));
   A_ub1_triplet.emplace_back(T(1, 0, -1.));
@@ -52,7 +53,8 @@ stuka::dLP::DecomposedLinearProgram stuka::example::Borrelli729::gen() {
   dlp.b_ub[0] = std::make_shared<Eigen::VectorXd>(8);
   dlp.b_ub[0]->setZero();
 
-  dlp.C_ub[0] = std::make_shared<Eigen::SparseMatrix<double>>(8, 2);
+  dlp.C_ub[0] = std::make_shared<Eigen::SparseMatrix < double>>
+  (8, 2);
   std::vector<T> C_ub1_triplet(12);
   C_ub1_triplet.emplace_back(T(0, 0, -1.));
   C_ub1_triplet.emplace_back(T(2, 0, 1.));
@@ -126,7 +128,8 @@ stuka::LP::LinearProgram stuka::example::Borrelli729::full() {
   C_ub1_triplet.emplace_back(T(7, 1, 1.));
   C_ub1.setFromTriplets(C_ub1_triplet.begin(), C_ub1_triplet.end());
 
-  lp.A_ub = std::make_shared<Eigen::SparseMatrix<double>>(8, 6);
+  lp.A_ub = std::make_shared<Eigen::SparseMatrix < double>>
+  (8, 6);
 
   lp.A_ub->setZero();
   for (int i = 0; i < 4; ++i) {

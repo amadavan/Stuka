@@ -24,6 +24,7 @@ endif ()
 set(STUKA_SOURCES
         ../include/stuka/LP/base_lp.h
         ../include/stuka/LP/base_solver.h
+        ../include/stuka/LP/constraint_reduction.h
         ../include/stuka/LP/lp.h
         ../include/stuka/LP/mehrotra_pc.h
         ../include/stuka/LP/slack_lp.h
@@ -32,7 +33,9 @@ set(STUKA_SOURCES
         ../include/stuka/LP/preconditioner/base_preconditioner.h
         ../include/stuka/LP/preconditioner/bounds_dedicated.h
         ../include/stuka/LP/preconditioner/bounds_zero.h
+        ../include/stuka/LP/preconditioner/composite_preconditioner.h
         ../include/stuka/LP/preconditioner/constant_folding.h
+        ../include/stuka/LP/preconditioner/dummy_preconditioner.h
         ../include/stuka/LP/preconditioner/slack_preconditioner.h
         ../include/stuka/QP/base_qp.h
         ../include/stuka/QP/base_solver.h
@@ -49,6 +52,7 @@ set(STUKA_SOURCES
         ../include/stuka/stochastic/program.h
         ../include/stuka/stochastic/base_solver.h
         ../include/stuka/stochastic/stochastic_pd.h
+        ../include/stuka/stochastic/stochastic_pd2.h
         ../include/stuka/util/functions.h
         ../include/stuka/util/solver_factory.h
         ../include/stuka/util/timer.h
@@ -61,6 +65,7 @@ set(STUKA_SOURCES
         ../include/stuka/base_solver.h
         ../include/stuka/optimize_state.h
         ../include/stuka/options.h
+        LP/constraint_reduction.cpp
         LP/slack_lp.cpp
         LP/mehrotra_pc.cpp
         LP/standard_lp.cpp
@@ -68,6 +73,7 @@ set(STUKA_SOURCES
         LP/preconditioner/constant_folding.cpp
         LP/preconditioner/bounds_dedicated.cpp
         LP/preconditioner/bounds_zero.cpp
+        dLP/constraint_reduction.cpp
         dLP/cre.cpp
         dLP/cre_subproblem.cpp
         dLP/critical_region.cpp
@@ -80,8 +86,7 @@ set(STUKA_SOURCES
         util/callback/composite.cpp
         util/callback/function.cpp
         util/callback/progress.cpp
-        ../include/stuka/stochastic/stochastic_pd2.h
-        stochastic/stochastic_pd2.cpp ../include/stuka/LP/preconditioner/composite_preconditioner.h ../include/stuka/LP/preconditioner/dummy_preconditioner.h ../include/stuka/util/compose.h)
+        stochastic/stochastic_pd2.cpp)
 
 add_library(stuka SHARED ${STUKA_SOURCES} ${GUROBI_SOURCES} ${HDF5_SOURCES})
 target_link_libraries(stuka PRIVATE ${GUROBI_LIBRARIES} ${SPQR_LIBRARIES} PUBLIC ${HDF5_LIBRARIES})

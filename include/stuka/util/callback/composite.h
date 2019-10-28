@@ -11,21 +11,21 @@
 #include "base_callback.h"
 
 namespace stuka { namespace util { namespace callback {
-  class Composite : public BaseCallback {
-  public:
-    Composite(const std::vector<std::shared_ptr<BaseCallback>> &cbs);
+class Composite : public BaseCallback {
+ public:
+  Composite(const std::vector<std::shared_ptr<BaseCallback>> &cbs);
 
-    void initialize(const OptimizeState state) override;
+  void initialize(const OptimizeState state) override;
 
-    void callback(const OptimizeState state) override;
+  void callback(const OptimizeState state) override;
 
-    void finish(const OptimizeState state) override;
+  void finish(const OptimizeState state) override;
 
-  public:
+ public:
 
-  private:
-    const std::vector<std::shared_ptr<BaseCallback>> cbs_;
-  };
+ private:
+  const std::vector<std::shared_ptr<BaseCallback>> cbs_;
+};
 }}}
 
 #endif //STUKA_CALLBACK_COMPOSITE_H

@@ -37,7 +37,7 @@ void stuka::LP::StandardLinearProgram::setBounds(const std::shared_ptr<Eigen::Ve
 void stuka::LP::StandardLinearProgram::addVar(double c, std::shared_ptr<Eigen::VectorXd> a_ub,
                                               std::shared_ptr<Eigen::VectorXd> a_eq, double lb, double ub) {
   this->c->conservativeResize(n_dim_ + 1);
-  this->c->coeffRef(c);
+  this->c->coeffRef(n_dim_ + 1) = c;
 
   // TODO: other stuff
 }

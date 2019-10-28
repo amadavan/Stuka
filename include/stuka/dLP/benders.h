@@ -13,32 +13,32 @@
 #include "benders_subproblem.h"
 
 namespace stuka { namespace dLP {
-  class BendersDecomposition : public BaseDLPSolver {
-  public:
-    explicit BendersDecomposition(const DecomposedLinearProgram &dlp, const Options &opts = Options());
+class BendersDecomposition : public BaseDLPSolver {
+ public:
+  explicit BendersDecomposition(const DecomposedLinearProgram &dlp, const Options &opts = Options());
 
-    ~BendersDecomposition() override = default;
+  ~BendersDecomposition() override = default;
 
-    void iterate() override;
+  void iterate() override;
 
-    bool terminate() override;
+  bool terminate() override;
 
-    const OptimizeState getState() override;
+  const OptimizeState getState() override;
 
-  private:
-    OptimizeState solveMasterProblem(const std::vector<BendersCut> &cuts);
+ private:
+  OptimizeState solveMasterProblem(const std::vector<BendersCut> &cuts);
 
-    Eigen::VectorXd x_;                                                 // Current iterate
-    size_t n_sub_;
-    size_t n_dim_master_;
-    size_t n_sub_calls_;
+  Eigen::VectorXd x_;                                                 // Current iterate
+  size_t n_sub_;
+  size_t n_dim_master_;
+  size_t n_sub_calls_;
 
-    std::unique_ptr<LP::BaseLPSolver> master_solver_;                   // Solver for master problem
-    std::vector<BendersSubproblem> subproblems_;                        // Subproblems
-    Eigen::VectorXd subproblem_values_;                                 // Function value of each subproblem
+  std::unique_ptr<LP::BaseLPSolver> master_solver_;                   // Solver for master problem
+  std::vector<BendersSubproblem> subproblems_;                        // Subproblems
+  Eigen::VectorXd subproblem_values_;                                 // Function value of each subproblem
 
-    LP::LinearProgram master_lp_;
-  };
+  LP::LinearProgram master_lp_;
+};
 
 }}
 

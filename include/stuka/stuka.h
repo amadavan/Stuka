@@ -10,27 +10,13 @@
 #include "optimize_state.h"
 
 // Linear program
-//#include "LP/base_lp.h"
-//#include "LP/base_solver.h"
 #include "LP/lp.h"
-//#include "LP/mehrotra_pc.h"
-//#include "LP/slack_lp.h"
 
 // Quadratic program
-//#include "QP/base_qp.h"
-//#include "QP/base_solver.h"
 #include "QP/qp.h"
 
 // Decomposed Linear Program
-//#include "dLP/base_solver.h"
-//#include "dLP/benders.h"
-//#include "dLP/benders_cut.h"
-//#include "dLP/benders_subproblem.h"
-//#include "dLP/cre.h"
-//#include "dLP/cre_subproblem.h"
-//#include "dLP/critical_region.h"
 #include "dLP/decomposed_lp.h"
-//#include "dLP/subproblem.h"
 
 // Stochastic program
 #include "stochastic/program.h"
@@ -49,7 +35,6 @@
 
 // Gurobi
 #ifdef ENABLE_GUROBI
-
 #include "LP/gurobi.h"
 #include "LP/gurobi_lp.h"
 #include "QP/gurobi.h"

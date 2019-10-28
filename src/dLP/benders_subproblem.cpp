@@ -4,7 +4,7 @@
 
 #include <stuka/dLP/benders_subproblem.h>
 
-stuka::dLP::BendersSubproblem::BendersSubproblem(const stuka::dLP::Subproblem sub) : sub_(sub) {
+stuka::dLP::BendersSubproblem::BendersSubproblem(const stuka::dLP::Subproblem sub, const Options opts) : sub_(sub) {
   current_value_ = INF;
 
   LP::LinearProgram lp;
@@ -17,7 +17,7 @@ stuka::dLP::BendersSubproblem::BendersSubproblem(const stuka::dLP::Subproblem su
   lp.ub = sub.ub;
 
   // TODO: use solver selected by options
-  solver_ = util::createSolver(lp);
+  solver_ = util::createSolver(lp, opts);
 }
 
 stuka::dLP::BendersSubproblem::BendersSubproblem(stuka::dLP::BendersSubproblem &&sub) noexcept :

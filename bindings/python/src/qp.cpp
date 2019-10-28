@@ -9,11 +9,15 @@ void init_qp(py::module &m) {
 
   py::class_<stuka::QP::QuadraticProgram, stuka::QP::PyQuadraticProgram>(m, "QuadraticProgram")
       .def(py::init<Eigen::SparseMatrix<double>, Eigen::VectorXd, Eigen::SparseMatrix<double>, Eigen::VectorXd,
-               Eigen::SparseMatrix<double>, Eigen::VectorXd, Eigen::VectorXd, Eigen::VectorXd>(),
-           py::arg("Q") = Eigen::SparseMatrix<double>(0, 0), py::arg("c") = Eigen::VectorXd(0),
-           py::arg("A_ub") = Eigen::SparseMatrix<double>(0, 0), py::arg("b_ub") = Eigen::VectorXd(0),
-           py::arg("A_eq") = Eigen::SparseMatrix<double>(0, 0), py::arg("b_eq") = Eigen::VectorXd(0),
-           py::arg("lb") = Eigen::VectorXd(0), py::arg("ub") = Eigen::VectorXd(0))
+                    Eigen::SparseMatrix<double>, Eigen::VectorXd, Eigen::VectorXd, Eigen::VectorXd>(),
+           py::arg("Q") = Eigen::SparseMatrix<double>(0, 0),
+           py::arg("c") = Eigen::VectorXd(0),
+           py::arg("A_ub") = Eigen::SparseMatrix<double>(0, 0),
+           py::arg("b_ub") = Eigen::VectorXd(0),
+           py::arg("A_eq") = Eigen::SparseMatrix<double>(0, 0),
+           py::arg("b_eq") = Eigen::VectorXd(0),
+           py::arg("lb") = Eigen::VectorXd(0),
+           py::arg("ub") = Eigen::VectorXd(0))
       .def_property("Q",
                     [](stuka::QP::QuadraticProgram &self) {
                       return (self.Q) ? py::cast<Eigen::SparseMatrix<double>>(*self.Q) : py::cast<py::none>(Py_None);

@@ -8,7 +8,6 @@
 stuka::LP::BoundsZero::BoundsZero(const std::shared_ptr<stuka::LP::BaseLinearProgram> &next) : BasePreconditioner(
     next) {}
 
-
 void stuka::LP::BoundsZero::initialize(const stuka::LP::LinearProgram &prog) {
   n_dim_ = prog.c->size();
   n_ub_ = (prog.b_ub) ? prog.b_ub->size() : 0;
@@ -102,8 +101,7 @@ void stuka::LP::BoundsZero::initialize(const stuka::LP::LinearProgram &prog) {
     if (prog.b_eq) lp_next.A_eq->startVec(i + current_shift);
     if (prog.b_ub || n_bounds_) lp_next.A_ub->startVec(i + current_shift);
     switch (x_type_[i]) {
-      case StateType::NORMAL:
-        lp_next.c->coeffRef(i + current_shift) = prog.c->coeff(i);
+      case StateType::NORMAL:lp_next.c->coeffRef(i + current_shift) = prog.c->coeff(i);
         if (prog.b_eq)
           for (Eigen::SparseMatrix<double>::InnerIterator it(*prog.A_eq, i); it; ++it)
             lp_next.A_eq->insertBack(it.row(), i + current_shift) = it.value();
@@ -111,8 +109,7 @@ void stuka::LP::BoundsZero::initialize(const stuka::LP::LinearProgram &prog) {
           for (Eigen::SparseMatrix<double>::InnerIterator it(*prog.A_ub, i); it; ++it)
             lp_next.A_ub->insertBack(n_bounds_ + it.row(), i + current_shift) = it.value();
         break;
-      case StateType::NEGATIVE:
-        lp_next.c->coeffRef(i + current_shift) = -prog.c->coeff(i);
+      case StateType::NEGATIVE:lp_next.c->coeffRef(i + current_shift) = -prog.c->coeff(i);
         if (prog.b_eq)
           for (Eigen::SparseMatrix<double>::InnerIterator it(*prog.A_eq, i); it; ++it)
             lp_next.A_eq->insertBack(it.row(), i + current_shift) = -it.value();
@@ -120,8 +117,7 @@ void stuka::LP::BoundsZero::initialize(const stuka::LP::LinearProgram &prog) {
           for (Eigen::SparseMatrix<double>::InnerIterator it(*prog.A_ub, i); it; ++it)
             lp_next.A_ub->insertBack(n_bounds_ + it.row(), i + current_shift) = -it.value();
         break;
-      case StateType::COMPACT:
-        lp_next.c->coeffRef(i + current_shift) = prog.c->coeff(i);
+      case StateType::COMPACT:lp_next.c->coeffRef(i + current_shift) = prog.c->coeff(i);
 
         // Add additional constraint from bound
         lp_next.A_ub->insertBack(con_shift, i + current_shift) = 1.;
@@ -136,8 +132,7 @@ void stuka::LP::BoundsZero::initialize(const stuka::LP::LinearProgram &prog) {
           for (Eigen::SparseMatrix<double>::InnerIterator it(*prog.A_ub, i); it; ++it)
             lp_next.A_ub->insertBack(n_bounds_ + it.row(), i + current_shift) = it.value();
         break;
-      case StateType::UNBOUNDED:
-        lp_next.c->coeffRef(i + current_shift) = prog.c->coeff(i);
+      case StateType::UNBOUNDED:lp_next.c->coeffRef(i + current_shift) = prog.c->coeff(i);
         if (prog.b_eq)
           for (Eigen::SparseMatrix<double>::InnerIterator it(*prog.A_eq, i); it; ++it)
             lp_next.A_eq->insertBack(it.row(), i + current_shift) = it.value();
@@ -248,11 +243,9 @@ Eigen::VectorXd stuka::LP::BoundsZero::convertState(const Eigen::VectorXd &x) {
   for (size_t i = 0; i < n_dim_; ++i) {
     switch (x_type_[i]) {
       case StateType::COMPACT:
-      case StateType::NORMAL:
-        x_slack.coeffRef(i + current_shift) = x.coeff(i) + x_shift_.coeff(i);
+      case StateType::NORMAL:x_slack.coeffRef(i + current_shift) = x.coeff(i) + x_shift_.coeff(i);
         break;
-      case StateType::NEGATIVE:
-        x_slack.coeffRef(i + current_shift) = -x.coeff(i) + x_shift_.coeff(i);
+      case StateType::NEGATIVE:x_slack.coeffRef(i + current_shift) = -x.coeff(i) + x_shift_.coeff(i);
         break;
       case StateType::UNBOUNDED:
         if (x.coeff(i) > 0)
@@ -276,14 +269,11 @@ Eigen::VectorXd stuka::LP::BoundsZero::revertState(const Eigen::VectorXd &x) {
   for (size_t i = 0; i < n_dim_; ++i) {
     switch (x_type_[i]) {
       case StateType::COMPACT:
-      case StateType::NORMAL:
-        x_.coeffRef(i) += xn.coeff(i + current_shift);
+      case StateType::NORMAL:x_.coeffRef(i) += xn.coeff(i + current_shift);
         break;
-      case StateType::NEGATIVE :
-        x_.coeffRef(i) -= xn.coeff(i + current_shift);
+      case StateType::NEGATIVE :x_.coeffRef(i) -= xn.coeff(i + current_shift);
         break;
-      case StateType::UNBOUNDED :
-        x_.coeffRef(i) += xn.coeff(i + current_shift) - xn.coeff(i + current_shift + 1);
+      case StateType::UNBOUNDED :x_.coeffRef(i) += xn.coeff(i + current_shift) - xn.coeff(i + current_shift + 1);
         current_shift += 1;
         break;
     }

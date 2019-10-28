@@ -24,18 +24,27 @@ std::string print_header(const std::string &header, const char sep = '=') {
   return tmp;
 }
 
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 int main() {
+
+  std::cout << "e: " << stuka::e << std::endl;
+  std::cout << "error: " << abs(stuka::e - M_E) << std::endl;
+  std::cout << "pi: " << stuka::pi << std::endl;
+  std::cout << "error: " << abs(stuka::pi - M_PI) << std::endl;
 
   std::vector<stuka::example::LinearProgramExample *> ex_lp = {new stuka::example::SimpleLP()};
   std::vector<stuka::example::QuadraticProgramExample *> ex_qp = {new stuka::example::SimpleQP()};
   std::vector<stuka::example::DecomposedLinearProgramExample *> ex_dlp = {new stuka::example::Borrelli729(),
                                                                           new stuka::example::Borrelli731()};
 
-  std::vector<std::pair<std::string, stuka::Solver>> solvers_lp = {{"Gurobi",                         stuka::Solver::GUROBI},
-                                                                   {"Mehrotra's Predictor Corrector", stuka::Solver::MPC}};
+  std::vector<std::pair<std::string, stuka::Solver>> solvers_lp = {{"Gurobi", stuka::Solver::GUROBI},
+                                                                   {"Mehrotra's Predictor Corrector",
+                                                                    stuka::Solver::MPC}};
   std::vector<std::pair<std::string, stuka::Solver>> solvers_qp = {{"Gurobi", stuka::Solver::GUROBI}};
   std::vector<std::pair<std::string, stuka::Solver>> solvers_dlp = {{"Critical Region Exploration", stuka::Solver::CRE},
-                                                                    {"Bender's Decomposition",      stuka::Solver::BENDER}};
+                                                                    {"Bender's Decomposition", stuka::Solver::BENDER}};
 
   stuka::OptimizeState res;
 
@@ -96,7 +105,5 @@ int main() {
   stuka::util::linprog(ex_lp[0]->gen(), opts);
 
   std::cout << print_header("", '=') << std::endl;
-
-
 
 }

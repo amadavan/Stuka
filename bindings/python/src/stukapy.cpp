@@ -60,6 +60,9 @@ PYBIND11_MODULE(stukapy, m) {
       .value("CRE", stuka::Solver::CRE)
       .value("MPC", stuka::Solver::MPC);
 
+  py::enum_<stuka::ConstraintReductionMethods>(m, "constraintReductionMethods")
+      .value("BOUNDS", stuka::ConstraintReductionMethods::BOUNDS);
+
   py::class_<stuka::OptimizeState>(m, "OptimizeState")
       .def(py::init<>())
       .def_readonly("x", &stuka::OptimizeState::x)

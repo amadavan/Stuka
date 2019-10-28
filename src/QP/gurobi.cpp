@@ -43,7 +43,9 @@ const stuka::OptimizeState stuka::QP::GurobiSolver::getState() {
       state.dual_eq *= -1;
     }
 
-    Eigen::VectorXd rc = Eigen::Map<Eigen::VectorXd>(prog_.model_.get(GRB_DoubleAttr_RC, prog_.model_.getVars(), (int) prog_.n_dim_), prog_.n_dim_);
+    Eigen::VectorXd rc =
+        Eigen::Map<Eigen::VectorXd>(prog_.model_.get(GRB_DoubleAttr_RC, prog_.model_.getVars(), (int) prog_.n_dim_),
+                                    prog_.n_dim_);
     state.dual_x_lb = Eigen::VectorXd(prog_.n_dim_);
     state.dual_x_ub = Eigen::VectorXd(prog_.n_dim_);
 
@@ -51,9 +53,9 @@ const stuka::OptimizeState stuka::QP::GurobiSolver::getState() {
     state.dual_x_ub.setZero();
 
     for (size_t i = 0; i < prog_.n_dim_; ++i) {
-      if (rc[i] < -1e-9)
+      if (rc.coeff(i) < -1e-9)
         state.dual_x_ub.coeffRef(i) = -rc.coeff(i);
-      else if (rc[i] > 1e-9)
+      else if (rc.coeff(i) > 1e-9)
         state.dual_x_lb.coeffRef(i) = rc.coeff(i);
     }
   } else {

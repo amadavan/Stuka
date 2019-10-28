@@ -15,45 +15,45 @@
 #include "preconditioner/slack_preconditioner.h"
 
 namespace stuka { namespace LP {
-  class MehrotraPC : public BaseLPSolver {
-  public:
-    MehrotraPC(const LinearProgram &lp, const Options &opts);
+class MehrotraPC : public BaseLPSolver {
+ public:
+  MehrotraPC(const LinearProgram &lp, const Options &opts);
 
-    void iterate() override;
+  void iterate() override;
 
-    bool terminate() override;
+  bool terminate() override;
 
-    const OptimizeState getState() override;
+  const OptimizeState getState() override;
 
-    BaseLinearProgram &getLP() override;
+  BaseLinearProgram &getLP() override;
 
-  private:
-    std::tuple<Eigen::VectorXd, Eigen::VectorXd, Eigen::VectorXd> solveKKT(Eigen::VectorXd Rc,
-                                                                           Eigen::VectorXd Rb,
-                                                                           Eigen::VectorXd Rxs,
-                                                                           bool resolve = true);
+ private:
+  std::tuple<Eigen::VectorXd, Eigen::VectorXd, Eigen::VectorXd> solveKKT(Eigen::VectorXd Rc,
+                                                                         Eigen::VectorXd Rb,
+                                                                         Eigen::VectorXd Rxs,
+                                                                         bool resolve = true);
 
-    std::tuple<double, double> computeStepSize(Eigen::VectorXd dx, Eigen::VectorXd ds, double scale = 1.);
+  std::tuple<double, double> computeStepSize(Eigen::VectorXd dx, Eigen::VectorXd ds, double scale = 1.);
 
-    PreconditionedLinearProgram<StandardLinearProgram, CompositePreconditioner<BoundsZero, SlackPreconditioner>> prog_;
+  PreconditionedLinearProgram<StandardLinearProgram, CompositePreconditioner<BoundsZero, SlackPreconditioner>> prog_;
 //    SlackLinearProgram prog_;
 
-    double bc_;
-    Eigen::VectorXd e_;
+  double bc_;
+  Eigen::VectorXd e_;
 
-    Eigen::VectorXd x_;
-    Eigen::VectorXd y_;
-    Eigen::VectorXd s_;
+  Eigen::VectorXd x_;
+  Eigen::VectorXd y_;
+  Eigen::VectorXd s_;
 
-    double mu_;
-    Eigen::VectorXd Rc_;
-    Eigen::VectorXd Rb_;
-    Eigen::VectorXd Rxs_;
-    double error_;
-    const double eps_;
+  double mu_;
+  Eigen::VectorXd Rc_;
+  Eigen::VectorXd Rb_;
+  Eigen::VectorXd Rxs_;
+  double error_;
+  const double eps_;
 
-    Eigen::SimplicialLLT<Eigen::SparseMatrix<double>> solver_;
-  };
+  Eigen::SimplicialLLT<Eigen::SparseMatrix<double>> solver_;
+};
 }}
 
 #endif //STUKA_LP_MEHROTRA_PC_H

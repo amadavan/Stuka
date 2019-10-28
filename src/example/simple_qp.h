@@ -9,13 +9,13 @@
 
 namespace stuka { namespace example {
 
-    // Example from https://www.mathworks.com/help/optim/ug/quadprog.html
-    class SimpleQP : public QuadraticProgramExample {
-    public:
-        QP::QuadraticProgram gen() override;
+// Example from https://www.mathworks.com/help/optim/ug/quadprog.html
+class SimpleQP : public QuadraticProgramExample {
+ public:
+  QP::QuadraticProgram gen() override;
 
-        std::string name() override;
-    };
+  std::string name() override;
+};
 
 }}
 

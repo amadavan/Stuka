@@ -9,17 +9,16 @@
 
 namespace stuka { namespace example {
 
-  class Borrelli729 : public DecomposedLinearProgramExample {
-  public:
-    stuka::dLP::DecomposedLinearProgram gen() override;
+class Borrelli729 : public DecomposedLinearProgramExample {
+ public:
+  stuka::dLP::DecomposedLinearProgram gen() override;
 
-    stuka::LP::LinearProgram full() override;
+  stuka::LP::LinearProgram full() override;
 
-    std::string name() override { return "Borrelli Example 7.29"; }
+  std::string name() override { return "Borrelli Example 7.29"; }
 
-  };
+};
 
 }}
-
 
 #endif //STUKA_EXAMPLE_BORRELLI_729_H

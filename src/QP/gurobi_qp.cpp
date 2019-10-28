@@ -116,7 +116,7 @@ void stuka::QP::GurobiQuadraticProgram::setObjective(const std::shared_ptr<Eigen
 }
 
 void stuka::QP::GurobiQuadraticProgram::setRHS(const std::shared_ptr<Eigen::VectorXd> &b_ub,
-                                            const std::shared_ptr<Eigen::VectorXd> &b_eq) {
+                                               const std::shared_ptr<Eigen::VectorXd> &b_eq) {
   if (b_ub && n_con_ub_ > 0)
     for (size_t i = 0; i < n_con_ub_; ++i)
       (ubconstr_ + i)->set(GRB_DoubleAttr_RHS, b_ub->coeff(i));
@@ -127,7 +127,7 @@ void stuka::QP::GurobiQuadraticProgram::setRHS(const std::shared_ptr<Eigen::Vect
 }
 
 void stuka::QP::GurobiQuadraticProgram::setBounds(const std::shared_ptr<Eigen::VectorXd> &lb,
-                                               const std::shared_ptr<Eigen::VectorXd> &ub) {
+                                                  const std::shared_ptr<Eigen::VectorXd> &ub) {
   if (lb) model_.set(GRB_DoubleAttr_LB, vars_, lb->data(), (int) n_dim_);
   if (ub) model_.set(GRB_DoubleAttr_LB, vars_, ub->data(), (int) n_dim_);
 }
@@ -149,7 +149,6 @@ void stuka::QP::GurobiQuadraticProgram::addVar(double c,
   vars_[n_dim_] = model_.addVar((lb == -INF) ? -GRB_INFINITY : lb,
                                 (ub == INF) ? GRB_INFINITY : ub,
                                 c, GRB_CONTINUOUS);
-
 
   if (n_con_ub_ > 0 && a_ub) {
     for (size_t i = 0; i < n_con_ub_; ++i)
@@ -222,7 +221,6 @@ void stuka::QP::GurobiQuadraticProgram::addVars(std::shared_ptr<Eigen::VectorXd>
 
   n_dim_ += n_add;
 
-
 }
 
 void stuka::QP::GurobiQuadraticProgram::removeVar(const size_t index) {
@@ -268,7 +266,7 @@ void stuka::QP::GurobiQuadraticProgram::addConstr_ub(const std::shared_ptr<Eigen
 }
 
 void stuka::QP::GurobiQuadraticProgram::addConstrs_ub(const std::shared_ptr<Eigen::SparseMatrix<double>> &A,
-                                                   const std::shared_ptr<Eigen::VectorXd> &b) {
+                                                      const std::shared_ptr<Eigen::VectorXd> &b) {
 
   size_t n_add = b->size();
 
@@ -310,7 +308,6 @@ void stuka::QP::GurobiQuadraticProgram::removeConstrs_ub(const size_t index, con
 
 }
 
-
 void stuka::QP::GurobiQuadraticProgram::addConstr_eq(const std::shared_ptr<Eigen::VectorXd> &a, const double &b) {
 
   if (n_con_eq_ + 1 > n_alloc_eq_) {
@@ -332,7 +329,7 @@ void stuka::QP::GurobiQuadraticProgram::addConstr_eq(const std::shared_ptr<Eigen
 }
 
 void stuka::QP::GurobiQuadraticProgram::addConstrs_eq(const std::shared_ptr<Eigen::SparseMatrix<double>> &A,
-                                                   const std::shared_ptr<Eigen::VectorXd> &b) {
+                                                      const std::shared_ptr<Eigen::VectorXd> &b) {
 
   size_t n_add = b->size();
 

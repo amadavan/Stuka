@@ -9,21 +9,21 @@
 
 namespace stuka {
 
-  struct OptimizeState {
-    Eigen::VectorXd x;
-    Eigen::VectorXd dual_ub;
-    Eigen::VectorXd dual_eq;
-    Eigen::VectorXd dual_x_lb;
-    Eigen::VectorXd dual_x_ub;
+struct OptimizeState {
+  Eigen::VectorXd x;
+  Eigen::VectorXd dual_ub;
+  Eigen::VectorXd dual_eq;
+  Eigen::VectorXd dual_x_lb;
+  Eigen::VectorXd dual_x_ub;
 
-    double fun = 0;
-    double error = 0;
-    int status = 0;
-    size_t nit = 0;
-    size_t nit_sub = 0;
+  double fun = 0;
+  double error = 0;
+  int status = 0;
+  size_t nit = 0;
+  size_t nit_sub = 0;
 
-    double runtime = 0;
-  };
+  double runtime = 0;
+};
 
 }
 

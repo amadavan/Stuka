@@ -17,23 +17,23 @@
 
 namespace stuka { namespace LP {
 
-  class BaseLPSolver : public BaseSolver {
-  public:
-    BaseLPSolver(const LinearProgram &lp, const Options &opts) : BaseLPSolver(opts) {}
+class BaseLPSolver : public BaseSolver {
+ public:
+  BaseLPSolver(const LinearProgram &lp, const Options &opts) : BaseLPSolver(opts) {}
 
-    virtual ~BaseLPSolver() override = default;
+  virtual ~BaseLPSolver() override = default;
 
-    /* Get the BaseLP of the solver.
-     *
-     * Each solver may use a reformulated version of the original LP that is given in the constructor. This function
-     * returns the reformulated LP as a BaseLP to allow for updates to the solver. This step also provides a method to
-     * trigger any updates that may be necessary due to changes in the LP.
-     */
-    virtual BaseLinearProgram &getLP() = 0;
+  /* Get the BaseLP of the solver.
+   *
+   * Each solver may use a reformulated version of the original LP that is given in the constructor. This function
+   * returns the reformulated LP as a BaseLP to allow for updates to the solver. This step also provides a method to
+   * trigger any updates that may be necessary due to changes in the LP.
+   */
+  virtual BaseLinearProgram &getLP() = 0;
 
-  private:
-    explicit BaseLPSolver(const Options &opts) : BaseSolver(opts) {}
-  };
+ private:
+  explicit BaseLPSolver(const Options &opts) : BaseSolver(opts) {}
+};
 
 }}
 

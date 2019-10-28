@@ -53,9 +53,10 @@ stuka::dLP::BendersDecomposition::BendersDecomposition(const stuka::dLP::Decompo
   // Set subproblems
   subproblems_.reserve(n_sub_);
   for (size_t i = 0; i < n_sub_; ++i) {
-    Subproblem sub{dlp.c[i], dlp.A_ub[i], dlp.b_ub[i], dlp.C_ub[i], dlp.A_eq[i], dlp.b_eq[i], dlp.C_eq[i], dlp.lb[i], dlp.ub[i]};
+    Subproblem sub
+        {dlp.c[i], dlp.A_ub[i], dlp.b_ub[i], dlp.C_ub[i], dlp.A_eq[i], dlp.b_eq[i], dlp.C_eq[i], dlp.lb[i], dlp.ub[i]};
 
-    subproblems_.emplace_back(BendersSubproblem(std::move(sub)));
+    subproblems_.emplace_back(BendersSubproblem(std::move(sub), opts));
   }
 
   // Set initial point
@@ -64,8 +65,7 @@ stuka::dLP::BendersDecomposition::BendersDecomposition(const stuka::dLP::Decompo
   if (opts.x0.size() == n_dim_master_) {
     x_.setConstant(0.);
     x_.head(n_dim_master_) = opts.x0;
-  }
-  else if (dlp.c.back() && dlp.c.back()->maxCoeff() > 1e-8 && dlp.c.back()->minCoeff() < -1e-8) {
+  } else if (dlp.c.back() && dlp.c.back()->maxCoeff() > 1e-8 && dlp.c.back()->minCoeff() < -1e-8) {
     LP::LinearProgram tmp;
     tmp.c = dlp.c.back();
     tmp.A_ub = dlp.A_ub.back();

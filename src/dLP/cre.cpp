@@ -99,7 +99,7 @@ void stuka::dLP::CRE::iterate() {
   }
 
   // Set next iterate
-  x_ = x - a_opt_ / a_opt_.norm() * 1e-5;
+  x_ = x - a_opt_ / a_opt_.norm() * 1e-4;
 
 }
 

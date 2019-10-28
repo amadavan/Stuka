@@ -8,19 +8,19 @@
 #include <chrono>
 
 namespace stuka { namespace util {
-  class Timer {
-  public:
-    Timer();
+class Timer {
+ public:
+  Timer();
 
-    ~Timer() = default;
+  ~Timer() = default;
 
-    void start();
+  void start();
 
-    std::chrono::duration<double> elapsed();
+  std::chrono::duration<double> elapsed();
 
-  protected:
-    std::chrono::time_point<std::chrono::high_resolution_clock> time_;
-  };
+ protected:
+  std::chrono::time_point<std::chrono::high_resolution_clock> time_;
+};
 }}
 
 #endif //STUKA_UTIL_TIMER_H

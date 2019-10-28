@@ -9,9 +9,9 @@
 #include <stuka/stochastic/stochastic_pd2.h>
 
 stuka::stochastic::StochasticPrimalDual2::StochasticPrimalDual2(const stuka::stochastic::Program &prog,
-                                                              const stuka::Options &opts) : BaseStochasticSolver(prog,
-                                                                                                                 opts),
-                                                                                            prog_(prog) {
+                                                                const stuka::Options &opts) : BaseStochasticSolver(prog,
+                                                                                                                   opts),
+                                                                                              prog_(prog) {
   step_ = (opts.step != 0) ? opts.step : 1.;
 
   if (opts.x0.size() > 0)
@@ -67,7 +67,7 @@ void stuka::stochastic::StochasticPrimalDual2::iterate() {
   xbarp_ = xbar_;
 
   Eigen::VectorXd wk = prog_.sample();
-  double step = 10./sqrt(nit_ + 0.);
+  double step = 10. / sqrt(nit_ + 0.);
 
   x_ -= step * df_(x_, wk);
   if (prog_.g) x_ -= step * dg_(x_, wk) * z_.head(m_g_);

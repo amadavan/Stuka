@@ -17,20 +17,20 @@
 
 namespace stuka { namespace QP {
 
-  class BaseQPSolver : public BaseSolver {
-  public:
-    BaseQPSolver(const QuadraticProgram &prog, const Options &opts) : BaseSolver(opts) {}
+class BaseQPSolver : public BaseSolver {
+ public:
+  BaseQPSolver(const QuadraticProgram &prog, const Options &opts) : BaseSolver(opts) {}
 
-    virtual ~BaseQPSolver() override = default;
+  virtual ~BaseQPSolver() override = default;
 
-    /* Get the BaseLP of the solver.
-     *
-     * Each solver may use a reformulated version of the original LP that is given in the constructor. This function
-     * returns the reformulated LP as a BaseLP to allow for updates to the solver. This step also provides a method to
-     * trigger any updates that may be necessary due to changes in the LP.
-     */
-    virtual BaseQuadraticProgram &getQP() = 0;
-  };
+  /* Get the BaseLP of the solver.
+   *
+   * Each solver may use a reformulated version of the original LP that is given in the constructor. This function
+   * returns the reformulated LP as a BaseLP to allow for updates to the solver. This step also provides a method to
+   * trigger any updates that may be necessary due to changes in the LP.
+   */
+  virtual BaseQuadraticProgram &getQP() = 0;
+};
 
 }}
 

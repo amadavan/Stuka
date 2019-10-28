@@ -13,23 +13,23 @@
 
 namespace stuka { namespace LP {
 
-  class GurobiSolver : public BaseLPSolver {
-  public:
-    explicit GurobiSolver(const LinearProgram &lp, const Options &opts = Options());
+class GurobiSolver : public BaseLPSolver {
+ public:
+  explicit GurobiSolver(const LinearProgram &lp, const Options &opts = Options());
 
-    ~GurobiSolver() override = default;
+  ~GurobiSolver() override = default;
 
-    BaseLinearProgram &getLP() override;
+  BaseLinearProgram &getLP() override;
 
-    void iterate() override;
+  void iterate() override;
 
-    bool terminate() override;
+  bool terminate() override;
 
-    const stuka::OptimizeState getState() override;
+  const stuka::OptimizeState getState() override;
 
-  private:
-    GurobiLinearProgram prog_;
-  };
+ private:
+  GurobiLinearProgram prog_;
+};
 
 }}
 
