@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/amadavan/Stuka.svg?branch=master)](https://travis-ci.org/amadavan/Stuka)
 
 # Requirements
-- C++14 compiler (gcc >= 5 or clang >= 3.5)
+- C++17 compiler (gcc >= 7 or clang >= 5)
 - [CMake](https://cmake.org/download/) (version >= 3.11) or [Bazel](https://github.com/bazelbuild/bazel/releases)
 - [SuiteSparse](http://faculty.cse.tamu.edu/davis/suitesparse.html)
 - [Gurobi optimizer](http://www.gurobi.com/downloads/download-center)
