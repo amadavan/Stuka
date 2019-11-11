@@ -14,6 +14,7 @@
 
 #include "../base_solver.h"
 #include "program.h"
+#include "measure/measure.h"
 
 namespace stuka { namespace stochastic {
 

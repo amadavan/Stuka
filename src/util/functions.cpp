@@ -39,7 +39,7 @@ stuka::util::linprog(const stuka::dLP::DecomposedLinearProgram &dlp, const stuka
 }
 
 const stuka::OptimizeState
-stuka::util::stochastic_cvar(const stuka::stochastic::Program &prog, const stuka::Options &opts) {
+stuka::util::stochastic(const stuka::stochastic::Program &prog, const stuka::Options &opts) {
   Timer timer;
 
   timer.start();

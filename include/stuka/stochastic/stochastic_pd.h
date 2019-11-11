@@ -22,40 +22,21 @@ class StochasticPrimalDual : public BaseStochasticSolver {
   const OptimizeState getState() override;
 
  private:
-  const Program &prog_;   // Main program data
+  const Program &prog_;                             // Main program data
+  const std::shared_ptr<ProgramMeasure> measure_;   // Measure on which to optimize
 
   Eigen::VectorXd x_;     // Primal variable
   Eigen::VectorXd z_;     // Dual variable with inequality constraint
-  Eigen::VectorXd xbar_;  // Average primal variable
-  Eigen::VectorXd zbar_;  // Average dual variable with inequality constraint
+  Eigen::VectorXd x_bar_;  // Average primal variable
+  Eigen::VectorXd z_bar_;  // Average dual variable with inequality constraint
 
-  size_t n_;              // Number of variables
-  size_t m_;              // Number of constraints
-  size_t m_g_;            // Number of stochastic constraints
-  size_t m_h_;            // Number of deterministic constraints
+  size_t n_;      // Number of variables
+  size_t m_;      // Number of constraints
+  size_t m_g_;    // Number of stochastic constraints
+  size_t m_h_;    // Number of deterministic constraints
 
-  double step_;           // Step size
-
-  double alphap_;         // 1/(1 - alpha)
-  Eigen::VectorXd betap_; // 1/(1 - beta)
-
-  size_t nit_;            // iteration
-
-  std::function<double(Eigen::VectorXd &, Eigen::VectorXd &)> f_;
-  std::function<Eigen::VectorXd(Eigen::VectorXd &, Eigen::VectorXd &)> g_;
-  std::function<Eigen::VectorXd(Eigen::VectorXd &, Eigen::VectorXd &)> df_;
-  std::function<Eigen::MatrixXd(Eigen::VectorXd &, Eigen::VectorXd &)> dg_;
-  std::function<Eigen::VectorXd(Eigen::VectorXd &)> projX_;
-
-  double f_cvar(Eigen::VectorXd &xu, Eigen::VectorXd &xi);
-
-  Eigen::VectorXd g_cvar(Eigen::VectorXd &xu, Eigen::VectorXd &xi);
-
-  Eigen::VectorXd df_cvar(Eigen::VectorXd &xu, Eigen::VectorXd &xi);
-
-  Eigen::MatrixXd dg_cvar(Eigen::VectorXd &xu, Eigen::VectorXd &xi);
-
-  Eigen::VectorXd projX_cvar(Eigen::VectorXd &xu);
+  double step_;     // Step size
+  size_t nit_;      // iteration
 };
 }}
 

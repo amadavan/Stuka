@@ -5,9 +5,8 @@
 #include <stuka/stochastic/stochastic_pd.h>
 
 stuka::stochastic::StochasticPrimalDual::StochasticPrimalDual(const stuka::stochastic::Program &prog,
-                                                              const stuka::Options &opts) : BaseStochasticSolver(prog,
-                                                                                                                 opts),
-                                                                                            prog_(prog) {
+                                                              const stuka::Options &opts)
+    : BaseStochasticSolver(prog, opts), prog_(prog), measure_(opts.measure) {
   step_ = (opts.step != 0) ? opts.step : 1.;
 
   if (opts.x0.size() > 0)
@@ -25,44 +24,28 @@ stuka::stochastic::StochasticPrimalDual::StochasticPrimalDual(const stuka::stoch
   z_ = Eigen::VectorXd(m_g_ + m_h_);
   z_.setZero();
 
-  if (prog_.alpha == 0. && (prog_.beta.size() == 0. || prog_.beta.maxCoeff() < 1e-16)) {
-    f_ = prog_.f;
-    g_ = prog_.g;
-    df_ = prog_.df;
-    dg_ = prog_.dg;
-    projX_ = prog_.projX;
-  } else {
-    x_.conservativeResize(n_ + 1 + m_g_);
-    for (size_t i = 0; i < 1 + m_g_; ++i) x_.coeffRef(i) = 0.;
-    alphap_ = 1. / (1. - prog_.alpha);
-    betap_ = 1. / (1. - prog_.beta.array());
-    f_ = std::bind(&StochasticPrimalDual::f_cvar, this, std::placeholders::_1, std::placeholders::_2);
-    g_ = std::bind(&StochasticPrimalDual::g_cvar, this, std::placeholders::_1, std::placeholders::_2);
-    df_ = std::bind(&StochasticPrimalDual::df_cvar, this, std::placeholders::_1, std::placeholders::_2);
-    dg_ = std::bind(&StochasticPrimalDual::dg_cvar, this, std::placeholders::_1, std::placeholders::_2);
-    projX_ = std::bind(&StochasticPrimalDual::projX_cvar, this, std::placeholders::_1);
-  }
+  x_ = measure_->augmentState(x_);
 
-  xbar_ = x_;
-  zbar_ = z_;
+  x_bar_ = x_;
+  z_bar_ = z_;
   nit_ = 1;
 
 }
 
 void stuka::stochastic::StochasticPrimalDual::iterate() {
   Eigen::VectorXd wk = prog_.sample();
-  x_ -= step_ * df_(x_, wk);
-  if (prog_.g) x_ -= step_ * dg_(x_, wk) * z_.head(m_g_);
+  x_ -= step_ * measure_->df(prog_, x_, wk);
+  if (prog_.g) x_ -= step_ * measure_->dg(prog_, x_, wk) * z_.head(m_g_);
   if (prog_.h) x_ -= step_ * prog_.dh(x_) * z_.tail(m_h_);
-  x_ = projX_(x_);
+  x_ = measure_->projX(prog_, x_);
 
   wk = prog_.sample();
-  if (prog_.g) z_.head(m_g_) += step_ * g_(x_, wk);
+  if (prog_.g) z_.head(m_g_) += step_ * measure_->g(prog_, x_, wk);
   if (prog_.h) z_.tail(m_h_) += step_ * prog_.h(x_);
   z_ = (z_.array() < 0).select(0, z_);
 
-  xbar_ = (xbar_ * nit_ + x_) / (nit_ + 1);
-  zbar_ = (zbar_ * nit_ + z_) / (nit_ + 1);
+  x_bar_ = (x_bar_ * nit_ + x_) / (nit_ + 1);
+  z_bar_ = (z_bar_ * nit_ + z_) / (nit_ + 1);
   nit_++;
 
 }
@@ -73,78 +56,7 @@ bool stuka::stochastic::StochasticPrimalDual::terminate() {
 
 const stuka::OptimizeState stuka::stochastic::StochasticPrimalDual::getState() {
   return {
-      xbar_,
-      zbar_
+      x_bar_,
+      z_bar_
   };
-}
-
-double stuka::stochastic::StochasticPrimalDual::f_cvar(Eigen::VectorXd &xu, Eigen::VectorXd &xi) {
-  Eigen::VectorXd x = xu.head(n_);
-  double u0 = xu.coeff(n_);
-  Eigen::VectorXd u = xu.tail(m_g_);
-
-  return u0 + (1. / (1. - alphap_)) * std::max(0., prog_.f(x, xi) - u0);
-}
-
-Eigen::VectorXd stuka::stochastic::StochasticPrimalDual::g_cvar(Eigen::VectorXd &xu, Eigen::VectorXd &xi) {
-  Eigen::VectorXd x = xu.head(n_);
-  double u0 = xu.coeff(n_);
-  Eigen::VectorXd u = xu.tail(m_g_);
-
-  Eigen::VectorXd gmu = prog_.g(x, xi) - u;
-  gmu = (gmu.array() < 0).select(0, gmu);
-
-  return u + betap_.cwiseProduct(gmu);
-}
-
-Eigen::VectorXd stuka::stochastic::StochasticPrimalDual::df_cvar(Eigen::VectorXd &xu, Eigen::VectorXd &xi) {
-  Eigen::VectorXd x = xu.head(n_);
-  double u0 = xu.coeff(n_);
-  Eigen::VectorXd u = xu.tail(m_g_);
-
-  Eigen::VectorXd df = Eigen::VectorXd(xu.size());
-  df.setZero();
-  df.coeffRef(n_) = 1.;
-
-  if (prog_.f(x, xi) >= u0) {
-    df.head(n_) = alphap_ * prog_.df(x, xi);
-    df.coeffRef(n_) -= alphap_;
-  }
-
-  return df;
-}
-
-Eigen::MatrixXd stuka::stochastic::StochasticPrimalDual::dg_cvar(Eigen::VectorXd &xu, Eigen::VectorXd &xi) {
-  Eigen::VectorXd x = xu.head(n_);
-  double u0 = xu.coeff(n_);
-  Eigen::VectorXd u = xu.tail(m_g_);
-
-  Eigen::MatrixXd dg = Eigen::MatrixXd(xu.size(), m_g_);
-  Eigen::MatrixXd prog_dg = prog_.dg(x, xi);
-  dg.setZero();
-
-  Eigen::Matrix<bool, Eigen::Dynamic, 1> gpos((prog_.g(x, xi) - u).array() >= 0.);
-  for (size_t i = 0; i < m_g_; ++i) {
-    dg.coeffRef(n_ + 1 + i, i) = 1.;
-    if (gpos.coeff(i)) {
-      dg.block(0, i, n_, 1) += betap_.coeff(i) * prog_dg.col(i);
-      dg.coeffRef(n_ + 1 + i, i) -= betap_.coeff(i);
-    }
-  }
-
-  return dg;
-}
-
-Eigen::VectorXd stuka::stochastic::StochasticPrimalDual::projX_cvar(Eigen::VectorXd &xu) {
-  Eigen::VectorXd x = xu.head(n_);
-  double u0 = xu.coeff(n_);
-  Eigen::VectorXd u = xu.tail(m_g_);
-
-  xu.head(n_) = prog_.projX(x);
-  for (unsigned long i = 0; i < u.size(); ++i) {
-    if (u[i] < -prog_.gmax.coeff(i)) xu.coeffRef(n_ + 1 + i) = -prog_.gmax.coeff(i);
-    if (u[i] > prog_.gmax.coeff(i)) xu.coeffRef(n_ + 1 + i) = prog_.gmax.coeff(i);
-  }
-
-  return xu;
 }

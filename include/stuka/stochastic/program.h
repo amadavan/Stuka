@@ -17,23 +17,20 @@ namespace stuka { namespace stochastic {
  */
 struct Program {
   std::function<double(const Eigen::VectorXd &,
-                       const Eigen::VectorXd &)> f;                     // Function value given iterate/sample
+                       const Eigen::VectorXd &)> f;                     //< Function value given iterate/sample
   std::function<Eigen::VectorXd(const Eigen::VectorXd &,
-                                const Eigen::VectorXd &)> g;            // Constraint values given iterate/sample
-  std::function<Eigen::VectorXd(const Eigen::VectorXd &)> h;            // Deterministic constraint values
+                                const Eigen::VectorXd &)> g;            //< Constraint values given iterate/sample
+  std::function<Eigen::VectorXd(const Eigen::VectorXd &)> h;            //< Deterministic constraint values
   std::function<Eigen::VectorXd(const Eigen::VectorXd &,
-                                const Eigen::VectorXd &)> df;           // Function gradient given iterate/sample
+                                const Eigen::VectorXd &)> df;           //< Function gradient given iterate/sample
   std::function<Eigen::MatrixXd(const Eigen::VectorXd &,
-                                const Eigen::VectorXd &)> dg;           // Stochastic Constraint gradients
-  std::function<Eigen::MatrixXd(const Eigen::VectorXd &)> dh;           // Deterministic constraint gradients
-  std::function<Eigen::VectorXd(const Eigen::VectorXd &)> projX;        // Projection of iterate onto feasible set
+                                const Eigen::VectorXd &)> dg;           //< Stochastic Constraint gradients
+  std::function<Eigen::MatrixXd(const Eigen::VectorXd &)> dh;           //< Deterministic constraint gradients
+  std::function<Eigen::VectorXd(const Eigen::VectorXd &)> projX;        //< Projection of iterate onto feasible set
 
-  std::function<Eigen::VectorXd()> sample;                              // Acquire a random sample
+  std::function<Eigen::VectorXd()> sample;                              //< Acquire a random sample
 
-  double alpha = 0.;                                                    // Function CVaR parameter
-  Eigen::VectorXd beta = Eigen::VectorXd(0);                            // Constraint CVaR parameter
-  Eigen::VectorXd gmax = Eigen::VectorXd(0);                            // Max constraint value for PDSS
-
+ private:
   // Hack for cleaner python implementation
   virtual std::string name() { return "StochasticProgram"; }
 };

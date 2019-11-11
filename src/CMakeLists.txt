@@ -49,6 +49,9 @@ set(STUKA_SOURCES
         ../include/stuka/dLP/benders.h
         ../include/stuka/dLP/benders_cut.h
         ../include/stuka/dLP/benders_subproblem.h
+        ../include/stuka/stochastic/measure/measure.h
+        ../include/stuka/stochastic/measure/cvar.h
+        ../include/stuka/stochastic/measure/expected_value.h
         ../include/stuka/stochastic/program.h
         ../include/stuka/stochastic/base_solver.h
         ../include/stuka/stochastic/stochastic_pd.h
@@ -79,14 +82,15 @@ set(STUKA_SOURCES
         dLP/critical_region.cpp
         dLP/benders_subproblem.cpp
         dLP/benders.cpp
+        stochastic/measure/cvar.cpp
         stochastic/stochastic_pd.cpp
+        stochastic/stochastic_pd2.cpp
         util/solver_factory.cpp
         util/timer.cpp
         util/functions.cpp
         util/callback/composite.cpp
         util/callback/function.cpp
-        util/callback/progress.cpp
-        stochastic/stochastic_pd2.cpp)
+        util/callback/progress.cpp)
 
 add_library(stuka SHARED ${STUKA_SOURCES} ${GUROBI_SOURCES} ${HDF5_SOURCES})
 target_link_libraries(stuka PRIVATE ${GUROBI_LIBRARIES} ${SPQR_LIBRARIES} PUBLIC ${HDF5_LIBRARIES})

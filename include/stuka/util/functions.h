@@ -6,6 +6,7 @@
 #define STUKA_UTIL_FUNCTIONS_H
 
 #include <memory>
+#include <stuka/stochastic/measure/expected_value.h>
 
 #include "../LP/lp.h"
 #include "../LP/base_solver.h"
@@ -28,7 +29,7 @@ const OptimizeState quadprog(const QP::QuadraticProgram &qp, const Options &opts
 
 const OptimizeState linprog(const dLP::DecomposedLinearProgram &lp, const Options &opts = Options());
 
-const OptimizeState stochastic_cvar(const stochastic::Program &prog, const Options &opts = Options());
+const OptimizeState stochastic(const stochastic::Program &prog, const Options &opts = Options());
 }}
 
 #endif //STUKA_UTIL_FUNCTIONS_H

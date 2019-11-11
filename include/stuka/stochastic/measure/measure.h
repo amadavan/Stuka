@@ -15,19 +15,17 @@ namespace stuka { namespace stochastic {
  * Each of these measures augments the original stochastic program, which we handle by introducing the notation of
  * measure and any associated additional variables that are required.
  */
-class MeasurableProgram : public Program {
+class ProgramMeasure {
  public:
-  MeasurableProgram(const Program &prog) {
-    f = prog.f;
-    g = prog.g;
-    h = prog.h;
-    df = prog.df;
-    dg = prog.dg;
-    dh = prog.dh;
-    projX = prog.projX;
-    sample = prog.sample;
-  }
-  virtual ~MeasurableProgram() {}
+  ProgramMeasure() {}
+  virtual ~ProgramMeasure() = default;
+
+  virtual double f(const Program &, const Eigen::VectorXd &, const Eigen::VectorXd &) = 0;
+  virtual Eigen::VectorXd g(const Program &, const Eigen::VectorXd &, const Eigen::VectorXd &) = 0;
+  virtual Eigen::VectorXd df(const Program &, const Eigen::VectorXd &, const Eigen::VectorXd &) = 0;
+  virtual Eigen::MatrixXd dg(const Program &, const Eigen::VectorXd &, const Eigen::VectorXd &) = 0;
+  virtual Eigen::VectorXd projX(const Program &, const Eigen::VectorXd &) = 0;
+  virtual Eigen::VectorXd augmentState(Eigen::VectorXd &x) { return x; }
 };
 
 }}

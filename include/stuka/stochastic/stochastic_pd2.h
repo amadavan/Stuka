@@ -23,6 +23,7 @@ class StochasticPrimalDual2 : public BaseStochasticSolver {
 
  private:
   const Program &prog_;   // Main program data
+  const std::shared_ptr<ProgramMeasure> measure_;   // Measure on which to optimize
 
   Eigen::VectorXd x_;     // Primal variable
   Eigen::VectorXd z_;     // Dual variable with inequality constraint
@@ -40,26 +41,26 @@ class StochasticPrimalDual2 : public BaseStochasticSolver {
 
   double step_;           // Step size
 
-  double alphap_;         // 1/(1 - alpha)
-  Eigen::VectorXd betap_; // 1/(1 - beta)
+//  double alphap_;         // 1/(1 - alpha)
+//  Eigen::VectorXd betap_; // 1/(1 - beta)
 
   size_t nit_;            // iteration
 
-  std::function<double(Eigen::VectorXd &, Eigen::VectorXd &)> f_;
-  std::function<Eigen::VectorXd(Eigen::VectorXd &, Eigen::VectorXd &)> g_;
-  std::function<Eigen::VectorXd(Eigen::VectorXd &, Eigen::VectorXd &)> df_;
-  std::function<Eigen::MatrixXd(Eigen::VectorXd &, Eigen::VectorXd &)> dg_;
-  std::function<Eigen::VectorXd(Eigen::VectorXd &)> projX_;
-
-  double f_cvar(Eigen::VectorXd &xu, Eigen::VectorXd &xi);
-
-  Eigen::VectorXd g_cvar(Eigen::VectorXd &xu, Eigen::VectorXd &xi);
-
-  Eigen::VectorXd df_cvar(Eigen::VectorXd &xu, Eigen::VectorXd &xi);
-
-  Eigen::MatrixXd dg_cvar(Eigen::VectorXd &xu, Eigen::VectorXd &xi);
-
-  Eigen::VectorXd projX_cvar(Eigen::VectorXd &xu);
+//  std::function<double(Eigen::VectorXd &, Eigen::VectorXd &)> f_;
+//  std::function<Eigen::VectorXd(Eigen::VectorXd &, Eigen::VectorXd &)> g_;
+//  std::function<Eigen::VectorXd(Eigen::VectorXd &, Eigen::VectorXd &)> df_;
+//  std::function<Eigen::MatrixXd(Eigen::VectorXd &, Eigen::VectorXd &)> dg_;
+//  std::function<Eigen::VectorXd(Eigen::VectorXd &)> projX_;
+//
+//  double f_cvar(Eigen::VectorXd &xu, Eigen::VectorXd &xi);
+//
+//  Eigen::VectorXd g_cvar(Eigen::VectorXd &xu, Eigen::VectorXd &xi);
+//
+//  Eigen::VectorXd df_cvar(Eigen::VectorXd &xu, Eigen::VectorXd &xi);
+//
+//  Eigen::MatrixXd dg_cvar(Eigen::VectorXd &xu, Eigen::VectorXd &xi);
+//
+//  Eigen::VectorXd projX_cvar(Eigen::VectorXd &xu);
 
   int restart_;
 };
