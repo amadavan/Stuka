@@ -21,10 +21,17 @@
 #   substitutions: A dictionary mapping strings to their substitutions
 
 def template_rule_impl(ctx):
+    subs = dict(ctx.attr.substitutions)
+
+    if ctx.attr.expand_make:
+        for key in subs.keys():
+            subs[key] = ctx.expand_make_variables("substitutions", subs[key], ctx.var)
+            subs[key] = ctx.expand_location(subs[key])
+
     ctx.actions.expand_template(
         template = ctx.file.src,
         output = ctx.outputs.out,
-        substitutions = ctx.attr.substitutions,
+        substitutions = subs,
     )
 
 template_rule = rule(
@@ -34,6 +41,7 @@ template_rule = rule(
             allow_single_file = True,
         ),
         "substitutions": attr.string_dict(mandatory = True),
+        "expand_make": attr.bool(default = False),
         "out": attr.output(mandatory = True),
     },
     # output_to_genfiles is required for header files.

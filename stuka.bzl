@@ -71,6 +71,7 @@ def pybind_extension(
             version_script_file,
         ] + ["@pybind11//:pybind11"],
         features = features,
+        linkstatic = 1,
         linkshared = 1,
         testonly = testonly,
         licenses = licenses,

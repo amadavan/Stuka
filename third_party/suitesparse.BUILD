@@ -217,7 +217,7 @@ cc_library(
         ":colamd",
         ":cholmod",
     ]
-            + ["@openblas//:openblas"],
+    + ["@openblas//:openblas"],
 #    + mkl_deps() + if_mkl([], ["@openblas//:openblas"]),
     visibility = ["//visibility:public"],
 )

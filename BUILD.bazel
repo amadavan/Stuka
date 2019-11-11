@@ -1,3 +1,4 @@
+exports_files(["LICENSE"])
 
 # Configuration variables
 config_setting(
@@ -25,6 +26,12 @@ load("@stuka//third_party/mkl:build_defs.bzl", "if_mkl", "mkl_deps")
 
 GUROBI_SRCS=glob(["src/**/*gurobi*.cpp"])
 
+filegroup(
+    name = "stuka_headers",
+    srcs = glob(["include/stuka/**/*.h"]),
+    visibility = ["//visibility:public"],
+)
+
 cc_library(
     name = "stuka",
     srcs = glob(["src/**/*.cpp"], exclude=["src/example/**/*.cc", "src/example/**/*.cpp", "src/test.cc"] + GUROBI_SRCS) + if_gurobi(GUROBI_SRCS),
@@ -39,6 +46,7 @@ cc_library(
         ]
         + gurobi_deps()
         + mkl_deps() + if_mkl([], ["@openblas//:openblas"]),
+    linkstatic = True,
     visibility = ["//visibility:public"],
 )
 

@@ -27,6 +27,9 @@ find_package(SPQR REQUIRED)
 # Optional packages
 find_package(GUROBI)
 find_package(HDF5 COMPONENTS C)
+find_package(DOXYGEN)
+find_package(SPHINX)
 
 add_subdirectory(src)
 add_subdirectory(bindings)
+add_subdirectory(docs)

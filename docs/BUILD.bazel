@@ -1,0 +1,39 @@
+
+load("@stuka//third_party:common.bzl", "template_rule")
+load("@stuka//third_party:doxygen.bzl", "doxygen_rule")
+load("@stuka//third_party:sphinx.bzl", "sphinx_rule")
+
+template_rule(
+    name = "create_doxyfile",
+    out = "Doxyfile",
+    src = "Doxyfile.in",
+    substitutions = {
+        "@PROJECT_SOURCE_DIR@": "external/stuka",
+        "@CMAKE_CURRENT_BINARY_DIRECTORY@": "$(BINDIR)/docs/doxygen.out"
+    },
+    expand_make = True,
+)
+
+doxygen_rule(
+    name = "doxygen",
+    doxyfile = ":create_doxyfile",
+    output_dir = "doxygen.out",
+    source = "@stuka//:stuka_headers",
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "sphinx_data",
+    srcs = glob(["sphinx_data/**/*"], exclude=["**/CMakeLists.txt"], exclude_directories=0),
+    visibility = ["//visibility:private"],
+)
+
+sphinx_rule(
+    name = "sphinx",
+    breathe_project_name = "stuka",
+    doxygen_output = ":doxygen",
+    source_dir = "docs/sphinx_data",
+    srcs = ":sphinx_data",
+    visibility = ["//visibility:public"],
+)
+

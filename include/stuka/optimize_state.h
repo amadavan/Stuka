@@ -10,19 +10,19 @@
 namespace stuka {
 
 struct OptimizeState {
-  Eigen::VectorXd x;
-  Eigen::VectorXd dual_ub;
-  Eigen::VectorXd dual_eq;
-  Eigen::VectorXd dual_x_lb;
-  Eigen::VectorXd dual_x_ub;
+  Eigen::VectorXd x;            ///< Primal variable
+  Eigen::VectorXd dual_ub;      ///< Dual variable associated with inequality constraints
+  Eigen::VectorXd dual_eq;      ///< Dual variable associated with equality constraints
+  Eigen::VectorXd dual_x_lb;    ///< Dual variable associated with primal variable lower bounds
+  Eigen::VectorXd dual_x_ub;    ///< Dual variable associated with primal variable upper bounds
 
-  double fun = 0;
-  double error = 0;
-  int status = 0;
-  size_t nit = 0;
-  size_t nit_sub = 0;
+  double fun = 0;         ///< Function value
+  double error = 0;       ///< Solver error
+  int status = 0;         ///< Status code
+  size_t nit = 0;         ///< Iteration count
+  size_t nit_sub = 0;     ///< Number of computations of subproblems for decomposed linear programs
 
-  double runtime = 0;
+  double runtime = 0;     ///< Runtime (in s)
 };
 
 }
