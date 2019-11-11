@@ -6,6 +6,8 @@
 #define STUKA_PYTHON_STOCHASTIC_H
 
 #include <stuka/stochastic/program.h>
+#include <stuka/stochastic/measure/expected_value.h>
+#include <stuka/stochastic/measure/cvar.h>
 
 #include <pybind11/pybind11.h>
 #include <pybind11/functional.h>

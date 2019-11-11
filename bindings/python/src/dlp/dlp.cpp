@@ -3,6 +3,7 @@
 //
 
 #include <stuka/constants.h>
+#include <stuka/stochastic/measure/expected_value.h>
 #include "dlp.h"
 
 void init_dlp(py::module &m) {

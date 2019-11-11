@@ -17,16 +17,16 @@ include_directories(pybind11/include)
 
 set(STUKAPY_SOURCES
         src/stukapy.cpp
-        src/lp.h
-        src/lp.cpp
-        src/qp.h
-        src/qp.cpp
-        src/dlp.h
-        src/dlp.cpp
-        src/stochastic.h
-        src/stochastic.cpp
-        src/callbacks.h
-        src/callbacks.cpp)
+        src/lp/lp.h
+        src/lp/lp.cpp
+        src/qp/qp.h
+        src/qp/qp.cpp
+        src/dlp/dlp.h
+        src/dlp/dlp.cpp
+        src/stochastic/stochastic.h
+        src/stochastic/stochastic.cpp
+        src/callbacks/callbacks.h
+        src/callbacks/callbacks.cpp)
 
 pybind11_add_module(stukapy ${STUKAPY_SOURCES})
 target_link_libraries(stukapy PRIVATE stuka)
