@@ -7,4 +7,4 @@ While we recommend Bazel for the C++ build, the current Bazel rules do not work 
 
     python setup.py install
 
-This will install the :code`stukapy` package which you can then use directly. It's as simple as that!
+This will install the :code:`stukapy` package which you can then use directly. It's as simple as that!
