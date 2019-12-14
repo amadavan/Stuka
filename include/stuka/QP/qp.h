@@ -21,6 +21,7 @@ struct QuadraticProgram {
   std::shared_ptr<Eigen::VectorXd> lb;
   std::shared_ptr<Eigen::VectorXd> ub;
 
+ private:
   // Hack for cleaner python implementation
   virtual std::string name() { return "QuadraticProgram"; }
 };

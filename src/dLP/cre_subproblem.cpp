@@ -47,8 +47,8 @@ stuka::dLP::CriticalRegion stuka::dLP::CRESubproblem::computeCriticalRegion(cons
   }
 
   Eigen::Matrix<bool, Eigen::Dynamic, 1> ub_activity = res.dual_ub.array() > 0;
-  Eigen::Matrix<bool, Eigen::Dynamic, 1> xlb_activity = res.dual_x_lb.array() > 0;
-  Eigen::Matrix<bool, Eigen::Dynamic, 1> xub_activity = res.dual_x_ub.array() > 0;
+  Eigen::Matrix<bool, Eigen::Dynamic, 1> xlb_activity = res.dual_x_lb.array() > GUROBI_TOLERANCE;
+  Eigen::Matrix<bool, Eigen::Dynamic, 1> xub_activity = res.dual_x_ub.array() > GUROBI_TOLERANCE;
 
   long n_con_ub = (sub_.b_ub) ? sub_.b_ub->size() : 0;
 
@@ -80,31 +80,21 @@ stuka::dLP::CriticalRegion stuka::dLP::CRESubproblem::computeCriticalRegion(cons
   size_t nnz;
 
   // Active A matrix
-  Eigen::SparseMatrix<double> A_active(n_active, n_dim_);
-  nnz = n_xlb + n_xub;
-  if (sub_.A_eq) nnz += sub_.A_eq->nonZeros();
-  if (sub_.A_ub) nnz += sub_.A_ub->nonZeros();
-  A_active.reserve(nnz);
+  // TODO: simplify the following or make global
+  Eigen::Matrix<bool, Eigen::Dynamic, 1> bone_eq(n_eq);
+  bone_eq.setConstant(true);
+  Eigen::SparseMatrix<double> eye(n_dim_, n_dim_);
+  eye.setIdentity();
+  Eigen::SparseMatrix<double> negative_eye = eye;
+  negative_eye *= -1;
 
-  size_t n_xbound = 0;
-  for (size_t i = 0; i < n_dim_; ++i) {
-    A_active.startVec(i);
-    if (n_eq > 0)
-      for (Eigen::SparseMatrix<double>::InnerIterator it(*sub_.A_eq, i); it; ++it)
-        A_active.insertBack(it.row(), i) = it.value();
-    if (n_ub_active > 0)
-      for (Eigen::SparseMatrix<double>::InnerIterator it(*sub_.A_ub, i); it; ++it)
-        if (ub_activity.coeff(it.row()))
-          A_active.insertBack(n_eq + active_count_ub.coeff(it.row()), i) = it.value();
-    if (xlb_activity.coeff(i)) {
-      A_active.insertBack(n_eq + n_ub_active + n_xbound, i) = -1;
-      n_xbound++;
-    } else if (xub_activity.coeff(i)) {
-      A_active.insertBack(n_eq + n_ub_active + n_xbound, i) = 1;
-      n_xbound++;
-    }
-  }
-  A_active.finalize();
+  Eigen::SparseMatrix<double> A_active = util::SparseOps::vstack_rows<double>(
+      {
+//        std::make_pair(*sub_.A_eq, bone_eq),
+        std::make_pair(*sub_.A_ub, ub_activity),
+        std::make_pair(negative_eye, xlb_activity),
+        std::make_pair(eye, xub_activity)}
+      );
 
   // Active b vector
   Eigen::VectorXd b_active(n_active);
@@ -112,7 +102,7 @@ stuka::dLP::CriticalRegion stuka::dLP::CRESubproblem::computeCriticalRegion(cons
   for (size_t i = 0; i < n_ub; ++i)
     if (ub_activity.coeff(i))
       b_active.coeffRef(n_eq + active_count_ub.coeff(i)) = sub_.b_ub->coeff(i);
-  n_xbound = 0;
+  size_t n_xbound = 0;
   for (size_t i = 0; i < n_dim_; ++i) {
     if (sub_.lb && xlb_activity[i]) {
       b_active.coeffRef(n_eq + n_ub_active + n_xbound) = -sub_.lb->coeff(i);
@@ -124,22 +114,13 @@ stuka::dLP::CriticalRegion stuka::dLP::CRESubproblem::computeCriticalRegion(cons
   }
 
   // Active C matrix
-  Eigen::SparseMatrix<double> C_active(n_active, n_dim_master_);
-  nnz = 0;
-  if (sub_.C_eq) nnz += sub_.C_eq->nonZeros();
-  if (sub_.C_ub) nnz += sub_.C_ub->nonZeros();
-  C_active.reserve(nnz);
-  for (size_t i = 0; i < n_dim_master_; ++i) {
-    C_active.startVec(i);
-    if (n_eq > 0)
-      for (Eigen::SparseMatrix<double>::InnerIterator it(*sub_.C_eq, i); it; ++it)
-        C_active.insertBack(it.row(), i) = it.value();
-    if (n_ub_active > 0)
-      for (Eigen::SparseMatrix<double>::InnerIterator it(*sub_.C_ub, i); it; ++it)
-        if (ub_activity.coeff(it.row()))
-          C_active.insertBack(n_eq + active_count_ub.coeff(it.row()), i) = it.value();
-  }
-  C_active.finalize();
+  Eigen::SparseMatrix<double> C_active = util::SparseOps::vstack_rows<double>(
+      {
+//        std::make_pair(*sub_.C_eq, bone_eq),
+        std::make_pair(*sub_.C_ub, ub_activity),
+      }
+      );
+  C_active.conservativeResize(n_active, n_dim_master_);
 
   // Construct set of inactive constraints -----------------------------------------------------------------------------
   // Inactive A matrix

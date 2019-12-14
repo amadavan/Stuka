@@ -14,6 +14,7 @@
 #include "../util/solver_factory.h"
 #include "../LP/base_solver.h"
 #include "../QP/base_solver.h"
+#include "../util/sparse_ops.h"
 
 #include "base_solver.h"
 #include "cre_subproblem.h"

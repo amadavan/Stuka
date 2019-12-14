@@ -29,10 +29,10 @@ struct LinearProgram {
     }
   };
 
+ private:
   // Hack for cleaner python implementation
   virtual std::string name() { return "LinearProgram"; }
 
- private:
   void ConstraintReductionBounds();
 };
 }}

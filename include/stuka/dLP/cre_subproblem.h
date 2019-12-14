@@ -13,6 +13,7 @@
 #include <Eigen/SPQRSupport>
 
 #include "../util/solver_factory.h"
+#include "../util/sparse_ops.h"
 #include "../LP/base_solver.h"
 #include "../LP/lp.h"
 #include "subproblem.h"

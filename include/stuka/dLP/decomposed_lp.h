@@ -71,10 +71,10 @@ struct DecomposedLinearProgram {
     }
   };
 
+ private:
   // Hack for cleaner python implementation
   virtual std::string name() { return "DecomposedLinearProgram"; }
 
- private:
   void ConstraintReductionBounds();
 };
 }}

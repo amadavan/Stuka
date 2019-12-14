@@ -72,8 +72,8 @@ void stuka::LP::GurobiLinearProgram::initialize(const stuka::LP::LinearProgram &
 
   model_.set(GRB_IntParam_OutputFlag, false);
   model_.set(GRB_IntParam_Method, GRB_METHOD_DETERMINISTIC_CONCURRENT_SIMPLEX);
-  model_.set(GRB_DoubleParam_OptimalityTol, 1e-9);
-  model_.set(GRB_DoubleParam_FeasibilityTol, 1e-9);
+  model_.set(GRB_DoubleParam_OptimalityTol, GUROBI_TOLERANCE);
+  model_.set(GRB_DoubleParam_FeasibilityTol, GUROBI_TOLERANCE);
 }
 
 void stuka::LP::GurobiLinearProgram::setObjective(const std::shared_ptr<Eigen::VectorXd> &c) {
