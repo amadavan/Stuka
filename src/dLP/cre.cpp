@@ -229,33 +229,16 @@ stuka::dLP::CRE::computeResidualFirst(const OptimizeState &res) {
 
   // Determine active constraints
   Eigen::Matrix<bool, Eigen::Dynamic, 1> ub_activity(n_con_ub);
-  if (master_lp_.b_ub) ub_activity = res.dual_ub.head(n_con_ub).array() > GUROBI_TOLERANCE;
-//  Eigen::Matrix<bool, Eigen::Dynamic, 1> ub_activity = dual_ub.array() > 0;
   Eigen::Matrix<bool, Eigen::Dynamic, 1> xlb_activity(n_dim_master_);
   Eigen::Matrix<bool, Eigen::Dynamic, 1> xub_activity(n_dim_master_);
   xlb_activity.setConstant(false);
   xub_activity.setConstant(false);
+
+  if (master_lp_.b_ub) ub_activity = res.dual_ub.head(n_con_ub).array() > GUROBI_TOLERANCE;
   if (master_lp_.lb) xlb_activity = res.dual_x_lb.head(n_dim_master_).array() > GUROBI_TOLERANCE;
   if (master_lp_.ub) xub_activity = res.dual_x_ub.head(n_dim_master_).array() > GUROBI_TOLERANCE;
-//  for (size_t i = 0; i < n_dim_master_; ++i) {
-//    if (master_lp_.lb && master_lp_.lb->coeff(i) != -INF && abs(master_lp_.lb->coeff(i) - res.x[i]) < 1e-8)
-//      xlb_activity.coeffRef(i) = true;
-//    if (master_lp_.ub && master_lp_.ub->coeff(i) != INF && abs(master_lp_.ub->coeff(i) - res.x[i]) < 1e-8)
-//      xub_activity.coeffRef(i) = true;
-//  }
-//  Eigen::Matrix<bool, Eigen::Dynamic, 1> xlb_activity = res.dual_x_lb.array() > 0;
-//  Eigen::Matrix<bool, Eigen::Dynamic, 1> xub_activity = res.dual_x_ub.array() > 0;
 
-  // Count all previous active constraints at each index. This will be used in the next step to construct the complete
-  // sets of active and inactive constraints
-  Eigen::VectorXi active_count_ub(n_con_ub);
-
-  int count_active = 0;
-  for (size_t i = 0; i < n_con_ub; ++i) {
-    active_count_ub.coeffRef(i) = count_active;
-    if (ub_activity.coeff(i)) ++count_active;
-  }
-
+  // Create useful constants
   long n_eq = (master_lp_.A_eq) ? master_lp_.A_eq->rows() : 0;
   long n_ub = ub_activity.count();
   long n_xlb = xlb_activity.count();
@@ -271,22 +254,22 @@ stuka::dLP::CRE::computeResidualFirst(const OptimizeState &res) {
   Eigen::SparseMatrix<double> negative_eye = eye;
   negative_eye *= -1;
 
-  Eigen::SparseMatrix<double> A_active = util::SparseOps::vstack_rows<double>(
-      {
-//        std::make_pair(*master_lp_.A_eq, bone_eq), // TODO: Need to check for existence before assignment.
-//       std::make_pair(*master_lp_.A_ub, ub_activity), // TODO: Need to check for existence before assignment.
-       std::make_pair(negative_eye, xlb_activity),
-       std::make_pair(eye, xub_activity)}
-  );
+  std::vector<std::pair<const Eigen::SparseMatrix<double>, const Eigen::Matrix<bool, Eigen::Dynamic, 1>>> A_active_l =
+      std::vector<std::pair<const Eigen::SparseMatrix<double>, const Eigen::Matrix<bool, Eigen::Dynamic, 1>>>();
+  if (master_lp_.A_eq) A_active_l.push_back(std::make_pair(*master_lp_.A_eq, bone_eq));
+  if (master_lp_.A_ub) A_active_l.push_back(std::make_pair(*master_lp_.A_ub, ub_activity));
+  if (master_lp_.lb) A_active_l.push_back(std::make_pair(negative_eye, xlb_activity));
+  if (master_lp_.ub) A_active_l.push_back(std::make_pair(eye, xub_activity));
+
+  Eigen::SparseMatrix<double> A_active = util::SparseOps::vstack_rows<double>(A_active_l);
 
   // Add active constraints to residual matrix
-  std::shared_ptr<Eigen::SparseMatrix<double>> A_activeT = std::make_shared<Eigen::SparseMatrix<double>>(
-      A_active.transpose());
+  std::shared_ptr<Eigen::SparseMatrix<double>> A_activeT =
+      std::make_shared < Eigen::SparseMatrix < double >> (A_active.transpose());
   A_activeT->conservativeResize(n_dim_master_ + 1, A_activeT->cols());
   std::shared_ptr<Eigen::VectorXd> lb = std::make_shared<Eigen::VectorXd>(n_active_);
   lb->setZero();
   for (size_t i = 0; i < n_eq; ++i) lb->coeffRef(i) = -INF;
-  std::shared_ptr<Eigen::VectorXd> c = std::make_shared<Eigen::VectorXd>(n_active_);
   if (n_active_ > 0) residual_solver_->getQP().addVars(nullptr, nullptr, A_activeT, lb, nullptr);
 
   // Add variable for first visit

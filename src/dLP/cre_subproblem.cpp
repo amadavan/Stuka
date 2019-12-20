@@ -9,10 +9,51 @@ stuka::dLP::CRESubproblem::CRESubproblem(const stuka::dLP::Subproblem sub, const
   n_dim_ = sub_.c->size();
   n_dim_master_ = (sub_.C_ub) ? sub_.C_ub->cols() : (sub_.C_eq) ? sub_.C_eq->cols() : 0;
 
+  bone_eq_ = util::DenseOps::ActiveSet((sub_.b_eq) ? sub_.b_eq->size() : 0);
+  bone_eq_.setConstant(true);
+
   n_bounds_ = 0;
   for (size_t i = 0; i < n_dim_; ++i) {
     if (sub_.lb && sub_.lb->coeff(i) > -INF) n_bounds_++;
     if (sub_.ub && sub_.ub->coeff(i) < INF) n_bounds_++;
+  }
+
+  b_lb_ = Eigen::VectorXd(n_dim_);
+  b_ub_ = Eigen::VectorXd(n_dim_);
+
+  b_lb_.setConstant(INF);
+  b_ub_.setConstant(INF);
+
+  xlb_constraints_ = util::DenseOps::ActiveSet(n_dim_);
+  xub_constraints_ = util::DenseOps::ActiveSet(n_dim_);
+
+  xlb_constraints_.setConstant(false);
+  xub_constraints_.setConstant(false);
+
+  if (sub_.lb) {
+    A_xlb_ = Eigen::SparseMatrix<double>(n_dim_, n_dim_);
+    A_xlb_.setIdentity();
+    A_xlb_ *= -1;
+    b_lb_ = *sub_.lb;
+    b_lb_ *= -1;
+
+    for (size_t i = 0; i < n_dim_; ++i)
+      xlb_constraints_.coeffRef(i) = sub_.lb->coeff(i) > -INF;
+
+    A_xlb_ = util::SparseOps::get_rows(A_xlb_, xlb_constraints_);
+    b_lb_ = util::DenseOps::get_rows(b_lb_, xlb_constraints_);
+  }
+
+  if (sub_.ub) {
+    A_xub_ = Eigen::SparseMatrix<double>(n_dim_, n_dim_);
+    A_xub_.setIdentity();
+    b_ub_ = *sub_.ub;
+
+    for (size_t i = 0; i < n_dim_; ++i)
+      xub_constraints_.coeffRef(i) = sub_.ub->coeff(i) < INF;
+
+    A_xub_ = util::SparseOps::get_rows(A_xub_, xub_constraints_);
+    b_ub_ = util::DenseOps::get_rows(b_ub_, xub_constraints_);
   }
 
   LP::LinearProgram lp;
@@ -46,136 +87,79 @@ stuka::dLP::CriticalRegion stuka::dLP::CRESubproblem::computeCriticalRegion(cons
     throw std::runtime_error("computeCriticalRegion: unable to solve subproblem");
   }
 
-  Eigen::Matrix<bool, Eigen::Dynamic, 1> ub_activity = res.dual_ub.array() > 0;
-  Eigen::Matrix<bool, Eigen::Dynamic, 1> xlb_activity = res.dual_x_lb.array() > GUROBI_TOLERANCE;
-  Eigen::Matrix<bool, Eigen::Dynamic, 1> xub_activity = res.dual_x_ub.array() > GUROBI_TOLERANCE;
+  // Construct list of matrices with subset of rows to include
+  std::vector<util::SparseOps::MatRowPairD> A_active_l = std::vector<util::SparseOps::MatRowPairD>();
+  std::vector<util::DenseOps::VecRowPairD> b_active_l = std::vector<util::DenseOps::VecRowPairD>();
+  std::vector<util::SparseOps::MatRowPairD> C_active_l = std::vector<util::SparseOps::MatRowPairD>();
+  std::vector<util::SparseOps::MatRowPairD> A_inactive_l = std::vector<util::SparseOps::MatRowPairD>();
+  std::vector<util::DenseOps::VecRowPairD> b_inactive_l = std::vector<util::DenseOps::VecRowPairD>();
+  std::vector<util::SparseOps::MatRowPairD> C_inactive_l = std::vector<util::SparseOps::MatRowPairD>();
 
-  long n_con_ub = (sub_.b_ub) ? sub_.b_ub->size() : 0;
-
-  // Count all previous active constraints at each index. This will be used in the next step to construct the complete
-  // sets of active and inactive constraints
-  Eigen::VectorXi active_count_ub(n_con_ub);
-  Eigen::VectorXi inactive_count_ub(n_con_ub);
-
-  int count_active = 0, count_inactive = 0;
-  for (size_t i = 0; i < n_con_ub; ++i) {
-    active_count_ub.coeffRef(i) = count_active;
-    inactive_count_ub.coeffRef(i) = count_inactive;
-    if (ub_activity.coeff(i)) ++count_active;
-    else ++count_inactive;
+  if (sub_.A_eq) {
+    A_active_l.push_back(std::make_pair(*sub_.A_eq, bone_eq_));
+    b_active_l.push_back(std::make_pair(*sub_.b_eq, bone_eq_));
+    C_active_l.push_back(std::make_pair(*sub_.C_eq, bone_eq_));
   }
+  if (sub_.A_ub) {
+    util::DenseOps::ActiveSet ub_activity = res.dual_ub.array() > GUROBI_TOLERANCE;
+    util::DenseOps::ActiveSet ub_inactivity = res.dual_ub.array() <= GUROBI_TOLERANCE;
 
-  // Count of active constraints
-  long n_eq = (sub_.b_eq) ? sub_.b_eq->size() : 0;
-  long n_ub = (sub_.b_ub) ? sub_.b_ub->size() : 0;
-  long n_ub_active = ub_activity.count();
-  long n_ub_inactive = n_ub - ub_activity.count();
-  long n_xlb = xlb_activity.count();
-  long n_xub = xub_activity.count();
+    A_active_l.push_back(std::make_pair(*sub_.A_ub, ub_activity));
+    b_active_l.push_back(std::make_pair(*sub_.b_ub, ub_activity));
+    C_active_l.push_back(std::make_pair(*sub_.C_ub, ub_activity));
 
-  long n_active = n_eq + n_ub_active + n_xlb + n_xub;
-  long n_inactive = n_ub_inactive + n_bounds_ - n_xlb - n_xub;
+    A_inactive_l.push_back(std::make_pair(*sub_.A_ub, ub_inactivity));
+    b_inactive_l.push_back(std::make_pair(*sub_.b_ub, ub_inactivity));
+    C_inactive_l.push_back(std::make_pair(*sub_.C_ub, ub_inactivity));
+  }
+  if (sub_.lb) {
+    util::DenseOps::ActiveSet xlb_activity = res.dual_x_lb.array() > GUROBI_TOLERANCE;
+    util::DenseOps::ActiveSet xlb_inactivity = res.dual_x_lb.array() <= GUROBI_TOLERANCE;
+
+    xlb_activity = util::DenseOps::get_rows<bool, Eigen::Dynamic, 1>(xlb_activity, xlb_constraints_);
+    xlb_inactivity = util::DenseOps::get_rows<bool, Eigen::Dynamic, 1>(xlb_inactivity, xlb_constraints_);
+
+    if (xlb_activity.size() > 0 && xlb_activity.count() > 0) {
+      A_active_l.push_back(std::make_pair(A_xlb_, xlb_activity));
+      b_active_l.push_back(std::make_pair(b_lb_, xlb_activity));
+    }
+
+    if (xlb_inactivity.size() > 0 && xlb_inactivity.count() > 0) {
+      A_inactive_l.push_back(std::make_pair(A_xlb_, xlb_inactivity));
+      b_inactive_l.push_back(std::make_pair(b_lb_, xlb_inactivity));
+    }
+  }
+  if (sub_.ub) {
+    util::DenseOps::ActiveSet xub_activity = res.dual_x_ub.array() > GUROBI_TOLERANCE;
+    util::DenseOps::ActiveSet xub_inactivity = res.dual_x_ub.array() <= GUROBI_TOLERANCE;
+
+    xub_activity = util::DenseOps::get_rows<bool, Eigen::Dynamic, 1>(xub_activity, xub_constraints_);
+    xub_inactivity = util::DenseOps::get_rows<bool, Eigen::Dynamic, 1>(xub_inactivity, xub_constraints_);
+
+    if (xub_activity.size() > 0 && xub_activity.count() > 0) {
+      A_active_l.push_back(std::make_pair(A_xub_, xub_activity));
+      b_active_l.push_back(std::make_pair(b_ub_, xub_activity));
+    }
+
+    if (xub_inactivity.size() > 0 && xub_inactivity.count() > 0) {
+      A_inactive_l.push_back(std::make_pair(A_xub_, xub_inactivity));
+      b_inactive_l.push_back(std::make_pair(b_ub_, xub_inactivity));
+    }
+  }
 
   // Construct set of active constraints -------------------------------------------------------------------------------
-  size_t nnz;
-
-  // Active A matrix
-  // TODO: simplify the following or make global
-  Eigen::Matrix<bool, Eigen::Dynamic, 1> bone_eq(n_eq);
-  bone_eq.setConstant(true);
-  Eigen::SparseMatrix<double> eye(n_dim_, n_dim_);
-  eye.setIdentity();
-  Eigen::SparseMatrix<double> negative_eye = eye;
-  negative_eye *= -1;
-
-  Eigen::SparseMatrix<double> A_active = util::SparseOps::vstack_rows<double>(
-      {
-//        std::make_pair(*sub_.A_eq, bone_eq),
-        std::make_pair(*sub_.A_ub, ub_activity),
-        std::make_pair(negative_eye, xlb_activity),
-        std::make_pair(eye, xub_activity)}
-      );
-
-  // Active b vector
-  Eigen::VectorXd b_active(n_active);
-  if (sub_.b_eq) b_active.head(n_eq) = *sub_.b_eq;
-  for (size_t i = 0; i < n_ub; ++i)
-    if (ub_activity.coeff(i))
-      b_active.coeffRef(n_eq + active_count_ub.coeff(i)) = sub_.b_ub->coeff(i);
-  size_t n_xbound = 0;
-  for (size_t i = 0; i < n_dim_; ++i) {
-    if (sub_.lb && xlb_activity[i]) {
-      b_active.coeffRef(n_eq + n_ub_active + n_xbound) = -sub_.lb->coeff(i);
-      n_xbound++;
-    } else if (sub_.ub && xub_activity[i]) {
-      b_active.coeffRef(n_eq + n_ub_active + n_xbound) = sub_.ub->coeff(i);
-      n_xbound++;
-    }
-  }
-
-  // Active C matrix
-  Eigen::SparseMatrix<double> C_active = util::SparseOps::vstack_rows<double>(
-      {
-//        std::make_pair(*sub_.C_eq, bone_eq),
-        std::make_pair(*sub_.C_ub, ub_activity),
-      }
-      );
-  C_active.conservativeResize(n_active, n_dim_master_);
+  Eigen::SparseMatrix<double> A_active = util::SparseOps::vstack_rows<double>(A_active_l);        // Active A matrix
+  Eigen::VectorXd b_active = util::DenseOps::vstack_rows<double, Eigen::Dynamic, 1>(b_active_l);  // Active b vector
+  Eigen::SparseMatrix<double> C_active = util::SparseOps::vstack_rows<double>(C_active_l);        // Active C matrix
+  C_active.conservativeResize(A_active.rows(), n_dim_master_);
 
   // Construct set of inactive constraints -----------------------------------------------------------------------------
-  // Inactive A matrix
-  Eigen::SparseMatrix<double, 0, long> A_inactive(n_inactive, n_dim_);
-  nnz = n_bounds_ - n_xlb - n_xub;
-  if (sub_.A_ub) nnz += sub_.A_ub->nonZeros() - A_active.nonZeros() + n_xlb + n_xub;
-  A_inactive.reserve(nnz);
-  n_xbound = 0;
-  for (size_t i = 0; i < n_dim_; ++i) {
-    A_inactive.startVec(i);
-    if (sub_.b_ub)
-      for (Eigen::SparseMatrix<double>::InnerIterator it(*sub_.A_ub, i); it; ++it)
-        if (!ub_activity.coeff(it.row()))
-          A_inactive.insertBack(inactive_count_ub.coeff(it.row()), i) = it.value();
-    if (sub_.lb && !xlb_activity[i] && sub_.lb->coeff(i) > -INF) {
-      A_inactive.insertBack(n_ub_inactive + n_xbound, i) = -1;
-      n_xbound++;
-    }
-    if (sub_.ub && !xub_activity[i] && sub_.ub->coeff(i) < INF) {
-      A_inactive.insertBack(n_ub_inactive + n_xbound, i) = 1;
-      n_xbound++;
-    }
-  }
-  A_inactive.finalize();
-
-  // Inactive b vector
-  Eigen::VectorXd b_inactive(n_inactive);
-  for (size_t i = 0; i < n_ub; ++i)
-    if (!ub_activity.coeff(i))
-      b_inactive.coeffRef(inactive_count_ub.coeff(i)) = sub_.b_ub->coeff(i);
-  n_xbound = 0;
-  for (size_t i = 0; i < n_dim_; ++i) {
-    if (sub_.lb && !xlb_activity[i] && sub_.lb->coeff(i) > -INF) {
-      b_inactive.coeffRef(n_ub_inactive + n_xbound) = -sub_.lb->coeff(i);
-      n_xbound++;
-    }
-    if (sub_.ub && !xub_activity[i] && sub_.ub->coeff(i) < INF) {
-      b_inactive.coeffRef(n_ub_inactive + n_xbound) = sub_.ub->coeff(i);
-      n_xbound++;
-    }
-  }
+  Eigen::SparseMatrix<double, 0, long> A_inactive = util::SparseOps::vstack_rows(A_inactive_l);   // Inactive A matrix
+  Eigen::VectorXd b_inactive = util::DenseOps::vstack_rows(b_inactive_l);                         // Inactive b vector
 
   // Inactive C matrix
-  Eigen::SparseMatrix<double> C_inactive(n_inactive, n_dim_master_);
-  nnz = 0;
-  if (sub_.C_ub) nnz += sub_.C_ub->nonZeros();
-  C_inactive.reserve(nnz);
-  for (size_t i = 0; i < n_dim_master_; ++i) {
-    C_inactive.startVec(i);
-    if (sub_.b_ub)
-      for (Eigen::SparseMatrix<double>::InnerIterator it(*sub_.C_ub, i); it; ++it)
-        if (!ub_activity.coeff(it.row()))
-          C_inactive.insertBack(inactive_count_ub.coeff(it.row()), i) = it.value();
-  }
-  C_inactive.finalize();
+  Eigen::SparseMatrix<double> C_inactive = util::SparseOps::vstack_rows<double>(C_inactive_l);
+  C_inactive.conservativeResize(A_inactive.rows(), n_dim_master_);
 
   // Determine critical region -----------------------------------------------------------------------------------------
   Eigen::VectorXd cc = sub_.C_ub->transpose() * res.dual_ub;
@@ -202,6 +186,7 @@ stuka::dLP::CriticalRegion stuka::dLP::CRESubproblem::computeCriticalRegion(cons
     Eigen::VectorXd qr = active_solver.matrixQ().transpose() * b_active;
     Eigen::VectorXd q = qr.head(n_rank);
 
+    size_t n_inactive = A_inactive.rows();
     Eigen::SparseMatrix<double> EF = A_inactive * active_solver.colsPermutation();
     Eigen::SparseMatrix<double> E = EF.topLeftCorner(n_inactive, n_rank);
     Eigen::SparseMatrix<double> F = EF.topRightCorner(n_inactive, cr.n_add);

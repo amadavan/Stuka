@@ -21,7 +21,7 @@ namespace stuka {
 
 class BaseSolver {
  public:
-  explicit BaseSolver(const Options &opts) : cb_(opts.callback), n_max_iter_(opts.max_iter) {
+  explicit BaseSolver(const Options &opts) : n_max_iter_(opts.max_iter), cb_(opts.callback) {
     if (opts.max_iter == 0)
       n_max_iter_ = DEFAULT_MAX_ITER;
   }

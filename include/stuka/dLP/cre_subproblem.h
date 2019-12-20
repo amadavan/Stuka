@@ -12,8 +12,9 @@
 #include <Eigen/SparseCore>
 #include <Eigen/SPQRSupport>
 
-#include "../util/solver_factory.h"
 #include "../util/sparse_ops.h"
+#include "../util/dense_ops.h"
+#include "../util/solver_factory.h"
 #include "../LP/base_solver.h"
 #include "../LP/lp.h"
 #include "subproblem.h"
@@ -31,6 +32,14 @@ class CRESubproblem {
   long n_dim_;
   long n_dim_master_;
   long n_bounds_;
+
+  Eigen::VectorXd b_lb_;
+  Eigen::VectorXd b_ub_;
+  util::DenseOps::ActiveSet bone_eq_;           // Array of ones whose length is the number of equality constraints
+  util::DenseOps::ActiveSet xlb_constraints_;   // Boolean array denoting whether lb constraint exists
+  util::DenseOps::ActiveSet xub_constraints_;   // Boolean array denoting whether ub constraint exists
+  Eigen::SparseMatrix<double> A_xlb_;           // Sparse identity matrix corresponding to lb constraints
+  Eigen::SparseMatrix<double> A_xub_;           // Sparse identity matrix corresponding to ub constraints
 
   const Subproblem sub_;
 };

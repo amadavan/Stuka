@@ -46,26 +46,6 @@ stuka_http_archive(
 )
 
 http_archive(
-    name = "blis",
-    build_file = "@stuka//third_party:blis.BUILD",
-    sha256 = "ad5765cc3f492d0c663f494850dafc4d72f901c332eb442f404814ff2995e5a9",
-    strip_prefix = "blis-0.6.0",
-    urls = [
-        "https://github.com/flame/blis/archive/0.6.0.tar.gz"
-    ],
-)
-
-http_archive(
-    name = "flame",
-    build_file = "@stuka//third_party:flame.BUILD",
-    sha256 = "e7189b750890bd781fe773f366b374518dd1d89a6513d3d6261bf549826384d1",
-    strip_prefix = "libflame-5.1.0",
-    urls = [
-        "https://github.com/flame/libflame/archive/5.1.0.tar.gz",
-    ],
-)
-
-http_archive(
     name = "eigen",
     build_file = "@stuka//third_party:eigen.BUILD",
     sha256 = "7e84ef87a07702b54ab3306e77cea474f56a40afa1c0ab245bb11725d006d0da",
