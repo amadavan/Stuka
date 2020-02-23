@@ -16,7 +16,6 @@ stuka::dLP::BendersSubproblem::BendersSubproblem(const stuka::dLP::Subproblem su
   lp.lb = sub.lb;
   lp.ub = sub.ub;
 
-  // TODO: use solver selected by options
   solver_ = util::createSolver(lp, opts);
 }
 
@@ -42,8 +41,7 @@ stuka::dLP::BendersCut stuka::dLP::BendersSubproblem::getBendersCut(const Eigen:
     throw std::runtime_error("getBendersCut: unable to solve subproblem");
   }
 
-  Eigen::VectorXd aux(x.size());
-  aux.setZero();
+  Eigen::VectorXd aux = Eigen::VectorXd::Zero(x.size());
   if (sub_.b_ub)
     aux += sub_.C_ub->transpose() * res.dual_ub;
   if (sub_.b_eq)

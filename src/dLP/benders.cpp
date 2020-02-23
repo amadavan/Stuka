@@ -5,7 +5,8 @@
 #include <stuka/dLP/benders.h>
 
 stuka::dLP::BendersDecomposition::BendersDecomposition(const stuka::dLP::DecomposedLinearProgram &dlp,
-                                                       const stuka::Options &opts) : BaseDLPSolver(dlp, opts) {
+                                                       const stuka::Options &opts) : BaseDLPSolver(dlp, opts),
+                                                                                     opts_(opts) {
   n_sub_calls_ = 0;
   n_sub_ = dlp.c.size() - 1;
   n_dim_master_ = dlp.c.back()->size();
@@ -19,13 +20,13 @@ stuka::dLP::BendersDecomposition::BendersDecomposition(const stuka::dLP::Decompo
     master_lp_.c->coeffRef(i) = 1.;
 
   if (n_con_ub_master > 0) {
-    master_lp_.A_ub = std::make_shared<Eigen::SparseMatrix<double>>(*dlp.A_ub.back());
+    master_lp_.A_ub = std::make_shared < Eigen::SparseMatrix < double >> (*dlp.A_ub.back());
     master_lp_.A_ub->conservativeResize(n_con_ub_master, n_dim_master_ + n_sub_);
     master_lp_.b_ub = dlp.b_ub.back();
   }
 
   if (n_con_eq_master > 0) {
-    master_lp_.A_eq = std::make_shared<Eigen::SparseMatrix<double>>(*dlp.A_eq.back());
+    master_lp_.A_eq = std::make_shared < Eigen::SparseMatrix < double >> (*dlp.A_eq.back());
     master_lp_.A_eq->conservativeResize(n_con_eq_master, n_dim_master_ + n_sub_);
     master_lp_.b_eq = dlp.b_eq.back();
   }
@@ -44,11 +45,10 @@ stuka::dLP::BendersDecomposition::BendersDecomposition(const stuka::dLP::Decompo
       master_lp_.ub->coeffRef(i) = INF;
   }
 
-  master_solver_ = util::createSolver(master_lp_, opts);
+  master_solver_ = util::createSolver(master_lp_, opts_);
 
   // Set subproblem values
-  subproblem_values_ = Eigen::VectorXd(n_sub_);
-  subproblem_values_.setConstant(INF);
+  subproblem_values_ = Eigen::VectorXd::Constant(n_sub_, INF);
 
   // Set subproblems
   subproblems_.reserve(n_sub_);
@@ -56,15 +56,15 @@ stuka::dLP::BendersDecomposition::BendersDecomposition(const stuka::dLP::Decompo
     Subproblem sub
         {dlp.c[i], dlp.A_ub[i], dlp.b_ub[i], dlp.C_ub[i], dlp.A_eq[i], dlp.b_eq[i], dlp.C_eq[i], dlp.lb[i], dlp.ub[i]};
 
-    subproblems_.emplace_back(BendersSubproblem(std::move(sub), opts));
+    subproblems_.emplace_back(BendersSubproblem(std::move(sub), opts_));
   }
 
   // Set initial point
-  x_ = Eigen::VectorXd(n_dim_master_ + n_sub_);
-  x_.setConstant(1.);
-  if (opts.x0.size() == n_dim_master_) {
+  x_ = Eigen::VectorXd::Constant(n_dim_master_ + n_sub_, 1);
+
+  if (opts_.x0.size() == n_dim_master_) {
     x_.setConstant(0.);
-    x_.head(n_dim_master_) = opts.x0;
+    x_.head(n_dim_master_) = opts_.x0;
   } else if (dlp.c.back() && dlp.c.back()->maxCoeff() > 1e-8 && dlp.c.back()->minCoeff() < -1e-8) {
     LP::LinearProgram tmp;
     tmp.c = dlp.c.back();
@@ -75,7 +75,7 @@ stuka::dLP::BendersDecomposition::BendersDecomposition(const stuka::dLP::Decompo
     tmp.lb = dlp.lb.back();
     tmp.ub = dlp.ub.back();
 
-    OptimizeState res = util::createSolver(tmp, opts)->solve();
+    OptimizeState res = util::createSolver(tmp, opts_)->solve();
     if (res.status == 2) {
       x_.setConstant(0.);
       x_.head(n_dim_master_) = res.x;
@@ -101,8 +101,7 @@ void stuka::dLP::BendersDecomposition::iterate() {
 }
 
 bool stuka::dLP::BendersDecomposition::terminate() {
-  // TODO: set tolerate from options
-  return (x_.tail(n_sub_) - subproblem_values_).norm() < 1e-8;
+  return (x_.tail(n_sub_) - subproblem_values_).norm() < opts_.tol;
 }
 
 const stuka::OptimizeState stuka::dLP::BendersDecomposition::getState() {

@@ -1,6 +1,9 @@
 .DS_STORE
 SuiteSparse
 
+# Remove test code artifacts
+test.h5
+
 # Prerequisites
 *.d
 

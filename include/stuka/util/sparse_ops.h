@@ -68,9 +68,8 @@ Eigen::SparseMatrix<T> vstack(std::initializer_list<const Eigen::SparseMatrix<T>
 }
 
 template<typename T>
-Eigen::SparseMatrix<T> vstack_rows(const std::vector<std::pair<const Eigen::SparseMatrix<T>,
-                                                               const Eigen::Matrix<bool, Eigen::Dynamic, 1>>
-> &mat_rows) {
+Eigen::SparseMatrix<T> vstack_rows(const std::vector<
+std::pair<const Eigen::SparseMatrix<T>, const Eigen::Matrix<bool, Eigen::Dynamic, 1>>> &mat_rows) {
 
   size_t n_mats = mat_rows.size(), n_col = mat_rows.begin()->first.cols(), n_row_out = 0, nnz = 0;
 

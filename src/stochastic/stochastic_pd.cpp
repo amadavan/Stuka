@@ -21,8 +21,7 @@ stuka::stochastic::StochasticPrimalDual::StochasticPrimalDual(const stuka::stoch
   m_g_ = (prog_.g) ? prog_.g(x_, xi).rows() : 0;
   m_h_ = (prog_.h) ? prog_.h(x_).rows() : 0;
 
-  z_ = Eigen::VectorXd(m_g_ + m_h_);
-  z_.setZero();
+  z_ = Eigen::VectorXd::Zero(m_g_ + m_h_);
 
   x_ = measure_->augmentState(x_);
 

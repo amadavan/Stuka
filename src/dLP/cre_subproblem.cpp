@@ -5,12 +5,10 @@
 #include <stuka/dLP/cre_subproblem.h>
 
 stuka::dLP::CRESubproblem::CRESubproblem(const stuka::dLP::Subproblem sub, const stuka::Options opts) : sub_(sub) {
-
   n_dim_ = sub_.c->size();
   n_dim_master_ = (sub_.C_ub) ? sub_.C_ub->cols() : (sub_.C_eq) ? sub_.C_eq->cols() : 0;
 
-  bone_eq_ = util::DenseOps::ActiveSet((sub_.b_eq) ? sub_.b_eq->size() : 0);
-  bone_eq_.setConstant(true);
+  bone_eq_ = util::DenseOps::ActiveSet::Constant((sub_.b_eq) ? sub_.b_eq->size() : 0, true);
 
   n_bounds_ = 0;
   for (size_t i = 0; i < n_dim_; ++i) {
@@ -18,17 +16,11 @@ stuka::dLP::CRESubproblem::CRESubproblem(const stuka::dLP::Subproblem sub, const
     if (sub_.ub && sub_.ub->coeff(i) < INF) n_bounds_++;
   }
 
-  b_lb_ = Eigen::VectorXd(n_dim_);
-  b_ub_ = Eigen::VectorXd(n_dim_);
+  b_lb_ = Eigen::VectorXd::Constant(n_dim_, INF);
+  b_ub_ = Eigen::VectorXd::Constant(n_dim_, INF);
 
-  b_lb_.setConstant(INF);
-  b_ub_.setConstant(INF);
-
-  xlb_constraints_ = util::DenseOps::ActiveSet(n_dim_);
-  xub_constraints_ = util::DenseOps::ActiveSet(n_dim_);
-
-  xlb_constraints_.setConstant(false);
-  xub_constraints_.setConstant(false);
+  xlb_constraints_ = util::DenseOps::ActiveSet::Constant(n_dim_, false);
+  xub_constraints_ = util::DenseOps::ActiveSet::Constant(n_dim_, false);
 
   if (sub_.lb) {
     A_xlb_ = Eigen::SparseMatrix<double>(n_dim_, n_dim_);
@@ -173,10 +165,10 @@ stuka::dLP::CriticalRegion stuka::dLP::CRESubproblem::computeCriticalRegion(cons
   // matrix which will result in faster inversion.
   Eigen::SPQR<Eigen::SparseMatrix<double>> active_solver(A_active);
   long n_rank = active_solver.rank();
+  cr.n_add = n_dim_ - n_rank;
 
   // Handle dual degeneracy
   if (n_rank < n_dim_) {
-    cr.n_add = n_dim_ - n_rank;
     Eigen::SparseMatrix<double> U1 = active_solver.matrixR().topLeftCorner(n_rank, n_rank);
     Eigen::SparseMatrix<double> U2 = active_solver.matrixR().topRightCorner(n_rank, cr.n_add);
 

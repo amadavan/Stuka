@@ -13,6 +13,7 @@
 #include <Eigen/Core>
 
 #include "constants.h"
+#include "defaults.h"
 #include "util/callback/base_callback.h"
 #include "stochastic/measure/measure.h"
 #include "stochastic/measure/expected_value.h"
@@ -45,6 +46,9 @@ struct Options {
   stuka::Solver qp_solver = DEFAULT_QP_SOLVER;                  ///< Solver to use for quadratic programs
   stuka::Solver dlp_solver = DEFAULT_DLP_SOLVER;                ///< Solver to use for decomposed linear programs
   stuka::Solver stochastic_solver = DEFAULT_STOCHASTIC_SOLVER;  ///< Solver to use for stochastic programs
+
+  // Other solver specific options
+  double cre_step = DEFAULT_CRE_STEP;                           ///< Step size for CRE algorithm
 
   // Callback
   std::shared_ptr<util::callback::BaseCallback> callback = nullptr;

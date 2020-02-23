@@ -34,8 +34,7 @@ Eigen::VectorXd stuka::stochastic::ConditionalValueAtRisk::df(const Program &p,
   double u0 = xu.coeff(n_);
   Eigen::VectorXd u = xu.tail(m_g_);
 
-  Eigen::VectorXd df = Eigen::VectorXd(xu.size());
-  df.setZero();
+  Eigen::VectorXd df = Eigen::VectorXd::Zero(xu.size());
   df.coeffRef(n_) = 1.;
 
   if (p.f(x, xi) >= u0) {
@@ -53,9 +52,8 @@ Eigen::MatrixXd stuka::stochastic::ConditionalValueAtRisk::dg(const Program &p,
   double u0 = xu.coeff(n_);
   Eigen::VectorXd u = xu.tail(m_g_);
 
-  Eigen::MatrixXd dg = Eigen::MatrixXd(xu.size(), m_g_);
+  Eigen::MatrixXd dg = Eigen::MatrixXd::Zero(xu.size(), m_g_);
   Eigen::MatrixXd prog_dg = p.dg(x, xi);
-  dg.setZero();
 
   Eigen::Matrix<bool, Eigen::Dynamic, 1> gpos((p.g(x, xi) - u).array() >= 0.);
   for (size_t i = 0; i < m_g_; ++i) {

@@ -19,7 +19,7 @@ struct CriticalRegion {
   Eigen::VectorXd b;
 
   size_t n_add = 0;
-//    Eigen::VectorXd c_add;
+//  Eigen::VectorXd c_add;
   Eigen::SparseMatrix<double> A_add;
 
   /* Default constructor

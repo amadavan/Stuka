@@ -23,17 +23,14 @@ void stuka::LP::GurobiLinearProgram::initialize(const stuka::LP::LinearProgram &
   n_alloc_eq_ = n_con_eq_;
 
   // Set bounds
-  Eigen::VectorXd lb(n_dim_);
-  Eigen::VectorXd ub(n_dim_);
-  if (prog.lb == nullptr)
-    lb.setConstant(-GRB_INFINITY);
-  else
+  Eigen::VectorXd lb = Eigen::VectorXd::Constant(n_dim_, -GRB_INFINITY);
+  Eigen::VectorXd ub = Eigen::VectorXd::Constant(n_dim_, GRB_INFINITY);
+
+  if (prog.lb)
     for (size_t i = 0; i < n_dim_; ++i)
       lb.coeffRef(i) = (prog.lb->coeff(i) == -INF) ? -GRB_INFINITY : prog.lb->coeff(i);
 
-  if (prog.ub == nullptr)
-    ub.setConstant(GRB_INFINITY);
-  else
+  if (prog.ub)
     for (size_t i = 0; i < n_dim_; ++i)
       ub.coeffRef(i) = (prog.ub->coeff(i) == INF) ? GRB_INFINITY : prog.ub->coeff(i);
 
@@ -154,17 +151,14 @@ void stuka::LP::GurobiLinearProgram::addVars(const std::shared_ptr<Eigen::Vector
   }
 
   // Set bounds
-  Eigen::VectorXd lb(n_add);
-  Eigen::VectorXd ub(n_add);
-  if (!lb_)
-    lb.setConstant(-GRB_INFINITY);
-  else
+  Eigen::VectorXd lb = Eigen::VectorXd::Constant(n_add, -GRB_INFINITY);
+  Eigen::VectorXd ub = Eigen::VectorXd::Constant(n_add, GRB_INFINITY);
+
+  if (lb_)
     for (size_t i = 0; i < n_add; ++i)
       lb.coeffRef(i) = (lb_->coeff(i) == -INF) ? -GRB_INFINITY : lb_->coeff(i);
 
-  if (!ub_)
-    ub.setConstant(GRB_INFINITY);
-  else
+  if (ub_)
     for (size_t i = 0; i < n_add; ++i)
       ub.coeffRef(i) = (ub_->coeff(i) == INF) ? GRB_INFINITY : ub_->coeff(i);
 

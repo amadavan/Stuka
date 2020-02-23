@@ -82,7 +82,7 @@ int main() {
       opts.dlp_solver = solver.second;
       try {
         res = stuka::util::linprog(ex->gen(), opts);
-        std::cout << res.x.transpose() << "\t\tRuntime: " << res.runtime << std::endl;
+        std::cout << res.x.transpose() << "\t\tRuntime: " << res.runtime << "\t\tIterations:" << res.nit << std::endl;
       } catch (std::exception e) {
         std::cout << "Unable to solve" << std::endl;
       }

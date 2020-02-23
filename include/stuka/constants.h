@@ -11,34 +11,6 @@
 
 #include "util/common_expressions.h"
 
-// Define default LP solver
-#ifndef DEFAULT_LP_SOLVER
-#ifdef ENABLE_GUROBI
-#define DEFAULT_LP_SOLVER GUROBI
-#else
-#define DEFAULT_LP_SOLVER MPC
-#endif
-#endif
-
-// Define default QP solver
-#ifndef DEFAULT_QP_SOLVER
-#ifdef ENABLE_GUROBI
-#define DEFAULT_QP_SOLVER GUROBI
-#else
-#define DEFAULT_QP_SOLVER MPC
-#endif
-#endif
-
-// Define default dLP solver
-#ifndef DEFAULT_DLP_SOLVER
-#define DEFAULT_DLP_SOLVER BENDER
-#endif
-
-// Define default stochastic solver
-#ifndef DEFAULT_STOCHASTIC_SOLVER
-#define DEFAULT_STOCHASTIC_SOLVER PDSS
-#endif
-
 // Define Gurobi options
 #ifdef ENABLE_GUROBI
 #ifndef GUROBI_TOLERANCE

@@ -11,13 +11,15 @@
 #include <Eigen/SparseCore>
 #include <Eigen/SparseCholesky>
 
+#include "../options.h"
 #include "../util/solver_factory.h"
+#include "../util/sparse_ops.h"
 #include "../LP/base_solver.h"
 #include "../QP/base_solver.h"
-#include "../util/sparse_ops.h"
 
 #include "base_solver.h"
 #include "cre_subproblem.h"
+#include "critical_region.h"
 
 namespace stuka { namespace dLP {
 class CRE : public BaseDLPSolver {
@@ -34,7 +36,7 @@ class CRE : public BaseDLPSolver {
 
  private:
   std::mutex mtx_cre_;
-  Eigen::VectorXd x_;                                           // Current iterate
+  Eigen::VectorXd x_;                 ///< Current iterate
   size_t n_sub_;
   long n_dim_master_;
   size_t n_active_;
@@ -42,14 +44,21 @@ class CRE : public BaseDLPSolver {
   size_t n_sub_calls_;
   bool first_run_;
 
-  Eigen::VectorXd a_opt_;                                       // Residual vector
-  double opt_val_;                                              // Current optimal value
-  Eigen::VectorXd x_opt_;                                       // Current optimum
+  const Options opts_;                ///< Options
 
-  Eigen::VectorXd cost_alpha_;
-  double cost_beta_;
-  size_t n_add_;
-  long n_con_ub_;
+  Eigen::VectorXd a_opt_;             ///< Residual vector
+  double opt_val_;                    ///< Current optimal value
+  Eigen::VectorXd x_opt_;             ///< Current optimum
+
+  CriticalRegion cr_;                 ///< Global critical region
+  long n_ub_cr_;
+
+  // Master problem properties
+  size_t n_eq_;
+  size_t n_ub_;
+  Eigen::Matrix<bool, Eigen::Dynamic, 1> bone_eq_;
+  Eigen::SparseMatrix<double> eye_;
+  Eigen::SparseMatrix<double> negative_eye_;
 
   LP::LinearProgram master_lp_;                                 // Master problem parameters
   std::unique_ptr<LP::BaseLPSolver> master_solver_;             // Solver for master problem
