@@ -17,8 +17,8 @@ cache:
     
 before_install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install libopenblas-dev liblapack-dev libhdf5-dev; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update; brew install pyenv; brew upgrade pyenv; pyenv install 3.6.7; brew install hdf5; fi
-  - pyenv global 3.6.7
+  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update; brew install pyenv; brew upgrade pyenv; pyenv install 3.6.9; brew install hdf5; fi
+  - pyenv global 3.6.9
 
 install:
   - ./scripts/install_suitesparse.sh
