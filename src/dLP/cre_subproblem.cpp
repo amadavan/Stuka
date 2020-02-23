@@ -93,8 +93,8 @@ stuka::dLP::CriticalRegion stuka::dLP::CRESubproblem::computeCriticalRegion(cons
     C_active_l.push_back(std::make_pair(*sub_.C_eq, bone_eq_));
   }
   if (sub_.A_ub) {
-    util::DenseOps::ActiveSet ub_activity = res.dual_ub.array() > GUROBI_TOLERANCE;
-    util::DenseOps::ActiveSet ub_inactivity = res.dual_ub.array() <= GUROBI_TOLERANCE;
+    util::DenseOps::ActiveSet ub_activity = res.dual_ub.array() > 0;
+    util::DenseOps::ActiveSet ub_inactivity = res.dual_ub.array() <= 0;
 
     A_active_l.push_back(std::make_pair(*sub_.A_ub, ub_activity));
     b_active_l.push_back(std::make_pair(*sub_.b_ub, ub_activity));
@@ -105,8 +105,8 @@ stuka::dLP::CriticalRegion stuka::dLP::CRESubproblem::computeCriticalRegion(cons
     C_inactive_l.push_back(std::make_pair(*sub_.C_ub, ub_inactivity));
   }
   if (sub_.lb) {
-    util::DenseOps::ActiveSet xlb_activity = res.dual_x_lb.array() > GUROBI_TOLERANCE;
-    util::DenseOps::ActiveSet xlb_inactivity = res.dual_x_lb.array() <= GUROBI_TOLERANCE;
+    util::DenseOps::ActiveSet xlb_activity = res.dual_x_lb.array() > 0;
+    util::DenseOps::ActiveSet xlb_inactivity = res.dual_x_lb.array() <= 0;
 
     xlb_activity = util::DenseOps::get_rows<bool, Eigen::Dynamic, 1>(xlb_activity, xlb_constraints_);
     xlb_inactivity = util::DenseOps::get_rows<bool, Eigen::Dynamic, 1>(xlb_inactivity, xlb_constraints_);
@@ -122,8 +122,8 @@ stuka::dLP::CriticalRegion stuka::dLP::CRESubproblem::computeCriticalRegion(cons
     }
   }
   if (sub_.ub) {
-    util::DenseOps::ActiveSet xub_activity = res.dual_x_ub.array() > GUROBI_TOLERANCE;
-    util::DenseOps::ActiveSet xub_inactivity = res.dual_x_ub.array() <= GUROBI_TOLERANCE;
+    util::DenseOps::ActiveSet xub_activity = res.dual_x_ub.array() > 0;
+    util::DenseOps::ActiveSet xub_inactivity = res.dual_x_ub.array() <= 0;
 
     xub_activity = util::DenseOps::get_rows<bool, Eigen::Dynamic, 1>(xub_activity, xub_constraints_);
     xub_inactivity = util::DenseOps::get_rows<bool, Eigen::Dynamic, 1>(xub_inactivity, xub_constraints_);
