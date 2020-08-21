@@ -11,7 +11,7 @@ mkl_repository depends on the following environment variables:
   * `MKL_ROOT`: The root folder where a copy of libmkl is located.
 """
 
-_MKL_ROOT = "MKL_ROOT"
+_MKL_ROOT = "MKLROOT"
 
 def if_mkl(if_true, if_false = []):
     """Shorthand for select()'ing on whether we're building with MKL.

@@ -31,3 +31,7 @@ set(STUKAPY_SOURCES
 pybind11_add_module(stukapy ${STUKAPY_SOURCES})
 target_link_libraries(stukapy PRIVATE stuka)
 set_target_properties(stukapy PROPERTIES CXX_VISIBILITY_PRESET hidden)
+
+if (MKL_FOUND)
+    target_link_libraries(stukapy PRIVATE mkl_rt mkl_def)
+endif()

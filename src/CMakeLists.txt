@@ -8,17 +8,12 @@ if (GUROBI_FOUND)
             LP/gurobi_lp.cpp
             QP/gurobi.cpp
             QP/gurobi_qp.cpp)
-else ()
-    set(GUROBI_LIBRARIES "")
-    set(GUROBI_INCLUDE_DIRS "")
 endif ()
 
 if (HDF5_FOUND)
     set(HDF5_SOURCES
             ../include/stuka/util/callback/save_hdf5.h
             util/callback/save_hdf5.cpp)
-else ()
-    set(HDF5_LIBRARIES "")
 endif ()
 
 set(STUKA_SOURCES
@@ -93,12 +88,31 @@ set(STUKA_SOURCES
         util/callback/progress.cpp)
 
 add_library(stuka SHARED ${STUKA_SOURCES} ${GUROBI_SOURCES} ${HDF5_SOURCES})
-target_link_libraries(stuka PRIVATE ${GUROBI_LIBRARIES} ${SPQR_LIBRARIES} PUBLIC ${HDF5_LIBRARIES})
-target_include_directories(stuka PUBLIC ${CMAKE_INCLUDE_PATH} ${EIGEN_INCLUDES} ${SPQR_INCLUDES} ${GUROBI_INCLUDE_DIRS} ${HDF5_INCLUDE_DIRS})
+target_link_libraries(stuka PRIVATE ${SPQR_LIBRARIES})
+target_include_directories(stuka PUBLIC ${CMAKE_INCLUDE_PATH} ${EIGEN_INCLUDES} ${SPQR_INCLUDES})
 
 if (GUROBI_FOUND)
     target_compile_definitions(stuka PUBLIC ENABLE_GUROBI)
+    target_link_libraries(stuka PUBLIC ${GUROBI_LIBRARIES})
+    target_include_directories(stuka PUBLIC ${GUROBI_INCLUDE_DIRS})
 endif ()
+
+if (IPOPT_FOUND)
+    target_compile_definitions(stuka PUBLIC ENABLE_IPOPT)
+    target_link_libraries(stuka PUBLIC ${IPOPT_LIBRARIES})
+    target_include_directories(stuka PUBLIC ${IPOPT_INCLUDE_DIRS})
+endif()
+
+if (MKL_FOUND)
+    target_compile_definitions(stuka PUBLIC EIGEN_USE_MKL_ALL)
+    target_link_libraries(stuka PUBLIC ${MKL_LIBRARIES})
+    target_include_directories(stuka PUBLIC ${MKL_INCLUDE_DIRS})
+endif()
+
+if (HDF5_FOUND)
+    target_link_libraries(stuka PUBLIC ${HDF5_LIBRARIES})
+    target_include_directories(stuka PUBLIC ${HDF5_INCLUDE_DIRS})
+endif()
 
 set(STUKA_EXAMPLE_SOURCES
         example/simple_lp.h

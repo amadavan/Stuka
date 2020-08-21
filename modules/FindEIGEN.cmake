@@ -58,7 +58,8 @@ LIST(APPEND EIGEN_CHECK_INCLUDE_DIRS
         /usr/local/homebrew/include/eigen3 # Mac OS X
         /opt/local/var/macports/software/eigen3 # Mac OS X.
         /opt/local/include/eigen3
-        /usr/include/eigen3)
+        /usr/include/eigen3
+        include)
 # Search supplied hint directories first if supplied.
 FIND_PATH(EIGEN_INCLUDE_DIR
         NAMES Eigen/Core
@@ -107,7 +108,7 @@ IF (EIGEN_FOUND)
 ENDIF (EIGEN_FOUND)
 # Handle REQUIRED / QUIET optional arguments and version.
 INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(Eigen
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(EIGEN
         REQUIRED_VARS EIGEN_INCLUDE_DIRS
         VERSION_VAR EIGEN_VERSION)
 # Only mark internal variables as advanced if we found Eigen, otherwise

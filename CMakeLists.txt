@@ -25,6 +25,7 @@ find_package(CHOLMOD REQUIRED)
 find_package(SPQR REQUIRED)
 
 # Optional packages
+find_package(MKL)
 find_package(GUROBI)
 find_package(HDF5 COMPONENTS C)
 find_package(DOXYGEN)
