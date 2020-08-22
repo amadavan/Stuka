@@ -17,12 +17,11 @@ cache:
     
 before_install:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get install libopenblas-dev liblapack-dev libhdf5-dev; fi
-  - if [ "$TRAVIS_OS_NAME" == "osx" ]; then brew update; brew install pyenv; brew upgrade pyenv; pyenv install 3.6.9; brew install hdf5; fi
-  - pyenv global 3.6.9
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update; brew install pyenv; brew upgrade pyenv; pyenv install 3.6.9; brew install hdf5; pyenv global 3.6.9; fi
 
 install:
   - ./scripts/install_suitesparse.sh
-  - if [ $TRAVIS_OS_NAME = linux ]; then echo $(python-config); fi
+  - if [ "$TRAVIS_OS_NAME" = "linux" ]; then echo $(python-config); fi
 
 script:
   - cmake -DPYTHON_EXECUTABLE=$(python-config --prefix)/bin/python3.6 -DPYTHON_LIBRARY=$(python-config --prefix)/lib/libpython3.6.dylib -DPYTHON_INCLUDE_DIR=$(python-config --prefix)/include/python3.6 -DCMAKE_BUILD_TYPE=Release .
