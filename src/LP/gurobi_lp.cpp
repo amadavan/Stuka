@@ -6,8 +6,8 @@
 
 stuka::LP::GurobiLinearProgram::~GurobiLinearProgram() {
   delete[] vars_;
-  delete[] eqconstr_;
-  delete[] ubconstr_;
+  if (n_con_eq_ > 0) delete[] eqconstr_;
+  if (n_con_ub_ > 0) delete[] ubconstr_;
 }
 
 // TODO: use asserts to check for invalid inputs
@@ -68,7 +68,7 @@ void stuka::LP::GurobiLinearProgram::initialize(const stuka::LP::LinearProgram &
   }
 
   model_.set(GRB_IntParam_OutputFlag, false);
-  model_.set(GRB_IntParam_Method, GRB_METHOD_DETERMINISTIC_CONCURRENT_SIMPLEX);
+  model_.set(GRB_IntParam_Method, GRB_METHOD_CONCURRENT);
   model_.set(GRB_DoubleParam_OptimalityTol, GUROBI_TOLERANCE);
   model_.set(GRB_DoubleParam_FeasibilityTol, GUROBI_TOLERANCE);
 }
@@ -165,6 +165,7 @@ void stuka::LP::GurobiLinearProgram::addVars(const std::shared_ptr<Eigen::Vector
   // Add variables
   GRBVar *vars_add = model_.addVars(lb.data(), ub.data(), (c) ? c->data() : nullptr, nullptr, nullptr, n_add);
   std::copy(vars_add, vars_add + n_add, vars_ + n_dim_);
+  delete[] vars_add;
 
   // Add constraints
   if (n_con_ub_ > 0 && A_ub) {
@@ -188,6 +189,7 @@ void stuka::LP::GurobiLinearProgram::addVars(const std::shared_ptr<Eigen::Vector
 void stuka::LP::GurobiLinearProgram::removeVar(const size_t index) {
   model_.remove(vars_[index]);
   std::copy(vars_ + index + 1, vars_ + n_dim_, vars_ + index);
+  n_dim_ -= 1;
 }
 
 void stuka::LP::GurobiLinearProgram::removeVars(const size_t index, const size_t n_remove) {
@@ -211,7 +213,7 @@ void stuka::LP::GurobiLinearProgram::addConstr_ub(const std::shared_ptr<Eigen::V
 
   if (n_con_ub_ + 1 > n_alloc_ub_) {
     n_alloc_ub_ = n_con_ub_ + 1;
-    GRBConstr *cons = new GRBConstr[n_alloc_];
+    GRBConstr *cons = new GRBConstr[n_alloc_ub_];
     std::copy(ubconstr_, ubconstr_ + n_con_ub_, cons);
     delete[] ubconstr_;
     ubconstr_ = cons;
@@ -242,6 +244,7 @@ void stuka::LP::GurobiLinearProgram::addConstrs_ub(const std::shared_ptr<Eigen::
 
   GRBConstr *newcons = model_.addConstrs(n_add);
   std::copy(newcons, newcons + n_add, ubconstr_ + n_con_ub_);
+  delete[] newcons;
 
   for (size_t i = 0; i < n_add; ++i) {
     (ubconstr_ + n_con_ub_ + i)->set(GRB_CharAttr_Sense, '<');
@@ -257,6 +260,8 @@ void stuka::LP::GurobiLinearProgram::addConstrs_ub(const std::shared_ptr<Eigen::
 void stuka::LP::GurobiLinearProgram::removeConstr_ub(const size_t index) {
   model_.remove(ubconstr_[index]);
   std::copy(ubconstr_ + index + 1, ubconstr_ + n_con_ub_, ubconstr_ + index);
+
+  n_con_ub_ -= 1;
 }
 
 void stuka::LP::GurobiLinearProgram::removeConstrs_ub(const size_t index, const size_t n_remove) {
@@ -273,7 +278,7 @@ void stuka::LP::GurobiLinearProgram::addConstr_eq(const std::shared_ptr<Eigen::V
 
   if (n_con_eq_ + 1 > n_alloc_eq_) {
     n_alloc_eq_ = n_con_eq_ + 1;
-    GRBConstr *cons = new GRBConstr[n_alloc_];
+    GRBConstr *cons = new GRBConstr[n_alloc_eq_];
     std::copy(eqconstr_, eqconstr_ + n_con_eq_, cons);
     delete[] eqconstr_;
     eqconstr_ = cons;
@@ -283,7 +288,7 @@ void stuka::LP::GurobiLinearProgram::addConstr_eq(const std::shared_ptr<Eigen::V
   for (size_t i = 0; i < n_dim_; ++i)
     if (abs(a->coeff(i)) > 1e-8)
       expr += a->coeff(i) * vars_[i];
-  eqconstr_[n_con_eq_] = model_.addConstr(expr, '<', b);
+  eqconstr_[n_con_eq_] = model_.addConstr(expr, '=', b);
 
   n_con_eq_ += 1;
 
@@ -304,6 +309,7 @@ void stuka::LP::GurobiLinearProgram::addConstrs_eq(const std::shared_ptr<Eigen::
 
   GRBConstr *newcons = model_.addConstrs(n_add);
   std::copy(newcons, newcons + n_add, eqconstr_ + n_con_eq_);
+  delete[] newcons;
 
   for (size_t i = 0; i < n_add; ++i) {
     (eqconstr_ + n_con_eq_ + i)->set(GRB_CharAttr_Sense, '=');
@@ -320,6 +326,8 @@ void stuka::LP::GurobiLinearProgram::addConstrs_eq(const std::shared_ptr<Eigen::
 void stuka::LP::GurobiLinearProgram::removeConstr_eq(const size_t index) {
   model_.remove(eqconstr_[index]);
   std::copy(eqconstr_ + index + 1, eqconstr_ + n_con_eq_, eqconstr_ + index);
+
+  n_con_eq_ -= 1;
 }
 
 void stuka::LP::GurobiLinearProgram::removeConstrs_eq(const size_t index, const size_t n_remove) {

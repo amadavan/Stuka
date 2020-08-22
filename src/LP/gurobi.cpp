@@ -30,31 +30,30 @@ const stuka::OptimizeState stuka::LP::GurobiSolver::getState() {
   if (state.status == 2) {
     state.fun = prog_.model_.get(GRB_DoubleAttr_ObjVal);
 
-    state.x = Eigen::Map<Eigen::VectorXd>(prog_.model_.get(GRB_DoubleAttr_X,
-                                                           prog_.vars_,
-                                                           (int) prog_.n_dim_),
-                                          prog_.n_dim_);
+    double *_x = prog_.model_.get(GRB_DoubleAttr_X, prog_.vars_, (int) prog_.n_dim_);
+    state.x = Eigen::Map<Eigen::VectorXd>(_x, prog_.n_dim_);
+    delete[] _x;
 
     if (prog_.n_con_ub_ > 0) {
-      state.dual_ub = Eigen::Map<Eigen::VectorXd>(prog_.model_.get(GRB_DoubleAttr_Pi,
-                                                                   prog_.ubconstr_,
-                                                                   (int) prog_.n_con_ub_),
-                                                  prog_.n_con_ub_);
+      double *_dual_ub = prog_.model_.get(GRB_DoubleAttr_Pi, prog_.ubconstr_, (int) prog_.n_con_ub_);
+      state.dual_ub = Eigen::Map<Eigen::VectorXd>(_dual_ub, prog_.n_con_ub_);
+      delete[] _dual_ub;
       state.dual_ub *= -1;
     }
 
     if (prog_.n_con_eq_ > 0) {
-      state.dual_eq = Eigen::Map<Eigen::VectorXd>(prog_.model_.get(GRB_DoubleAttr_Pi,
-                                                                   prog_.eqconstr_,
-                                                                   (int) prog_.n_con_eq_),
-                                                  prog_.n_con_eq_);
+      double *_dual_eq = prog_.model_.get(GRB_DoubleAttr_Pi, prog_.eqconstr_, (int) prog_.n_con_eq_);
+      state.dual_eq = Eigen::Map<Eigen::VectorXd>(_dual_eq, prog_.n_con_eq_);
+      delete[] _dual_eq;
       state.dual_eq *= -1;
     }
 
-    Eigen::VectorXd rc = Eigen::Map<Eigen::VectorXd>(prog_.model_.get(GRB_DoubleAttr_RC,
-                                                                      prog_.model_.getVars(),
-                                                                      (int) prog_.n_dim_),
-                                                     prog_.n_dim_);
+    GRBVar *_vars = prog_.model_.getVars();
+    double *_rc = prog_.model_.get(GRB_DoubleAttr_RC, _vars, (int) prog_.n_dim_);
+    Eigen::VectorXd rc = Eigen::Map<Eigen::VectorXd>(_rc, prog_.n_dim_);
+    delete[] _vars;
+    delete[] _rc;
+
     state.dual_x_lb = Eigen::VectorXd(prog_.n_dim_);
     state.dual_x_ub = Eigen::VectorXd(prog_.n_dim_);
 
