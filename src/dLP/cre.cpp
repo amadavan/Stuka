@@ -33,7 +33,7 @@ stuka::dLP::CRE::CRE(const stuka::dLP::DecomposedLinearProgram &dlp,
     Subproblem sub{dlp.c[i], dlp.A_ub[i], dlp.b_ub[i], dlp.C_ub[i], dlp.A_eq[i], dlp.b_eq[i], dlp.C_eq[i], dlp.lb[i],
                    dlp.ub[i]};
 
-    subproblems_.push_back({CRESubproblem(std::move(sub))});
+    subproblems_.push_back({CRESubproblem(std::move(sub), opts_)});
   }
 
   // Set useful constants
