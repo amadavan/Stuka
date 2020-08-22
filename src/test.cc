@@ -39,12 +39,14 @@ int main() {
   std::vector<stuka::example::DecomposedLinearProgramExample *> ex_dlp = {new stuka::example::Borrelli729(),
                                                                           new stuka::example::Borrelli731()};
 
-  std::vector<std::pair<std::string, stuka::Solver>> solvers_lp = {{"Gurobi", stuka::Solver::GUROBI},
-                                                                   {"Mehrotra's Predictor Corrector",
-                                                                    stuka::Solver::MPC}};
-  std::vector<std::pair<std::string, stuka::Solver>> solvers_qp = {{"Gurobi", stuka::Solver::GUROBI}};
-  std::vector<std::pair<std::string, stuka::Solver>> solvers_dlp = {{"Critical Region Exploration", stuka::Solver::CRE},
-                                                                    {"Bender's Decomposition", stuka::Solver::BENDER}};
+  std::vector<std::pair<std::string, stuka::Solver>> solvers_lp
+      = {{"Gurobi", stuka::Solver::GUROBI},
+         {"Mehrotra's Predictor Corrector", stuka::Solver::MPC}};
+  std::vector<std::pair<std::string, stuka::Solver>> solvers_qp
+      = {{"Gurobi", stuka::Solver::GUROBI}};
+  std::vector<std::pair<std::string, stuka::Solver>> solvers_dlp
+      = {{"Critical Region Exploration", stuka::Solver::CRE},
+         {"Bender's Decomposition", stuka::Solver::BENDER}};
 
   stuka::OptimizeState res;
 
@@ -56,6 +58,22 @@ int main() {
       opts.lp_solver = solver.second;
       res = stuka::util::linprog(ex->gen(), opts);
       std::cout << res.x.transpose() << "\t\tRuntime: " << res.runtime << std::endl;
+      std::cout << res.dual_ub.transpose() << std::endl;
+    }
+  }
+
+  // Linear programs with lazy constraint generation
+  for (stuka::example::LinearProgramExample *ex : ex_lp) {
+    std::cout << print_header("Lazy " + ex->name()) << std::endl;
+    stuka::Options opts;
+    opts.lazy = true;
+    for (const std::pair<std::string, stuka::Solver> solver : solvers_lp) {
+      std::cout << print_header(solver.first, '-') << std::endl;
+      opts.lp_solver = solver.second;
+      res = stuka::util::linprog(ex->gen(), opts);
+      std::cout << res.x.transpose() << "\t\tRuntime: " << res.runtime << std::endl;
+      std::cout << res.dual_ub.transpose() << "\t\tNumber of constraint generation steps: " << res.nit_con_gen << std::endl;
+      break;
     }
   }
 
@@ -89,6 +107,26 @@ int main() {
     }
   }
 
+  for (stuka::example::DecomposedLinearProgramExample *ex : ex_dlp) {
+    std::cout << print_header("Lazy " + ex->name()) << std::endl;
+    std::cout << print_header("Default LP", '-') << std::endl;
+    res = stuka::util::linprog(ex->full());
+    std::cout << res.x.transpose() << "\t\tRuntime: " << res.runtime << std::endl;
+
+    stuka::Options opts;
+    for (const std::pair<std::string, stuka::Solver> solver : solvers_dlp) {
+      std::cout << print_header(solver.first, '-') << std::endl;
+      opts.dlp_solver = solver.second;
+      opts.lazy = true;
+      try {
+        res = stuka::util::linprog(ex->gen(), opts);
+        std::cout << res.x.transpose() << "\t\tRuntime: " << res.runtime << "\t\tIterations:" << res.nit << std::endl;
+      } catch (std::exception e) {
+        std::cout << "Unable to solve" << std::endl;
+      }
+    }
+  }
+
   std::cout << print_header("Verify callbacks") << std::endl;
   stuka::Options opts;
   opts.max_iter = 10;
@@ -105,5 +143,10 @@ int main() {
   stuka::util::linprog(ex_lp[0]->gen(), opts);
 
   std::cout << print_header("", '=') << std::endl;
+
+  // Garbage collection
+  for (auto example : ex_lp) delete example;
+  for (auto example : ex_qp) delete example;
+  for (auto example : ex_dlp) delete example;
 
 }

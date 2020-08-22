@@ -50,6 +50,10 @@ struct Options {
   // Other solver specific options
   double cre_step = DEFAULT_CRE_STEP;                           ///< Step size for CRE algorithm
 
+  // Lazy constraint generation (CURRENTLY ONLY FOR LINEAR PROGRAMS)
+  bool lazy = false;
+  std::vector<size_t> active_indices = std::vector<size_t>();   ///< Indices of UB constraints that begin active
+
   // Callback
   std::shared_ptr<util::callback::BaseCallback> callback = nullptr;
 

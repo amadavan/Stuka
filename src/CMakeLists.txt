@@ -25,6 +25,8 @@ set(STUKA_SOURCES
         ../include/stuka/LP/slack_lp.h
         ../include/stuka/LP/preconditioned_lp.h
         ../include/stuka/LP/standard_lp.h
+        ../include/stuka/LP/lazy_constraints.h
+        ../include/stuka/LP/lazy_lp.h
         ../include/stuka/LP/preconditioner/base_preconditioner.h
         ../include/stuka/LP/preconditioner/bounds_dedicated.h
         ../include/stuka/LP/preconditioner/bounds_zero.h
@@ -67,6 +69,8 @@ set(STUKA_SOURCES
         LP/slack_lp.cpp
         LP/mehrotra_pc.cpp
         LP/standard_lp.cpp
+        LP/lazy_constraints.cpp
+        LP/lazy_lp.cpp
         LP/preconditioner/slack_preconditioner.cpp
         LP/preconditioner/constant_folding.cpp
         LP/preconditioner/bounds_dedicated.cpp

@@ -10,6 +10,10 @@ std::unique_ptr<stuka::LP::BaseLPSolver>
 stuka::util::createSolver(const LP::LinearProgram &lp, const stuka::Options &opts) {
   std::unique_ptr<LP::BaseLPSolver> solver;
 
+  if (opts.lazy) {
+    return std::make_unique<LP::LazyConstraints>(lp, opts);
+  }
+
   switch (opts.lp_solver) {
 #ifdef ENABLE_GUROBI
     case GUROBI:solver = std::make_unique<LP::GurobiSolver>(lp, opts);

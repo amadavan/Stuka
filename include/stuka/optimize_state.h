@@ -21,6 +21,7 @@ struct OptimizeState {
   int status = 0;         ///< Status code
   size_t nit = 0;         ///< Iteration count
   size_t nit_sub = 0;     ///< Number of computations of subproblems for decomposed linear programs
+  size_t nit_con_gen = 0; ///< Number of constraint generation iterations
 
   double runtime = 0;     ///< Runtime (in s)
 };

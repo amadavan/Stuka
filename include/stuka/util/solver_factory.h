@@ -9,6 +9,7 @@
 
 #include "../LP/lp.h"
 #include "../LP/base_solver.h"
+#include "../LP/lazy_constraints.h"
 #include "../LP/mehrotra_pc.h"
 #include "../QP/qp.h"
 #include "../QP/base_solver.h"

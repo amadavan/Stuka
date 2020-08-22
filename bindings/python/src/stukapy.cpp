@@ -77,6 +77,7 @@ PYBIND11_MODULE(stukapy, m) {
       .def_readonly("status", &stuka::OptimizeState::status)
       .def_readonly("nit", &stuka::OptimizeState::nit)
       .def_readonly("nit_sub", &stuka::OptimizeState::nit_sub)
+      .def_readonly("nit_con_gen", &stuka::OptimizeState::nit_con_gen)
       .def_readonly("runtime", &stuka::OptimizeState::runtime)
       .def("__repr__", [](const stuka::OptimizeState &state) {
         std::stringstream ss;
@@ -84,7 +85,7 @@ PYBIND11_MODULE(stukapy, m) {
         return ss.str();
       })
       .def("__getitem__", [](const stuka::OptimizeState &state, const std::string &key) {
-             std::variant<Eigen::VectorXd, double, size_t, int, std::string> ret = "Key not found.";;
+             std::variant<Eigen::VectorXd, double, size_t, int, std::string> ret = "Key not found.";
              if (key == "x") ret = state.x;
              if (key == "dual_ub") ret = state.dual_ub;
              if (key == "dual_eq") ret = state.dual_eq;
@@ -93,6 +94,7 @@ PYBIND11_MODULE(stukapy, m) {
              if (key == "status") ret = state.status;
              if (key == "nit") ret = state.nit;
              if (key == "nit_sub") ret = state.nit_sub;
+             if (key == "nit_con_gen") ret = state.nit_con_gen;
              if (key == "runtime") ret = state.runtime;
              return ret;
            },
@@ -111,7 +113,8 @@ PYBIND11_MODULE(stukapy, m) {
       .def_readwrite("lp_solver", &stuka::Options::lp_solver)
       .def_readwrite("qp_solver", &stuka::Options::qp_solver)
       .def_readwrite("dlp_solver", &stuka::Options::dlp_solver)
-.def_readwrite("cre_step", &stuka::Options::cre_step)
+      .def_readwrite("lazy", &stuka::Options::lazy)
+      .def_readwrite("cre_step", &stuka::Options::cre_step)
       .def_readwrite("callback", &stuka::Options::callback);
 
   init_lp(m);
