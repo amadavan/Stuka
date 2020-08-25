@@ -2,7 +2,7 @@
 // Created by Avinash on 8/19/2020.
 //
 
-#include <stuka/lp/lazy_lp.h>
+#include <stuka/LP/lazy_lp.h>
 
 stuka::LP::LazyLinearProgram::LazyLinearProgram() {}
 

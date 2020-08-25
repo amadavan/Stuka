@@ -2,7 +2,7 @@
 // Created by Avinash on 8/19/2020.
 //
 
-#include <stuka/lp/lazy_constraints.h>
+#include <stuka/LP/lazy_constraints.h>
 
 stuka::LP::LazyConstraints::LazyConstraints(const stuka::LP::LinearProgram &lp, const stuka::Options &opts)
     : BaseLPSolver(lp, opts), lp_() {
@@ -26,8 +26,8 @@ void stuka::LP::LazyConstraints::iterate() {
 
   try {
     state_ = solver_->solve();
-  } catch (GRBException e) {
-    std::cout << e.getMessage() << std::endl;
+  } catch (std::exception &e) {
+    std::cout << e.what() << std::endl;
     throw std::runtime_error("Lazy constraint generation had a problem with gurobi...");
   }
 
