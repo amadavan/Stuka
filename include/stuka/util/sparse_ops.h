@@ -39,10 +39,10 @@ Eigen::SparseMatrix<T> get_rows(const Eigen::SparseMatrix<T> mat, const Eigen::M
 }
 
 template<typename T>
-Eigen::SparseMatrix<T> vstack(std::initializer_list<const Eigen::SparseMatrix<T> &> mats) {
+Eigen::SparseMatrix<T> vstack(std::initializer_list<const Eigen::SparseMatrix<T>> mats) {
 
   // Iterate once to get system properties
-  size_t n_row = 0, n_col = mats[0].cols(), nnz = 0;
+  size_t n_row = 0, n_col = mats.begin()->cols(), nnz = 0;
   for (const Eigen::SparseMatrix<T> &mat : mats) {
     n_row += mat.rows();
     nnz += mat.nonZeros();

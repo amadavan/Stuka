@@ -10,6 +10,7 @@
 #include "../LP/base_solver.h"
 
 #include "base_solver.h"
+#include "benders_cut.h"
 #include "benders_subproblem.h"
 
 namespace stuka { namespace dLP {

@@ -95,6 +95,7 @@ void stuka::LP::LazyLinearProgram::removeVars(size_t index, size_t n_remove) {
     size_t n_dim_orig = A_ub_->cols();
     std::shared_ptr<Eigen::SparseMatrix<double>>
         A_ub = std::make_shared<Eigen::SparseMatrix<double>>(A_ub_->rows(), n_dim_orig - n_remove);
+    A_ub->reserve(A_ub_->nonZeros());
     for (size_t i = 0; i < index; ++i) {
       A_ub->startVec(i);
       for (Eigen::SparseMatrix<double>::InnerIterator it(*A_ub_, i); it; ++it)
@@ -189,14 +190,18 @@ void stuka::LP::LazyLinearProgram::removeConstr_ub(size_t index) {
 void stuka::LP::LazyLinearProgram::removeConstrs_ub(size_t index, size_t n_remove) {
   std::shared_ptr<Eigen::SparseMatrix<double>>
       A_ub = std::make_shared<Eigen::SparseMatrix<double>>(A_ub_->rows() - n_remove, A_ub_->cols());
-  std::shared_ptr<Eigen::VectorXd> b_ub = std::make_shared<Eigen::VectorXd>(b_ub_->size() - n_remove);
+  A_ub->reserve(A_ub_->nonZeros());
 
   for (size_t i = 0; i < A_ub_->cols(); ++i) {
+    A_ub->startVec(i);
     for (Eigen::SparseMatrix<double>::InnerIterator it(*A_ub_, i); it; ++it) {
       if (it.row() < index) A_ub->insertBack(it.row(), i) = it.value();
       else if (it.row() >= index + n_remove) A_ub->insertBack(it.row() - n_remove, i) = it.value();
     }
   }
+  A_ub->finalize();
+
+  std::shared_ptr<Eigen::VectorXd> b_ub = std::make_shared<Eigen::VectorXd>(b_ub_->size() - n_remove);
   b_ub->head(index) = b_ub_->head(index);
   b_ub->tail(b_ub->size() - index) = b_ub_->tail(b_ub_->size() - index - n_remove);
 
