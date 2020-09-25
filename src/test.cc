@@ -144,6 +144,8 @@ int main() {
 
   std::cout << print_header("", '=') << std::endl;
 
+
+
   // Garbage collection
   for (auto example : ex_lp) delete example;
   for (auto example : ex_qp) delete example;

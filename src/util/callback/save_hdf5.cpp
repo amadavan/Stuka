@@ -14,11 +14,15 @@ stuka::util::callback::SaveHDF5::SaveHDF5(const std::string &filename, const siz
   size_t ccnbytes;
   double w0;
   H5Pget_cache(fprops, &mdc, &ccelems, &ccnbytes, &w0);
-  H5Pset_cache(fprops, 0, 512, HDF5_CHUNK_CACHE * sizeof(double) * 3, w0);
+  H5Pset_cache(fprops, 0, 521, HDF5_CHUNK_CACHE * sizeof(double) * 3, w0);
   H5Pclose(fprops);
 
-  n_p_ = ((size_t) (n_iter / 10000) > 0) ? n_iter / 10000 : 1;
-  n_entries_ = ((size_t) (n_iter / 10000) > 0) ? 10001 + ceill((n_iter/10000. - n_iter/10000) * 10000/n_p_): n_iter + 1;
+  size_t max_entries = 10000; // Rough estimate of the maximum entries to store (may be slightly larger with overshoots)
+  double max_entries_d = max_entries;
+  size_t n_periods = n_iter / max_entries;
+  n_p_ = n_periods > 0 ? n_periods : 1;
+  n_entries_ = n_periods > 0 ? max_entries + 1 + ceill((n_iter / max_entries_d - n_periods) * max_entries_d / n_p_)
+                             : n_iter + 1;
   index_ = 0;
 }
 
