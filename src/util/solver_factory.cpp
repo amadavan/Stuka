@@ -5,6 +5,8 @@
 #include <stuka/util/solver_factory.h>
 #include <stuka/dLP/cre.h>
 #include <stuka/dLP/benders.h>
+#include <stuka/dLP/naive_cre.h>
+#include <stuka/dLP/naive_benders.h>
 
 std::unique_ptr<stuka::LP::BaseLPSolver>
 stuka::util::createSolver(const LP::LinearProgram &lp, const stuka::Options &opts) {
@@ -16,10 +18,10 @@ stuka::util::createSolver(const LP::LinearProgram &lp, const stuka::Options &opt
 
   switch (opts.lp_solver) {
 #ifdef ENABLE_GUROBI
-    case GUROBI:solver = std::make_unique<LP::GurobiSolver>(lp, opts);
+    case GUROBI: solver = std::make_unique<LP::GurobiSolver>(lp, opts);
       break;
 #endif
-    case MPC:solver = std::make_unique<LP::MehrotraPC>(lp, opts);
+    case MPC: solver = std::make_unique<LP::MehrotraPC>(lp, opts);
       break;
     default:throw std::runtime_error("createSolver: invalid solver selected");
   }
@@ -33,7 +35,7 @@ stuka::util::createSolver(const stuka::QP::QuadraticProgram &qp, const stuka::Op
 
   switch (opts.qp_solver) {
 #ifdef ENABLE_GUROBI
-    case GUROBI:solver = std::make_unique<QP::GurobiSolver>(qp, opts);
+    case GUROBI: solver = std::make_unique<QP::GurobiSolver>(qp, opts);
       break;
 #endif
     default:throw std::runtime_error("createSolver: invalid solver selected");
@@ -47,9 +49,13 @@ stuka::util::createSolver(const stuka::dLP::DecomposedLinearProgram &dlp, const 
   std::unique_ptr<dLP::BaseDLPSolver> solver;
 
   switch (opts.dlp_solver) {
-    case BENDER:solver = std::make_unique<dLP::BendersDecomposition>(dlp, opts);
+    case BENDER: solver = std::make_unique<dLP::BendersDecomposition>(dlp, opts);
       break;
-    case CRE:solver = std::make_unique<dLP::CRE>(dlp, opts);
+    case CRE: solver = std::make_unique<dLP::CRE>(dlp, opts);
+      break;
+    case NAIVE_BENDERS: solver = std::make_unique<dLP::NaiveBendersDecomposition>(dlp, opts);
+      break;
+    case NAIVE_CRE: solver = std::make_unique<dLP::NaiveCRE>(dlp, opts);
       break;
     default:throw std::runtime_error("createSolver: invalid solver selected");
   }
@@ -62,7 +68,7 @@ stuka::util::createSolver(const stuka::stochastic::Program &prog, const stuka::O
   std::unique_ptr<stochastic::BaseStochasticSolver> solver;
 
   switch (opts.stochastic_solver) {
-    case PDSS:solver = std::make_unique<stochastic::StochasticPrimalDual>(prog, opts);
+    case PDSS: solver = std::make_unique<stochastic::StochasticPrimalDual>(prog, opts);
       break;
     case PDSS2:solver = std::make_unique<stochastic::StochasticPrimalDual2>(prog, opts);
       break;

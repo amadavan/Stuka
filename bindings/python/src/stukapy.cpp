@@ -62,7 +62,10 @@ PYBIND11_MODULE(stukapy, m) {
       .value("CRE", stuka::Solver::CRE)
       .value("MPC", stuka::Solver::MPC)
       .value("PDSS", stuka::Solver::PDSS)
-      .value("PDSS2", stuka::Solver::PDSS2);
+      .value("PDSS2", stuka::Solver::PDSS2)
+      .value("PDSS_JACOBI", stuka::Solver::PDSS_JACOBI)
+      .value("NAIVE_BENDERS", stuka::Solver::NAIVE_BENDERS)
+      .value("NAIVE_CRE", stuka::Solver::NAIVE_CRE);
 
   py::enum_<stuka::ConstraintReductionMethods>(m, "constraintReductionMethods")
       .value("BOUNDS", stuka::ConstraintReductionMethods::BOUNDS);

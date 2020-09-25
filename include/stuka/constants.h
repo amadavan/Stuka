@@ -33,6 +33,9 @@ enum Solver {
   MPC,
   PDSS,
   PDSS2,
+  PDSS_JACOBI,
+  NAIVE_BENDERS,
+  NAIVE_CRE
 };
 
 enum ConstraintReductionMethods {

@@ -46,6 +46,10 @@ set(STUKA_SOURCES
         ../include/stuka/dLP/benders.h
         ../include/stuka/dLP/benders_cut.h
         ../include/stuka/dLP/benders_subproblem.h
+        ../include/stuka/dLP/naive_cre.h
+        ../include/stuka/dLP/naive_cre_subproblem.h
+        ../include/stuka/dLP/naive_benders.h
+        ../include/stuka/dLP/naive_benders_subproblem.h
         ../include/stuka/stochastic/measure/measure.h
         ../include/stuka/stochastic/measure/cvar.h
         ../include/stuka/stochastic/measure/expected_value.h
@@ -82,6 +86,10 @@ set(STUKA_SOURCES
         dLP/critical_region.cpp
         dLP/benders_subproblem.cpp
         dLP/benders.cpp
+        dLP/naive_cre.cpp
+        dLP/naive_cre_subproblem.cpp
+        dLP/naive_benders.cpp
+        dLP/naive_benders_subproblem.cpp
         stochastic/measure/cvar.cpp
         stochastic/stochastic_pd.cpp
         stochastic/stochastic_pd2.cpp
