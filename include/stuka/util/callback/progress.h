@@ -10,21 +10,19 @@
 
 #include "base_callback.h"
 #include "../timer.h"
+#include "../progress_bar.h"
 
 namespace stuka { namespace util { namespace callback {
 class Progress : public BaseCallback {
  public:
-  Progress(size_t n_max_);
+  Progress(size_t n_max_, const size_t precision = 3, const bool carriage_return = false);
 
   void callback(const OptimizeState state) override;
 
   void finish(const OptimizeState state) override;
 
  private:
-  size_t n_max_;
-  size_t n_p_;
-
-  Timer timer_;
+  ProgressBar<size_t> progress_bar_;
 };
 }}}
 

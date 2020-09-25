@@ -54,6 +54,7 @@ set(STUKA_SOURCES
         ../include/stuka/stochastic/stochastic_pd.h
         ../include/stuka/stochastic/stochastic_pd2.h
         ../include/stuka/util/functions.h
+        ../include/stuka/util/progress_bar.h
         ../include/stuka/util/solver_factory.h
         ../include/stuka/util/timer.h
         ../include/stuka/util/callback/base_callback.h
