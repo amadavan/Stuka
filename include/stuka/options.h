@@ -10,7 +10,6 @@
 #include <memory>
 
 #include <Eigen/Core>
-#include <gurobi_c++.h>
 
 #include "constants.h"
 #include "defaults.h"
