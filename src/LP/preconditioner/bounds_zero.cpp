@@ -162,30 +162,30 @@ void stuka::LP::BoundsZero::initialize(const stuka::LP::LinearProgram &prog) {
   next()->initialize(lp_next);
 }
 
-void stuka::LP::BoundsZero::setObjective(const std::shared_ptr<Eigen::VectorXd> &c) {
+void stuka::LP::BoundsZero::setObjective(const std::unique_ptr<Eigen::VectorXd> &c) {
 
 }
 
-void stuka::LP::BoundsZero::setRHS(const std::shared_ptr<Eigen::VectorXd> &b_ub,
-                                   const std::shared_ptr<Eigen::VectorXd> &b_eq) {
+void stuka::LP::BoundsZero::setRHS(const std::unique_ptr<Eigen::VectorXd> &b_ub,
+                                   const std::unique_ptr<Eigen::VectorXd> &b_eq) {
 
 }
 
-void stuka::LP::BoundsZero::setBounds(const std::shared_ptr<Eigen::VectorXd> &lb,
-                                      const std::shared_ptr<Eigen::VectorXd> &ub) {
+void stuka::LP::BoundsZero::setBounds(const std::unique_ptr<Eigen::VectorXd> &lb,
+                                      const std::unique_ptr<Eigen::VectorXd> &ub) {
 
 }
 
 void
-stuka::LP::BoundsZero::addVar(double c, std::shared_ptr<Eigen::VectorXd> a_ub, std::shared_ptr<Eigen::VectorXd> a_eq,
+stuka::LP::BoundsZero::addVar(double c, const std::unique_ptr<Eigen::VectorXd> &a_ub, const std::unique_ptr<Eigen::VectorXd> &a_eq,
                               double lb, double ub) {
 
 }
 
 void
-stuka::LP::BoundsZero::addVars(std::shared_ptr<Eigen::VectorXd> c, std::shared_ptr<Eigen::SparseMatrix<double>> A_ub,
-                               std::shared_ptr<Eigen::SparseMatrix<double>> A_eq, std::shared_ptr<Eigen::VectorXd> lb,
-                               std::shared_ptr<Eigen::VectorXd> ub) {
+stuka::LP::BoundsZero::addVars(const std::unique_ptr<Eigen::VectorXd> &c, const std::unique_ptr<Eigen::SparseMatrix<double>> &A_ub,
+                               const std::unique_ptr<Eigen::SparseMatrix<double>> &A_eq, const std::unique_ptr<Eigen::VectorXd> &lb,
+                               const std::unique_ptr<Eigen::VectorXd> &ub) {
 
 }
 
@@ -201,12 +201,12 @@ void stuka::LP::BoundsZero::removeBackVars(size_t n_remove) {
 
 }
 
-void stuka::LP::BoundsZero::addConstr_ub(const std::shared_ptr<Eigen::VectorXd> &a, const double &b) {
+void stuka::LP::BoundsZero::addConstr_ub(const std::unique_ptr<Eigen::VectorXd> &a, const double &b) {
 
 }
 
-void stuka::LP::BoundsZero::addConstrs_ub(const std::shared_ptr<Eigen::SparseMatrix<double>> &A,
-                                          const std::shared_ptr<Eigen::VectorXd> &b) {
+void stuka::LP::BoundsZero::addConstrs_ub(const std::unique_ptr<Eigen::SparseMatrix<double>> &A,
+                                          const std::unique_ptr<Eigen::VectorXd> &b) {
 
 }
 
@@ -218,12 +218,12 @@ void stuka::LP::BoundsZero::removeConstrs_ub(size_t index, size_t n_remove) {
 
 }
 
-void stuka::LP::BoundsZero::addConstr_eq(const std::shared_ptr<Eigen::VectorXd> &a, const double &b) {
+void stuka::LP::BoundsZero::addConstr_eq(const std::unique_ptr<Eigen::VectorXd> &a, const double &b) {
 
 }
 
-void stuka::LP::BoundsZero::addConstrs_eq(const std::shared_ptr<Eigen::SparseMatrix<double>> &A,
-                                          const std::shared_ptr<Eigen::VectorXd> &b) {
+void stuka::LP::BoundsZero::addConstrs_eq(const std::unique_ptr<Eigen::SparseMatrix<double>> &A,
+                                          const std::unique_ptr<Eigen::VectorXd> &b) {
 
 }
 

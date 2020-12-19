@@ -16,7 +16,7 @@ stuka::util::LinearInequalityConstraintReduction::bounds(Eigen::VectorXd lb, Eig
   }
 
   Eigen::VectorXd U = A_.cwiseMax(zero) * ub + A_.cwiseMin(zero) * lb;
-  Eigen::Matrix<bool, Eigen::Dynamic, 1> redundancy = (b_ - U).array() > 0;
+  Eigen::Array<bool, Eigen::Dynamic, 1> redundancy = (b_ - U).array() > 0;
 
   size_t n_dim = A_.rows();
   size_t n_ub = b_.size();

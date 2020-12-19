@@ -67,6 +67,14 @@ PYBIND11_MODULE(stukapy, m) {
       .value("NAIVE_BENDERS", stuka::Solver::NAIVE_BENDERS)
       .value("NAIVE_CRE", stuka::Solver::NAIVE_CRE);
 
+  py::enum_<stuka::GurobiMethod>(m, "gurobi_method")
+      .value("PRIMAL_SIMPLEX", stuka::GurobiMethod::PRIMAL_SIMPLEX)
+      .value("DUAL_SIMPLEX", stuka::GurobiMethod::DUAL_SIMPLEX)
+      .value("BARRIER", stuka::GurobiMethod::BARRIER)
+      .value("CONCURRENT", stuka::GurobiMethod::CONCURRENT)
+      .value("DETERMINISTIC_CONCURRENT", stuka::GurobiMethod::DETERMINISTIC_CONCURRENT)
+      .value("DETERMINISTIC_CONCURRENT_SIMPLEX", stuka::GurobiMethod::DETERMINISTIC_CONCURRENT_SIMPLEX);
+
   py::enum_<stuka::ConstraintReductionMethods>(m, "constraintReductionMethods")
       .value("BOUNDS", stuka::ConstraintReductionMethods::BOUNDS);
 
@@ -118,6 +126,7 @@ PYBIND11_MODULE(stukapy, m) {
       .def_readwrite("dlp_solver", &stuka::Options::dlp_solver)
       .def_readwrite("lazy", &stuka::Options::lazy)
       .def_readwrite("cre_step", &stuka::Options::cre_step)
+      .def_readwrite("gurobi_method", &stuka::Options::gurobi_method)
       .def_readwrite("callback", &stuka::Options::callback);
 
   init_lp(m);

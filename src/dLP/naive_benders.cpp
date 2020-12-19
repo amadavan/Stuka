@@ -18,32 +18,32 @@ stuka::dLP::NaiveBendersDecomposition::NaiveBendersDecomposition(const stuka::dL
   size_t n_con_eq_master = (dlp.b_eq.back()) ? dlp.b_eq.back()->size() : 0;
 
   // Generate master problem
-  master_lp_.c = std::make_shared<Eigen::VectorXd>(*dlp.c.back());
+  master_lp_.c = util::DenseOps::unique_copy(dlp.c.back());
   master_lp_.c->conservativeResize(n_dim_master_ + n_sub_);
   for (size_t i = n_dim_master_; i < n_dim_master_ + n_sub_; ++i)
     master_lp_.c->coeffRef(i) = 1.;
 
   if (n_con_ub_master > 0) {
-    master_lp_.A_ub = std::make_shared < Eigen::SparseMatrix < double >> (*dlp.A_ub.back());
+    master_lp_.A_ub = util::SparseOps::unique_copy(dlp.A_ub.back());
     master_lp_.A_ub->conservativeResize(n_con_ub_master, n_dim_master_ + n_sub_);
-    master_lp_.b_ub = dlp.b_ub.back();
+    master_lp_.b_ub = util::DenseOps::unique_copy(dlp.b_ub.back());
   }
 
   if (n_con_eq_master > 0) {
-    master_lp_.A_eq = std::make_shared < Eigen::SparseMatrix < double >> (*dlp.A_eq.back());
+    master_lp_.A_eq = util::SparseOps::unique_copy(dlp.A_eq.back());
     master_lp_.A_eq->conservativeResize(n_con_eq_master, n_dim_master_ + n_sub_);
-    master_lp_.b_eq = dlp.b_eq.back();
+    master_lp_.b_eq = util::DenseOps::unique_copy(dlp.b_eq.back());
   }
 
   if (dlp.lb.back()) {
-    master_lp_.lb = std::make_shared<Eigen::VectorXd>(*dlp.lb.back());
+    master_lp_.lb = util::DenseOps::unique_copy(dlp.lb.back());
     master_lp_.lb->conservativeResize(n_dim_master_ + n_sub_);
     for (size_t i = n_dim_master_; i < n_dim_master_ + n_sub_; ++i)
       master_lp_.lb->coeffRef(i) = 0;
   }
 
   if (dlp.ub.back()) {
-    master_lp_.ub = std::make_shared<Eigen::VectorXd>(*dlp.ub.back());
+    master_lp_.ub = util::DenseOps::unique_copy(dlp.ub.back());
     master_lp_.ub->conservativeResize(n_dim_master_ + n_sub_);
     for (size_t i = n_dim_master_; i < n_dim_master_ + n_sub_; ++i)
       master_lp_.ub->coeffRef(i) = INF;
@@ -54,11 +54,21 @@ stuka::dLP::NaiveBendersDecomposition::NaiveBendersDecomposition(const stuka::dL
 
   // Set subproblems
   subproblems_.reserve(n_sub_);
-  for (size_t i = 0; i < n_sub_; ++i) {
-    Subproblem sub
-        {dlp.c[i], dlp.A_ub[i], dlp.b_ub[i], dlp.C_ub[i], dlp.A_eq[i], dlp.b_eq[i], dlp.C_eq[i], dlp.lb[i], dlp.ub[i]};
+  Options opts_sub(opts_);
+  opts_sub.lazy = opts_.lazy_sub;
 
-    subproblems_.emplace_back(NaiveBendersSubproblem(std::move(sub), opts_));
+  for (size_t i = 0; i < n_sub_; ++i) {
+    subproblems_.emplace_back((Subproblem){
+        util::DenseOps::unique_copy(dlp.c[i]),
+        util::SparseOps::unique_copy(dlp.A_ub[i]),
+        util::DenseOps::unique_copy(dlp.b_ub[i]),
+        util::SparseOps::unique_copy(dlp.C_ub[i]),
+        util::SparseOps::unique_copy(dlp.A_eq[i]),
+        util::DenseOps::unique_copy(dlp.b_eq[i]),
+        util::SparseOps::unique_copy(dlp.C_eq[i]),
+        util::DenseOps::unique_copy(dlp.lb[i]),
+        util::DenseOps::unique_copy(dlp.ub[i])
+    }, opts_sub);
   }
 
   // Set initial point
@@ -69,13 +79,13 @@ stuka::dLP::NaiveBendersDecomposition::NaiveBendersDecomposition(const stuka::dL
     x_.head(n_dim_master_) = opts_.x0;
   } else if (dlp.c.back() && dlp.c.back()->maxCoeff() > 1e-8 && dlp.c.back()->minCoeff() < -1e-8) {
     LP::LinearProgram tmp;
-    tmp.c = dlp.c.back();
-    tmp.A_ub = dlp.A_ub.back();
-    tmp.b_ub = dlp.b_ub.back();
-    tmp.A_eq = dlp.A_eq.back();
-    tmp.b_eq = dlp.b_eq.back();
-    tmp.lb = dlp.lb.back();
-    tmp.ub = dlp.ub.back();
+    tmp.c = util::DenseOps::unique_copy(dlp.c.back());
+    tmp.A_ub = util::SparseOps::unique_copy(dlp.A_ub.back());
+    tmp.b_ub = util::DenseOps::unique_copy(dlp.b_ub.back());
+    tmp.A_eq = util::SparseOps::unique_copy(dlp.A_eq.back());
+    tmp.b_eq = util::DenseOps::unique_copy(dlp.b_eq.back());
+    tmp.lb = util::DenseOps::unique_copy(dlp.lb.back());
+    tmp.ub = util::DenseOps::unique_copy(dlp.ub.back());
 
     OptimizeState res = util::createSolver(tmp, opts_)->solve();
     if (res.status == 2) {
@@ -122,8 +132,8 @@ stuka::OptimizeState
 stuka::dLP::NaiveBendersDecomposition::solveMasterProblem(const std::vector<stuka::dLP::BendersCut> &cuts) {
 
   // Concatenate cuts and upper-bounding constraints
-  std::shared_ptr<Eigen::SparseMatrix<double>> A_ub =
-      std::make_shared<Eigen::SparseMatrix<double>>(n_sub_, n_dim_master_ + n_sub_);
+  std::unique_ptr<Eigen::SparseMatrix<double>> A_ub =
+      std::make_unique<Eigen::SparseMatrix<double>>(n_sub_, n_dim_master_ + n_sub_);
 
   for (size_t i = 0; i < n_dim_master_; ++i) {
     A_ub->startVec(i);
@@ -139,7 +149,7 @@ stuka::dLP::NaiveBendersDecomposition::solveMasterProblem(const std::vector<stuk
 
   A_ub->finalize();
 
-  std::shared_ptr<Eigen::VectorXd> b_ub = std::make_shared<Eigen::VectorXd>(n_sub_);
+  std::unique_ptr<Eigen::VectorXd> b_ub = std::make_unique<Eigen::VectorXd>(n_sub_);
   for (size_t i = 0; i < n_sub_; ++i)
     b_ub->coeffRef(i) = (abs(cuts[i].b) > 1e-8) ? cuts[i].b : 0;
 
@@ -149,12 +159,12 @@ stuka::dLP::NaiveBendersDecomposition::solveMasterProblem(const std::vector<stuk
     _b_ub.head(master_lp_.b_ub->size()) = *master_lp_.b_ub;
     _b_ub.tail(b_ub->size()) = *b_ub;
 
-    master_lp_.A_ub = std::make_shared<Eigen::SparseMatrix<double>>(_A_ub);
-    master_lp_.b_ub = std::make_shared<Eigen::VectorXd>(_b_ub);
+    master_lp_.A_ub = std::make_unique<Eigen::SparseMatrix<double>>(_A_ub);
+    master_lp_.b_ub = std::make_unique<Eigen::VectorXd>(_b_ub);
   }
   else {
-    master_lp_.A_ub = A_ub;
-    master_lp_.b_ub = b_ub;
+    master_lp_.A_ub = std::move(A_ub);
+    master_lp_.b_ub = std::move(b_ub);
   }
 
   std::unique_ptr<LP::BaseLPSolver> master_solver = util::createSolver(master_lp_, opts_);

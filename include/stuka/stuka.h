@@ -35,10 +35,10 @@
 
 // Gurobi
 #ifdef ENABLE_GUROBI
-#include "LP/gurobi.h"
-#include "LP/gurobi_lp.h"
-#include "QP/gurobi.h"
-#include "QP/gurobi_qp.h"
+#include "gurobi/LP/gurobi.h"
+#include "gurobi/LP/gurobi_lp.h"
+#include "gurobi/QP/gurobi.h"
+#include "gurobi/QP/gurobi_qp.h"
 #endif
 
 #endif //STUKA_STUKA_H

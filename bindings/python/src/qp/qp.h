@@ -24,18 +24,18 @@ namespace stuka { namespace QP {
                        Eigen::VectorXd _b_eq,
                        Eigen::VectorXd _lb,
                        Eigen::VectorXd _ub) {
-      if (_Q.rows() > 0 && _Q.cols() > 0) Q = std::make_shared<Eigen::SparseMatrix<double>>(_Q);
-      if (_c.size() > 0) c = std::make_shared<Eigen::VectorXd>(_c);
+      if (_Q.rows() > 0 && _Q.cols() > 0) Q = std::make_unique<Eigen::SparseMatrix<double>>(_Q);
+      if (_c.size() > 0) c = std::make_unique<Eigen::VectorXd>(_c);
       if (_b_ub.size() > 0) {
-        A_ub = std::make_shared<Eigen::SparseMatrix<double>>(_A_ub);
-        b_ub = std::make_shared<Eigen::VectorXd>(_b_ub);
+        A_ub = std::make_unique<Eigen::SparseMatrix<double>>(_A_ub);
+        b_ub = std::make_unique<Eigen::VectorXd>(_b_ub);
       }
       if (_b_eq.size() > 0) {
-        A_eq = std::make_shared<Eigen::SparseMatrix<double>>(_A_eq);
-        b_eq = std::make_shared<Eigen::VectorXd>(_b_eq);
+        A_eq = std::make_unique<Eigen::SparseMatrix<double>>(_A_eq);
+        b_eq = std::make_unique<Eigen::VectorXd>(_b_eq);
       }
-      if (_lb.size() > 0) lb = std::make_shared<Eigen::VectorXd>(_lb);
-      if (_ub.size() > 0) ub = std::make_shared<Eigen::VectorXd>(_ub);
+      if (_lb.size() > 0) lb = std::make_unique<Eigen::VectorXd>(_lb);
+      if (_ub.size() > 0) ub = std::make_unique<Eigen::VectorXd>(_ub);
     }
   };
 }}

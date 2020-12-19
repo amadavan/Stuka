@@ -12,10 +12,10 @@ void stuka::LP::ConstantFolding::initialize(const stuka::LP::LinearProgram &prog
   n_ub_ = (prog.b_ub) ? prog.b_ub->size() : 0;
   n_eq_ = (prog.b_eq) ? prog.b_eq->size() : 0;
 
-  A_ub_ = prog.A_ub;
-  b_ub_ = prog.b_ub;
-  A_eq_ = prog.A_eq;
-  b_eq_ = prog.b_eq;
+  A_ub_ = util::SparseOps::unique_copy(prog.A_ub);
+  b_ub_ = util::DenseOps::unique_copy(prog.b_ub);
+  A_eq_ = util::SparseOps::unique_copy(prog.A_eq);
+  b_eq_ = util::DenseOps::unique_copy(prog.b_eq);
 
   is_constant_ = std::vector<bool>(n_dim_, false);
   constant_value_ = Eigen::VectorXd(n_dim_);
@@ -31,25 +31,25 @@ void stuka::LP::ConstantFolding::initialize(const stuka::LP::LinearProgram &prog
   LinearProgram lp_next;
   if (n_constants_ > 0) {
     size_t n_dim_next = n_dim_ - n_constants_;
-    lp_next.c = std::make_shared<Eigen::VectorXd>(n_dim_next);
+    lp_next.c = std::make_unique<Eigen::VectorXd>(n_dim_next);
     if (prog.b_ub) {
       size_t n_ub = lp_next.b_ub->size();
-      lp_next.A_ub = std::make_shared<Eigen::SparseMatrix<double>>(n_ub, n_dim_next);
+      lp_next.A_ub = std::make_unique<Eigen::SparseMatrix<double>>(n_ub, n_dim_next);
       lp_next.A_ub->reserve(prog.A_ub->nonZeros());
-      lp_next.b_ub = prog.b_ub;
+      lp_next.b_ub = util::DenseOps::unique_copy(prog.b_ub);
 
       b_ub_shift_ = Eigen::VectorXd(prog.b_ub->size());
     }
     if (prog.b_eq) {
       size_t n_eq = lp_next.b_eq->size();
-      lp_next.A_eq = std::make_shared<Eigen::SparseMatrix<double>>(n_eq, n_dim_next);
+      lp_next.A_eq = std::make_unique<Eigen::SparseMatrix<double>>(n_eq, n_dim_next);
       lp_next.A_eq->reserve(prog.A_eq->nonZeros());
-      lp_next.b_eq = prog.b_eq;
+      lp_next.b_eq = util::DenseOps::unique_copy(prog.b_eq);
 
       b_eq_shift_ = Eigen::VectorXd(prog.b_eq->size());
     }
-    lp_next.lb = std::make_shared<Eigen::VectorXd>(n_dim_next);
-    lp_next.ub = std::make_shared<Eigen::VectorXd>(n_dim_next);
+    lp_next.lb = std::make_unique<Eigen::VectorXd>(n_dim_next);
+    lp_next.ub = std::make_unique<Eigen::VectorXd>(n_dim_next);
 
     size_t num_const = 0;
     for (size_t i = 0; i < n_dim_; ++i) {
@@ -83,25 +83,25 @@ void stuka::LP::ConstantFolding::initialize(const stuka::LP::LinearProgram &prog
       *lp_next.b_eq -= b_eq_shift_;
     }
   } else {
-    lp_next.c = std::make_shared<Eigen::VectorXd>(*prog.c);
-    lp_next.A_ub = std::make_shared<Eigen::SparseMatrix<double>>(*prog.A_ub);
-    lp_next.b_ub = std::make_shared<Eigen::VectorXd>(*prog.b_ub);
-    lp_next.A_eq = std::make_shared<Eigen::SparseMatrix<double>>(*prog.A_eq);
-    lp_next.b_eq = std::make_shared<Eigen::VectorXd>(*prog.b_eq);
-    lp_next.lb = std::make_shared<Eigen::VectorXd>(*prog.lb);
-    lp_next.ub = std::make_shared<Eigen::VectorXd>(*prog.ub);
+    lp_next.c = util::DenseOps::unique_copy(prog.c);
+    lp_next.A_ub = util::SparseOps::unique_copy(prog.A_ub);
+    lp_next.b_ub = util::DenseOps::unique_copy(prog.b_ub);
+    lp_next.A_eq = util::SparseOps::unique_copy(prog.A_eq);
+    lp_next.b_eq = util::DenseOps::unique_copy(prog.b_eq);
+    lp_next.lb = util::DenseOps::unique_copy(prog.lb);
+    lp_next.ub = util::DenseOps::unique_copy(prog.ub);
   }
 
   next()->initialize(lp_next);
 }
 
-void stuka::LP::ConstantFolding::setObjective(const std::shared_ptr<Eigen::VectorXd> &c) {
+void stuka::LP::ConstantFolding::setObjective(const std::unique_ptr<Eigen::VectorXd> &c) {
   if (n_constants_ == 0) {
     next()->setObjective(c);
     return;
   }
 
-  std::shared_ptr<Eigen::VectorXd> c_next = std::make_shared<Eigen::VectorXd>(n_dim_ - n_constants_);
+  std::unique_ptr<Eigen::VectorXd> c_next = std::make_unique<Eigen::VectorXd>(n_dim_ - n_constants_);
 
   size_t num_const = 0;
   for (size_t i = 0; i < n_dim_; ++i) {
@@ -112,15 +112,15 @@ void stuka::LP::ConstantFolding::setObjective(const std::shared_ptr<Eigen::Vecto
   next()->setObjective(c_next);
 }
 
-void stuka::LP::ConstantFolding::setRHS(const std::shared_ptr<Eigen::VectorXd> &b_ub,
-                                        const std::shared_ptr<Eigen::VectorXd> &b_eq) {
+void stuka::LP::ConstantFolding::setRHS(const std::unique_ptr<Eigen::VectorXd> &b_ub,
+                                        const std::unique_ptr<Eigen::VectorXd> &b_eq) {
   if (n_constants_ == 0) {
     next()->setRHS(b_ub, b_eq);
     return;
   }
 
-  std::shared_ptr<Eigen::VectorXd> b_ub_ = std::make_shared<Eigen::VectorXd>(*b_ub);
-  std::shared_ptr<Eigen::VectorXd> b_eq_ = std::make_shared<Eigen::VectorXd>(*b_eq);
+  std::unique_ptr<Eigen::VectorXd> b_ub_ = std::make_unique<Eigen::VectorXd>(*b_ub);
+  std::unique_ptr<Eigen::VectorXd> b_eq_ = std::make_unique<Eigen::VectorXd>(*b_eq);
 
   if (b_ub) *b_ub_ += b_ub_shift_;
   if (b_eq) *b_eq_ += b_eq_shift_;
@@ -128,13 +128,13 @@ void stuka::LP::ConstantFolding::setRHS(const std::shared_ptr<Eigen::VectorXd> &
   next()->setRHS(b_ub_, b_eq_);
 }
 
-void stuka::LP::ConstantFolding::setBounds(const std::shared_ptr<Eigen::VectorXd> &lb,
-                                           const std::shared_ptr<Eigen::VectorXd> &ub) {
+void stuka::LP::ConstantFolding::setBounds(const std::unique_ptr<Eigen::VectorXd> &lb,
+                                           const std::unique_ptr<Eigen::VectorXd> &ub) {
   throw std::runtime_error("LP::ConstantFolding::setBounds not implemented");
 }
 
-void stuka::LP::ConstantFolding::addVar(double c, std::shared_ptr<Eigen::VectorXd> a_ub,
-                                        std::shared_ptr<Eigen::VectorXd> a_eq, double lb, double ub) {
+void stuka::LP::ConstantFolding::addVar(double c, const std::unique_ptr<Eigen::VectorXd> &a_ub,
+                                        const std::unique_ptr<Eigen::VectorXd> &a_eq, double lb, double ub) {
   if (b_ub_) {
     A_ub_->conservativeResize(n_ub_, n_dim_ + 1);
     A_ub_->reserve(A_ub_->nonZeros() + n_dim_);
@@ -159,8 +159,8 @@ void stuka::LP::ConstantFolding::addVar(double c, std::shared_ptr<Eigen::VectorX
     is_constant_[n_dim_] = true;
     n_constants_++;
 
-    std::shared_ptr<Eigen::VectorXd> b_ub = std::make_shared<Eigen::VectorXd>(*b_ub_);
-    std::shared_ptr<Eigen::VectorXd> b_eq = std::make_shared<Eigen::VectorXd>(*b_eq_);
+    std::unique_ptr<Eigen::VectorXd> b_ub = std::make_unique<Eigen::VectorXd>(*b_ub_);
+    std::unique_ptr<Eigen::VectorXd> b_eq = std::make_unique<Eigen::VectorXd>(*b_eq_);
 
     if (b_ub) {
       b_ub_shift_ -= *a_ub * lb;
@@ -180,27 +180,28 @@ void stuka::LP::ConstantFolding::addVar(double c, std::shared_ptr<Eigen::VectorX
   n_dim_++;
 }
 
-void stuka::LP::ConstantFolding::addVars(std::shared_ptr<Eigen::VectorXd> c,
-                                         std::shared_ptr<Eigen::SparseMatrix<double>> A_ub,
-                                         std::shared_ptr<Eigen::SparseMatrix<double>> A_eq,
-                                         std::shared_ptr<Eigen::VectorXd> lb, std::shared_ptr<Eigen::VectorXd> ub) {
+void stuka::LP::ConstantFolding::addVars(const std::unique_ptr<Eigen::VectorXd> &c,
+                                         const std::unique_ptr<Eigen::SparseMatrix<double>> &A_ub,
+                                         const std::unique_ptr<Eigen::SparseMatrix<double>> &A_eq,
+                                         const std::unique_ptr<Eigen::VectorXd> &lb,
+                                         const std::unique_ptr<Eigen::VectorXd> &ub) {
 
   size_t n_add = (c) ? c->size() : (lb) ? lb->size() : (ub) ? ub->size() : (A_ub) ? A_ub->cols() : (A_eq) ? A_eq->cols()
                                                                                                           : 0;
 
   for (size_t i = 0; i < n_add; ++i) {
-    std::shared_ptr<Eigen::VectorXd> a_ub = nullptr;
-    std::shared_ptr<Eigen::VectorXd> a_eq = nullptr;
+    std::unique_ptr<Eigen::VectorXd> a_ub = nullptr;
+    std::unique_ptr<Eigen::VectorXd> a_eq = nullptr;
 
     if (b_ub_) {
-      a_ub = std::make_shared<Eigen::VectorXd>(n_ub_);
+      a_ub = std::make_unique<Eigen::VectorXd>(n_ub_);
       a_ub->setZero();
       for (Eigen::SparseMatrix<double>::InnerIterator it(*A_ub, i); it; ++it)
         a_ub->coeffRef(it.row()) = it.value();
     }
 
     if (b_eq_) {
-      a_eq = std::make_shared<Eigen::VectorXd>(n_eq_);
+      a_eq = std::make_unique<Eigen::VectorXd>(n_eq_);
       a_eq->setZero();
       for (Eigen::SparseMatrix<double>::InnerIterator it(*A_eq, i); it; ++it)
         a_ub->coeffRef(it.row()) = it.value();
@@ -212,8 +213,8 @@ void stuka::LP::ConstantFolding::addVars(std::shared_ptr<Eigen::VectorXd> c,
 
 void stuka::LP::ConstantFolding::removeVar(size_t var) {
   if (b_ub_) {
-    std::shared_ptr<Eigen::SparseMatrix<double>>
-        A_ub = std::make_shared<Eigen::SparseMatrix<double>>(n_ub_, n_dim_ - 1);
+    std::unique_ptr<Eigen::SparseMatrix<double>>
+        A_ub = std::make_unique<Eigen::SparseMatrix<double>>(n_ub_, n_dim_ - 1);
     A_ub->reserve(A_ub_->nonZeros());
     for (size_t i = 0; i < n_dim_; ++i) {
       if (i == var) {
@@ -227,12 +228,12 @@ void stuka::LP::ConstantFolding::removeVar(size_t var) {
         A_ub->insertBack(it.row(), col) = it.value();
       A_ub->finalize();
     }
-    A_ub_ = A_ub;
+    A_ub_ = std::move(A_ub);
   }
 
   if (b_eq_) {
-    std::shared_ptr<Eigen::SparseMatrix<double>>
-        A_eq = std::make_shared<Eigen::SparseMatrix<double>>(n_eq_, n_dim_ - 1);
+    std::unique_ptr<Eigen::SparseMatrix<double>>
+        A_eq = std::make_unique<Eigen::SparseMatrix<double>>(n_eq_, n_dim_ - 1);
     A_eq->reserve(A_eq_->nonZeros());
     for (size_t i = 0; i < n_dim_; ++i) {
       if (i == var) {
@@ -246,12 +247,12 @@ void stuka::LP::ConstantFolding::removeVar(size_t var) {
         A_eq->insertBack(it.row(), col) = it.value();
       A_eq->finalize();
     }
-    A_eq_ = A_eq;
+    A_eq_ = std::move(A_eq);
   }
 
   if (is_constant_[var]) {
-    std::shared_ptr<Eigen::VectorXd> b_ub = std::make_shared<Eigen::VectorXd>(*b_ub_);
-    std::shared_ptr<Eigen::VectorXd> b_eq = std::make_shared<Eigen::VectorXd>(*b_eq_);
+    std::unique_ptr<Eigen::VectorXd> b_ub = util::DenseOps::unique_copy(b_ub_);
+    std::unique_ptr<Eigen::VectorXd> b_eq = util::DenseOps::unique_copy(b_eq_);
 
     if (b_ub_) *b_ub += b_ub_shift_;
     if (b_eq_) *b_eq += b_eq_shift_;
@@ -279,14 +280,14 @@ void stuka::LP::ConstantFolding::removeBackVars(size_t n_remove) {
     removeVar(n_dim_ - 1 - n_remove + i);
 }
 
-void stuka::LP::ConstantFolding::addConstr_ub(const std::shared_ptr<Eigen::VectorXd> &a, const double &b) {
+void stuka::LP::ConstantFolding::addConstr_ub(const std::unique_ptr<Eigen::VectorXd> &a, const double &b) {
   if (b_ub_) {
     A_ub_->conservativeResize(n_ub_ + 1, n_dim_);
     b_ub_->conservativeResize(n_ub_ + 1);
     b_ub_shift_.conservativeResize(n_ub_ + 1);
   } else {
-    A_ub_ = std::make_shared<Eigen::SparseMatrix<double>>(1, n_dim_);
-    b_ub_ = std::make_shared<Eigen::VectorXd>(1);
+    A_ub_ = std::make_unique<Eigen::SparseMatrix<double>>(1, n_dim_);
+    b_ub_ = std::make_unique<Eigen::VectorXd>(1);
     b_ub_shift_ = Eigen::VectorXd(1);
   }
 
@@ -299,7 +300,7 @@ void stuka::LP::ConstantFolding::addConstr_ub(const std::shared_ptr<Eigen::Vecto
   if (n_constants_ == 0) {
     next()->addConstr_ub(a, b);
   } else {
-    std::shared_ptr<Eigen::VectorXd> a_next = std::make_shared<Eigen::VectorXd>(n_dim_ - n_constants_);
+    std::unique_ptr<Eigen::VectorXd> a_next = std::make_unique<Eigen::VectorXd>(n_dim_ - n_constants_);
 
     size_t num_const = 0;
     for (size_t i = 0; i < n_dim_; ++i) {
@@ -315,8 +316,8 @@ void stuka::LP::ConstantFolding::addConstr_ub(const std::shared_ptr<Eigen::Vecto
   n_ub_++;
 }
 
-void stuka::LP::ConstantFolding::addConstrs_ub(const std::shared_ptr<Eigen::SparseMatrix<double>> &A,
-                                               const std::shared_ptr<Eigen::VectorXd> &b) {
+void stuka::LP::ConstantFolding::addConstrs_ub(const std::unique_ptr<Eigen::SparseMatrix<double>> &A,
+                                               const std::unique_ptr<Eigen::VectorXd> &b) {
   size_t n_add = b->size();
 
   if (b_ub_) {
@@ -324,8 +325,8 @@ void stuka::LP::ConstantFolding::addConstrs_ub(const std::shared_ptr<Eigen::Spar
     b_ub_->conservativeResize(n_ub_ + n_add);
     b_ub_shift_.conservativeResize(n_ub_ + n_add);
   } else {
-    A_ub_ = std::make_shared<Eigen::SparseMatrix<double>>(n_add, n_dim_);
-    b_ub_ = std::make_shared<Eigen::VectorXd>(n_add);
+    A_ub_ = std::make_unique<Eigen::SparseMatrix<double>>(n_add, n_dim_);
+    b_ub_ = std::make_unique<Eigen::VectorXd>(n_add);
     b_ub_shift_ = Eigen::VectorXd(n_add);
   }
 
@@ -338,7 +339,7 @@ void stuka::LP::ConstantFolding::addConstrs_ub(const std::shared_ptr<Eigen::Spar
   if (n_constants_ == 0) {
     next()->addConstrs_ub(A, b);
   } else {
-    std::shared_ptr<Eigen::SparseMatrix<double>> A_next = std::make_shared<Eigen::SparseMatrix<double>>(n_add, n_dim_ -
+    std::unique_ptr<Eigen::SparseMatrix<double>> A_next = std::make_unique<Eigen::SparseMatrix<double>>(n_add, n_dim_ -
         n_constants_);
 
     size_t num_const = 0;
@@ -353,8 +354,8 @@ void stuka::LP::ConstantFolding::addConstrs_ub(const std::shared_ptr<Eigen::Spar
       }
     }
     A_next->finalize();
-    std::shared_ptr<Eigen::VectorXd>
-        b_next = std::make_shared<Eigen::VectorXd>(b_ub_->tail(n_add) - b_ub_shift_.tail(n_add));
+    std::unique_ptr<Eigen::VectorXd>
+        b_next = std::make_unique<Eigen::VectorXd>(b_ub_->tail(n_add) - b_ub_shift_.tail(n_add));
     next()->addConstrs_ub(A_next, b_next);
   }
 
@@ -362,8 +363,8 @@ void stuka::LP::ConstantFolding::addConstrs_ub(const std::shared_ptr<Eigen::Spar
 }
 
 void stuka::LP::ConstantFolding::removeConstr_ub(size_t index) {
-  std::shared_ptr<Eigen::SparseMatrix<double>> A = std::make_shared<Eigen::SparseMatrix<double>>(n_ub_ - 1, n_dim_);
-  std::shared_ptr<Eigen::VectorXd> b = std::make_shared<Eigen::VectorXd>(n_ub_ - 1);
+  std::unique_ptr<Eigen::SparseMatrix<double>> A = std::make_unique<Eigen::SparseMatrix<double>>(n_ub_ - 1, n_dim_);
+  std::unique_ptr<Eigen::VectorXd> b = std::make_unique<Eigen::VectorXd>(n_ub_ - 1);
 
   A->reserve(A_ub_->nonZeros());
   for (size_t i = 0; i < n_dim_; ++i) {
@@ -378,8 +379,8 @@ void stuka::LP::ConstantFolding::removeConstr_ub(size_t index) {
   b->head(index) = b_ub_->head(index);
   b->tail(n_dim_ - index - 1) = b_ub_->tail(n_dim_ - index - 1);
 
-  A_ub_ = A;
-  b_ub_ = b;
+  A_ub_ = std::move(A);
+  b_ub_ = std::move(b);
 
   b_ub_shift_.head(index) = b_ub_shift_.head(index);
   b_ub_shift_.segment(index, n_dim_ - index - 1) = b_ub_shift_.tail(n_dim_ - index - 1);
@@ -391,9 +392,9 @@ void stuka::LP::ConstantFolding::removeConstr_ub(size_t index) {
 }
 
 void stuka::LP::ConstantFolding::removeConstrs_ub(size_t index, size_t n_remove) {
-  std::shared_ptr<Eigen::SparseMatrix<double>> A = std::make_shared<Eigen::SparseMatrix<double>>(n_ub_ - n_remove,
+  std::unique_ptr<Eigen::SparseMatrix<double>> A = std::make_unique<Eigen::SparseMatrix<double>>(n_ub_ - n_remove,
                                                                                                  n_dim_);
-  std::shared_ptr<Eigen::VectorXd> b = std::make_shared<Eigen::VectorXd>(n_ub_ - 1);
+  std::unique_ptr<Eigen::VectorXd> b = std::make_unique<Eigen::VectorXd>(n_ub_ - 1);
 
   A->reserve(A_ub_->nonZeros());
   for (size_t i = 0; i < n_dim_; ++i) {
@@ -408,8 +409,8 @@ void stuka::LP::ConstantFolding::removeConstrs_ub(size_t index, size_t n_remove)
   b->head(index) = b_ub_->head(index);
   b->tail(n_dim_ - index - n_remove) = b_ub_->tail(n_dim_ - index - n_remove);
 
-  A_ub_ = A;
-  b_ub_ = b;
+  A_ub_ = std::move(A);
+  b_ub_ = std::move(b);
 
   b_ub_shift_.head(index) = b_ub_shift_.head(index);
   b_ub_shift_.segment(index + n_remove, n_dim_ - index - n_remove) = b_ub_shift_.tail(n_dim_ - index - n_remove);
@@ -420,14 +421,14 @@ void stuka::LP::ConstantFolding::removeConstrs_ub(size_t index, size_t n_remove)
   n_ub_ -= n_remove;
 }
 
-void stuka::LP::ConstantFolding::addConstr_eq(const std::shared_ptr<Eigen::VectorXd> &a, const double &b) {
+void stuka::LP::ConstantFolding::addConstr_eq(const std::unique_ptr<Eigen::VectorXd> &a, const double &b) {
   if (b_eq_) {
     A_eq_->conservativeResize(n_eq_ + 1, n_dim_);
     b_eq_->conservativeResize(n_eq_ + 1);
     b_eq_shift_.conservativeResize(n_eq_ + 1);
   } else {
-    A_eq_ = std::make_shared<Eigen::SparseMatrix<double>>(1, n_dim_);
-    b_eq_ = std::make_shared<Eigen::VectorXd>(1);
+    A_eq_ = std::make_unique<Eigen::SparseMatrix<double>>(1, n_dim_);
+    b_eq_ = std::make_unique<Eigen::VectorXd>(1);
     b_eq_shift_ = Eigen::VectorXd(1);
   }
 
@@ -440,7 +441,7 @@ void stuka::LP::ConstantFolding::addConstr_eq(const std::shared_ptr<Eigen::Vecto
   if (n_constants_ == 0) {
     next()->addConstr_eq(a, b);
   } else {
-    std::shared_ptr<Eigen::VectorXd> a_next = std::make_shared<Eigen::VectorXd>(n_dim_ - n_constants_);
+    std::unique_ptr<Eigen::VectorXd> a_next = std::make_unique<Eigen::VectorXd>(n_dim_ - n_constants_);
 
     size_t num_const = 0;
     for (size_t i = 0; i < n_dim_; ++i) {
@@ -456,8 +457,8 @@ void stuka::LP::ConstantFolding::addConstr_eq(const std::shared_ptr<Eigen::Vecto
   n_eq_++;
 }
 
-void stuka::LP::ConstantFolding::addConstrs_eq(const std::shared_ptr<Eigen::SparseMatrix<double>> &A,
-                                               const std::shared_ptr<Eigen::VectorXd> &b) {
+void stuka::LP::ConstantFolding::addConstrs_eq(const std::unique_ptr<Eigen::SparseMatrix<double>> &A,
+                                               const std::unique_ptr<Eigen::VectorXd> &b) {
   size_t n_add = b->size();
 
   if (b_eq_) {
@@ -465,8 +466,8 @@ void stuka::LP::ConstantFolding::addConstrs_eq(const std::shared_ptr<Eigen::Spar
     b_eq_->conservativeResize(n_eq_ + n_add);
     b_eq_shift_.conservativeResize(n_eq_ + n_add);
   } else {
-    A_eq_ = std::make_shared<Eigen::SparseMatrix<double>>(n_add, n_dim_);
-    b_eq_ = std::make_shared<Eigen::VectorXd>(n_add);
+    A_eq_ = std::make_unique<Eigen::SparseMatrix<double>>(n_add, n_dim_);
+    b_eq_ = std::make_unique<Eigen::VectorXd>(n_add);
     b_eq_shift_ = Eigen::VectorXd(n_add);
   }
 
@@ -479,7 +480,7 @@ void stuka::LP::ConstantFolding::addConstrs_eq(const std::shared_ptr<Eigen::Spar
   if (n_constants_ == 0) {
     next()->addConstrs_eq(A, b);
   } else {
-    std::shared_ptr<Eigen::SparseMatrix<double>> A_next = std::make_shared<Eigen::SparseMatrix<double>>(n_add, n_dim_ -
+    std::unique_ptr<Eigen::SparseMatrix<double>> A_next = std::make_unique<Eigen::SparseMatrix<double>>(n_add, n_dim_ -
         n_constants_);
 
     size_t num_const = 0;
@@ -494,8 +495,8 @@ void stuka::LP::ConstantFolding::addConstrs_eq(const std::shared_ptr<Eigen::Spar
       }
     }
     A_next->finalize();
-    std::shared_ptr<Eigen::VectorXd>
-        b_next = std::make_shared<Eigen::VectorXd>(b_eq_->tail(n_add) - b_eq_shift_.tail(n_add));
+    std::unique_ptr<Eigen::VectorXd>
+        b_next = std::make_unique<Eigen::VectorXd>(b_eq_->tail(n_add) - b_eq_shift_.tail(n_add));
     next()->addConstrs_eq(A_next, b_next);
   }
 
@@ -503,8 +504,8 @@ void stuka::LP::ConstantFolding::addConstrs_eq(const std::shared_ptr<Eigen::Spar
 }
 
 void stuka::LP::ConstantFolding::removeConstr_eq(size_t index) {
-  std::shared_ptr<Eigen::SparseMatrix<double>> A = std::make_shared<Eigen::SparseMatrix<double>>(n_eq_ - 1, n_dim_);
-  std::shared_ptr<Eigen::VectorXd> b = std::make_shared<Eigen::VectorXd>(n_eq_ - 1);
+  std::unique_ptr<Eigen::SparseMatrix<double>> A = std::make_unique<Eigen::SparseMatrix<double>>(n_eq_ - 1, n_dim_);
+  std::unique_ptr<Eigen::VectorXd> b = std::make_unique<Eigen::VectorXd>(n_eq_ - 1);
 
   A->reserve(A_eq_->nonZeros());
   for (size_t i = 0; i < n_dim_; ++i) {
@@ -519,8 +520,8 @@ void stuka::LP::ConstantFolding::removeConstr_eq(size_t index) {
   b->head(index) = b_eq_->head(index);
   b->tail(n_dim_ - index - 1) = b_eq_->tail(n_dim_ - index - 1);
 
-  A_eq_ = A;
-  b_eq_ = b;
+  A_eq_ = std::move(A);
+  b_eq_ = std::move(b);
 
   b_eq_shift_.head(index) = b_eq_shift_.head(index);
   b_eq_shift_.segment(index, n_dim_ - index - 1) = b_eq_shift_.tail(n_dim_ - index - 1);
@@ -532,9 +533,9 @@ void stuka::LP::ConstantFolding::removeConstr_eq(size_t index) {
 }
 
 void stuka::LP::ConstantFolding::removeConstrs_eq(size_t index, size_t n_remove) {
-  std::shared_ptr<Eigen::SparseMatrix<double>> A = std::make_shared<Eigen::SparseMatrix<double>>(n_eq_ - n_remove,
+  std::unique_ptr<Eigen::SparseMatrix<double>> A = std::make_unique<Eigen::SparseMatrix<double>>(n_eq_ - n_remove,
                                                                                                  n_dim_);
-  std::shared_ptr<Eigen::VectorXd> b = std::make_shared<Eigen::VectorXd>(n_eq_ - 1);
+  std::unique_ptr<Eigen::VectorXd> b = std::make_unique<Eigen::VectorXd>(n_eq_ - 1);
 
   A->reserve(A_eq_->nonZeros());
   for (size_t i = 0; i < n_dim_; ++i) {
@@ -549,8 +550,8 @@ void stuka::LP::ConstantFolding::removeConstrs_eq(size_t index, size_t n_remove)
   b->head(index) = b_eq_->head(index);
   b->tail(n_dim_ - index - n_remove) = b_eq_->tail(n_dim_ - index - n_remove);
 
-  A_eq_ = A;
-  b_eq_ = b;
+  A_eq_ = std::move(A);
+  b_eq_ = std::move(b);
 
   b_eq_shift_.head(index) = b_eq_shift_.head(index);
   b_eq_shift_.segment(index + n_remove, n_dim_ - index - n_remove) = b_eq_shift_.tail(n_dim_ - index - n_remove);

@@ -22,7 +22,7 @@ void init_qp(py::module &m) {
                     [](stuka::QP::QuadraticProgram &self) {
                       return (self.Q) ? py::cast<Eigen::SparseMatrix<double>>(*self.Q) : py::cast<py::none>(Py_None);
                     }, py::cpp_function([](stuka::QP::QuadraticProgram &self, Eigen::SparseMatrix<double> Q_) {
-                                          self.Q = std::make_shared<Eigen::SparseMatrix<double>>(Q_);
+                                          self.Q = std::make_unique<Eigen::SparseMatrix<double>>(Q_);
                                         },
                                         py::keep_alive<1, 2>()))
       .def_property("c",
@@ -30,7 +30,7 @@ void init_qp(py::module &m) {
                       return (self.c) ? py::cast<Eigen::VectorXd>(*self.c) : py::cast<py::none>(Py_None);
                     },
                     py::cpp_function([](stuka::QP::QuadraticProgram &self,
-                                        Eigen::VectorXd c_) { self.c = std::make_shared<Eigen::VectorXd>(c_); },
+                                        Eigen::VectorXd c_) { self.c = std::make_unique<Eigen::VectorXd>(c_); },
                                      py::keep_alive<1, 2>()))
       .def_property("A_ub",
                     [](stuka::QP::QuadraticProgram &self) {
@@ -38,7 +38,7 @@ void init_qp(py::module &m) {
                     },
                     py::cpp_function([](stuka::QP::QuadraticProgram &self,
                                         Eigen::SparseMatrix<double> A_ub_) {
-                                       self.A_ub = std::make_shared<Eigen::SparseMatrix<double>>(A_ub_);
+                                       self.A_ub = std::make_unique<Eigen::SparseMatrix<double>>(A_ub_);
                                      },
                                      py::keep_alive<1, 2>()))
       .def_property("b_ub",
@@ -47,7 +47,7 @@ void init_qp(py::module &m) {
                     },
                     py::cpp_function([](stuka::QP::QuadraticProgram &self,
                                         Eigen::VectorXd b_ub_) {
-                                       self.b_ub = std::make_shared<Eigen::VectorXd>(b_ub_);
+                                       self.b_ub = std::make_unique<Eigen::VectorXd>(b_ub_);
                                      },
                                      py::keep_alive<1, 2>()))
       .def_property("A_eq",
@@ -56,7 +56,7 @@ void init_qp(py::module &m) {
                     },
                     py::cpp_function([](stuka::QP::QuadraticProgram &self,
                                         Eigen::SparseMatrix<double> A_eq_) {
-                                       self.A_eq = std::make_shared<Eigen::SparseMatrix<double>>(A_eq_);
+                                       self.A_eq = std::make_unique<Eigen::SparseMatrix<double>>(A_eq_);
                                      },
                                      py::keep_alive<1, 2>()))
       .def_property("b_eq",
@@ -65,7 +65,7 @@ void init_qp(py::module &m) {
                     },
                     py::cpp_function([](stuka::QP::QuadraticProgram &self,
                                         Eigen::VectorXd b_eq_) {
-                                       self.b_eq = std::make_shared<Eigen::VectorXd>(b_eq_);
+                                       self.b_eq = std::make_unique<Eigen::VectorXd>(b_eq_);
                                      },
                                      py::keep_alive<1, 2>()))
       .def_property("lb",
@@ -73,13 +73,13 @@ void init_qp(py::module &m) {
                       return (self.lb) ? py::cast<Eigen::VectorXd>(*self.lb) : py::cast<py::none>(Py_None);
                     },
                     py::cpp_function([](stuka::QP::QuadraticProgram &self,
-                                        Eigen::VectorXd lb_) { self.lb = std::make_shared<Eigen::VectorXd>(lb_); },
+                                        Eigen::VectorXd lb_) { self.lb = std::make_unique<Eigen::VectorXd>(lb_); },
                                      py::keep_alive<1, 2>()))
       .def_property("ub",
                     [](stuka::QP::QuadraticProgram &self) {
                       return (self.ub) ? py::cast<Eigen::VectorXd>(*self.ub) : py::cast<py::none>(Py_None);
                     },
                     py::cpp_function([](stuka::QP::QuadraticProgram &self,
-                                        Eigen::VectorXd ub_) { self.ub = std::make_shared<Eigen::VectorXd>(ub_); },
+                                        Eigen::VectorXd ub_) { self.ub = std::make_unique<Eigen::VectorXd>(ub_); },
                                      py::keep_alive<1, 2>()));
 }

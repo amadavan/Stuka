@@ -18,10 +18,11 @@
 #include "../stochastic/base_solver.h"
 #include "../stochastic/stochastic_pd.h"
 #include "../stochastic/stochastic_pd2.h"
+#include "../stochastic/stochastic_pd_jacobi.h"
 
 #ifdef ENABLE_GUROBI
-#include "../LP/gurobi.h"
-#include "../QP/gurobi.h"
+#include "../gurobi/LP/gurobi.h"
+#include "../gurobi/QP/gurobi.h"
 #endif
 
 namespace stuka { namespace util {

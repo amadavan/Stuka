@@ -22,22 +22,22 @@ class PreconditionedLinearProgram : public BaseLinearProgram {
 
   void initialize(const LinearProgram &prog) override { next_->initialize(prog); }
 
-  void setObjective(const std::shared_ptr<Eigen::VectorXd> &c) override { next_->setObjective(c); }
+  void setObjective(const std::unique_ptr<Eigen::VectorXd> &c) override { next_->setObjective(c); }
 
-  void setRHS(const std::shared_ptr<Eigen::VectorXd> &b_ub, const std::shared_ptr<Eigen::VectorXd> &b_eq) override {
+  void setRHS(const std::unique_ptr<Eigen::VectorXd> &b_ub, const std::unique_ptr<Eigen::VectorXd> &b_eq) override {
     next_->setRHS(b_ub, b_eq);
   }
 
-  void setBounds(const std::shared_ptr<Eigen::VectorXd> &lb, const std::shared_ptr<Eigen::VectorXd> &ub) override {
+  void setBounds(const std::unique_ptr<Eigen::VectorXd> &lb, const std::unique_ptr<Eigen::VectorXd> &ub) override {
     next_->setBounds(lb, ub);
   }
 
-  void addVar(double c, std::shared_ptr<Eigen::VectorXd> a_ub, std::shared_ptr<Eigen::VectorXd> a_eq, double lb,
+  void addVar(double c, const std::unique_ptr<Eigen::VectorXd> &a_ub, const std::unique_ptr<Eigen::VectorXd> &a_eq, double lb,
               double ub) override { next_->addVar(c, a_ub, a_eq, lb, ub); }
 
-  void addVars(std::shared_ptr<Eigen::VectorXd> c, std::shared_ptr<Eigen::SparseMatrix<double>> A_ub,
-               std::shared_ptr<Eigen::SparseMatrix<double>> A_eq, std::shared_ptr<Eigen::VectorXd> lb,
-               std::shared_ptr<Eigen::VectorXd> ub) override { next_->addVars(c, A_ub, A_eq, lb, ub); }
+  void addVars(const std::unique_ptr<Eigen::VectorXd> &c, const std::unique_ptr<Eigen::SparseMatrix<double>> &A_ub,
+               const std::unique_ptr<Eigen::SparseMatrix<double>> &A_eq, const std::unique_ptr<Eigen::VectorXd> &lb,
+               const std::unique_ptr<Eigen::VectorXd> &ub) override { next_->addVars(c, A_ub, A_eq, lb, ub); }
 
   void removeVar(size_t var) override { next_->removeVar(var); }
 
@@ -45,19 +45,19 @@ class PreconditionedLinearProgram : public BaseLinearProgram {
 
   void removeBackVars(size_t n_remove) override { next_->removeBackVars(n_remove); }
 
-  void addConstr_ub(const std::shared_ptr<Eigen::VectorXd> &a, const double &b) override { next_->addConstr_ub(a, b); }
+  void addConstr_ub(const std::unique_ptr<Eigen::VectorXd> &a, const double &b) override { next_->addConstr_ub(a, b); }
 
-  void addConstrs_ub(const std::shared_ptr<Eigen::SparseMatrix<double>> &A,
-                     const std::shared_ptr<Eigen::VectorXd> &b) override { next_->addConstrs_ub(A, b); }
+  void addConstrs_ub(const std::unique_ptr<Eigen::SparseMatrix<double>> &A,
+                     const std::unique_ptr<Eigen::VectorXd> &b) override { next_->addConstrs_ub(A, b); }
 
   void removeConstr_ub(size_t index) override { next_->removeConstr_ub(index); }
 
   void removeConstrs_ub(size_t index, size_t n_remove) override { next_->removeConstrs_ub(index, n_remove); }
 
-  void addConstr_eq(const std::shared_ptr<Eigen::VectorXd> &a, const double &b) override { next_->addConstr_eq(a, b); }
+  void addConstr_eq(const std::unique_ptr<Eigen::VectorXd> &a, const double &b) override { next_->addConstr_eq(a, b); }
 
-  void addConstrs_eq(const std::shared_ptr<Eigen::SparseMatrix<double>> &A,
-                     const std::shared_ptr<Eigen::VectorXd> &b) override { next_->addConstrs_eq(A, b); }
+  void addConstrs_eq(const std::unique_ptr<Eigen::SparseMatrix<double>> &A,
+                     const std::unique_ptr<Eigen::VectorXd> &b) override { next_->addConstrs_eq(A, b); }
 
   void removeConstr_eq(size_t index) override { next_->removeConstr_eq(index); }
 

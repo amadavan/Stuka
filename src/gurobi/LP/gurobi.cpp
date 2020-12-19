@@ -1,25 +1,28 @@
 //
-// Created by Avinash Madavan on 1/7/19.
+// Created by Avinash Madavan on 12/4/18.
 //
 
-#include <stuka/QP/gurobi.h>
+#include <stuka/gurobi/LP/gurobi.h>
 
-stuka::QP::GurobiSolver::GurobiSolver(const stuka::QP::QuadraticProgram &qp, const stuka::Options &opts) : BaseQPSolver(
-    qp, opts), prog_(qp) {}
+stuka::LP::GurobiSolver::GurobiSolver(const stuka::LP::LinearProgram &lp, const stuka::Options &opts) :
+    BaseLPSolver(lp, opts), prog_() {
+  prog_.initialize(lp);
+  prog_.model_.set(GRB_IntParam_Method, opts.gurobi_method);
+}
 
-stuka::QP::BaseQuadraticProgram &stuka::QP::GurobiSolver::getQP() {
+stuka::LP::BaseLinearProgram &stuka::LP::GurobiSolver::getLP() {
   return prog_;
 }
 
-void stuka::QP::GurobiSolver::iterate() {
+void stuka::LP::GurobiSolver::iterate() {
   prog_.model_.optimize();
 }
 
-bool stuka::QP::GurobiSolver::terminate() {
+bool stuka::LP::GurobiSolver::terminate() {
   return true;
 }
 
-const stuka::OptimizeState stuka::QP::GurobiSolver::getState() {
+const stuka::OptimizeState stuka::LP::GurobiSolver::getState() {
   OptimizeState state;
   state.x = Eigen::VectorXd(prog_.n_dim_);
 

@@ -13,18 +13,18 @@ void stuka::dLP::DecomposedLinearProgram::ConstraintReductionBounds() {
   size_t n_dim0 = c.back()->size();
 
   LP::LinearProgram master;
-  master.c = c.back();
-  master.A_ub = A_ub.back();
-  master.b_ub = b_ub.back();
-  master.A_eq = A_eq.back();
-  master.b_eq = b_eq.back();
-  master.lb = lb.back();
-  master.ub = ub.back();
+  master.c = util::DenseOps::unique_copy(c.back());
+  master.A_ub = util::SparseOps::unique_copy(A_ub.back());
+  master.b_ub = util::DenseOps::unique_copy(b_ub.back());
+  master.A_eq = util::SparseOps::unique_copy(A_eq.back());
+  master.b_eq = util::DenseOps::unique_copy(b_eq.back());
+  master.lb = util::DenseOps::unique_copy(lb.back());
+  master.ub = util::DenseOps::unique_copy(ub.back());
 
   master.reduceConstraints(ConstraintReductionMethods::BOUNDS);
 
-  A_ub.back() = master.A_ub;
-  b_ub.back() = master.b_ub;
+  A_ub.back() = std::move(master.A_ub);
+  b_ub.back() = std::move(master.b_ub);
 
   size_t n_sub = c.size() - 1;
   for (size_t i = 0; i < n_sub; ++i) {
@@ -48,17 +48,17 @@ void stuka::dLP::DecomposedLinearProgram::ConstraintReductionBounds() {
 
     Eigen::VectorXd Ui = A_ub[i]->cwiseMax(zero_A) * *ub[i] + A_ub[i]->cwiseMin(zero_A) * *lb[i];
     Eigen::VectorXd U0 = C_ub[i]->cwiseMax(zero_C) * *ub.back() + C_ub[i]->cwiseMin(zero_C) * *lb.back();
-    Eigen::Matrix<bool, Eigen::Dynamic, 1> redundancy = (*(b_ub[i]) - U0 - Ui).array() > 0;
+    Eigen::Array<bool, Eigen::Dynamic, 1> redundancy = (*(b_ub[i]) - U0 - Ui).array() > 0;
 
     size_t n_dim = c[i]->size();
     size_t n_ub = b_ub[i]->size();
     size_t n_redundant = redundancy.count();
 
-    std::shared_ptr<Eigen::SparseMatrix<double>>
-        A_ub_reduced = std::make_shared<Eigen::SparseMatrix<double>>(n_ub - n_redundant, n_dim);
-    std::shared_ptr<Eigen::VectorXd> b_ub_reduced = std::make_shared<Eigen::VectorXd>(n_ub - n_redundant);
-    std::shared_ptr<Eigen::SparseMatrix<double>>
-        C_ub_reduced = std::make_shared<Eigen::SparseMatrix<double>>(n_ub - n_redundant, n_dim0);
+    std::unique_ptr<Eigen::SparseMatrix<double>>
+        A_ub_reduced = std::make_unique<Eigen::SparseMatrix<double>>(n_ub - n_redundant, n_dim);
+    std::unique_ptr<Eigen::VectorXd> b_ub_reduced = std::make_unique<Eigen::VectorXd>(n_ub - n_redundant);
+    std::unique_ptr<Eigen::SparseMatrix<double>>
+        C_ub_reduced = std::make_unique<Eigen::SparseMatrix<double>>(n_ub - n_redundant, n_dim0);
 
     A_ub_reduced->reserve(A_ub[i]->nonZeros());
     C_ub_reduced->reserve(C_ub[i]->nonZeros());
@@ -94,9 +94,9 @@ void stuka::dLP::DecomposedLinearProgram::ConstraintReductionBounds() {
           C_ub_reduced->insertBack(active_count.coeff(it.row()), j) = it.value();
     }
 
-    A_ub[i] = A_ub_reduced;
-    b_ub[i] = b_ub_reduced;
-    C_ub[i] = C_ub_reduced;
+    A_ub[i] = std::move(A_ub_reduced);
+    b_ub[i] = std::move(b_ub_reduced);
+    C_ub[i] = std::move(C_ub_reduced);
 
     std::cout << n_redundant << std::endl;
   }

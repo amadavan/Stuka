@@ -12,6 +12,8 @@
 #include <Eigen/SparseCore>
 #include <Eigen/SPQRSupport>
 
+#include "../options.h"
+#include "../constants.h"
 #include "../util/sparse_ops.h"
 #include "../util/dense_ops.h"
 #include "../util/solver_factory.h"
@@ -23,9 +25,10 @@
 namespace stuka { namespace dLP {
 class CRESubproblem {
  public:
-  explicit CRESubproblem(Subproblem sub, const Options = Options());
+  explicit CRESubproblem(Subproblem &&sub, const Options & = Options());
+  CRESubproblem(CRESubproblem &&sub);
 
-  CriticalRegion computeCriticalRegion(const Eigen::VectorXd &x) const;
+  [[nodiscard]] CriticalRegion computeCriticalRegion(const Eigen::VectorXd &x);
  private:
   std::unique_ptr<LP::BaseLPSolver> solver_;
 
@@ -42,6 +45,7 @@ class CRESubproblem {
   Eigen::SparseMatrix<double> A_xub_;           // Sparse identity matrix corresponding to ub constraints
 
   const Subproblem sub_;
+  const Options opts_;
 };
 }}
 

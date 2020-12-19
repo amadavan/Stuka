@@ -25,7 +25,8 @@ class LazyConstraints : public BaseLPSolver {
   BaseLinearProgram &getLP() override;
 
  private:
-  size_t nit;
+  size_t nit_;
+  size_t constraints_added_;
 
   std::unique_ptr<BaseLPSolver> solver_;
   LazyLinearProgram lp_;

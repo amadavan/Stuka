@@ -7,10 +7,10 @@
 
 #include <gurobi_c++.h>
 
-#include "../optimize_state.h"
+#include "../../optimize_state.h"
 
-#include "base_solver.h"
-#include "qp.h"
+#include "../../QP/base_solver.h"
+#include "../../QP/qp.h"
 #include "gurobi_qp.h"
 
 namespace stuka { namespace QP {

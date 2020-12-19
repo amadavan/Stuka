@@ -4,7 +4,7 @@
 
 #include <stuka/dLP/naive_cre_subproblem.h>
 
-stuka::dLP::NaiveCRESubproblem::NaiveCRESubproblem(const stuka::dLP::Subproblem sub, const stuka::Options opts) : sub_(sub), opts_(opts) {
+stuka::dLP::NaiveCRESubproblem::NaiveCRESubproblem(stuka::dLP::Subproblem &&sub, const stuka::Options &opts) : sub_(std::move(sub)) {
   n_dim_ = sub_.c->size();
   n_dim_master_ = (sub_.C_ub) ? sub_.C_ub->cols() : (sub_.C_eq) ? sub_.C_eq->cols() : 0;
 
@@ -48,13 +48,45 @@ stuka::dLP::NaiveCRESubproblem::NaiveCRESubproblem(const stuka::dLP::Subproblem 
     b_ub_ = util::DenseOps::get_rows(b_ub_, xub_constraints_);
   }
 
-  prog_.c = sub_.c;
-  prog_.A_ub = sub_.A_ub;
-  prog_.b_ub = sub_.b_ub;
-  prog_.A_eq = sub_.A_eq;
-  prog_.b_eq = sub_.b_eq;
-  prog_.lb = sub_.lb;
-  prog_.ub = sub_.ub;
+  prog_.c = util::DenseOps::unique_copy(sub_.c);
+  prog_.A_ub = util::SparseOps::unique_copy(sub_.A_ub);
+  prog_.b_ub = util::DenseOps::unique_copy(sub_.b_ub);
+  prog_.A_eq = util::SparseOps::unique_copy(sub_.A_eq);
+  prog_.b_eq = util::DenseOps::unique_copy(sub_.b_eq);
+  prog_.lb = util::DenseOps::unique_copy(sub_.lb);
+  prog_.ub = util::DenseOps::unique_copy(sub_.ub);
+}
+
+stuka::dLP::NaiveCRESubproblem::NaiveCRESubproblem(NaiveCRESubproblem &&sub) : opts_(sub.opts_),
+                                                                sub_{
+                                                                    util::DenseOps::unique_copy(sub.sub_.c),
+                                                                    util::SparseOps::unique_copy(sub.sub_.A_ub),
+                                                                    util::DenseOps::unique_copy(sub.sub_.b_ub),
+                                                                    util::SparseOps::unique_copy(sub.sub_.C_ub),
+                                                                    util::SparseOps::unique_copy(sub.sub_.A_eq),
+                                                                    util::DenseOps::unique_copy(sub.sub_.b_eq),
+                                                                    util::SparseOps::unique_copy(sub.sub_.C_eq),
+                                                                    util::DenseOps::unique_copy(sub.sub_.lb),
+                                                                    util::DenseOps::unique_copy(sub.sub_.ub)} {
+  n_dim_ = sub.n_dim_;
+  n_dim_master_ = sub.n_dim_master_;
+  n_bounds_ = sub.n_bounds_;
+  b_lb_ = std::move(sub.b_lb_);
+  b_ub_ = std::move(sub.b_ub_);
+  bone_eq_ = std::move(sub.bone_eq_);
+  xlb_constraints_ = std::move(sub.xlb_constraints_);
+  xub_constraints_ = std::move(sub.xub_constraints_);
+  A_xlb_ = std::move(sub.A_xlb_);
+  A_xub_ = std::move(sub.A_xub_);
+
+  prog_.c = util::DenseOps::unique_copy(sub_.c);
+  prog_.A_ub = util::SparseOps::unique_copy(sub_.A_ub);
+  prog_.b_ub = util::DenseOps::unique_copy(sub_.b_ub);
+  prog_.A_eq = util::SparseOps::unique_copy(sub_.A_eq);
+  prog_.b_eq = util::DenseOps::unique_copy(sub_.b_eq);
+  prog_.lb = util::DenseOps::unique_copy(sub_.lb);
+  prog_.ub = util::DenseOps::unique_copy(sub_.ub);
+
 }
 
 stuka::dLP::CriticalRegion stuka::dLP::NaiveCRESubproblem::computeCriticalRegion(const Eigen::VectorXd &x) {
@@ -62,6 +94,8 @@ stuka::dLP::CriticalRegion stuka::dLP::NaiveCRESubproblem::computeCriticalRegion
   if (sub_.b_ub) prog_.b_ub = std::make_shared<Eigen::VectorXd>(*sub_.b_ub - *sub_.C_ub * x);
   if (sub_.b_eq) prog_.b_eq = std::make_shared<Eigen::VectorXd>(*sub_.b_eq - *sub_.C_eq * x);
 
+  if (sub_.b_ub) prog_.b_ub = std::make_unique<Eigen::VectorXd>(*sub_.b_ub - *sub_.C_ub * x);
+  if (sub_.b_eq) prog_.b_eq = std::make_unique<Eigen::VectorXd>(*sub_.b_eq - *sub_.C_eq * x);
   std::unique_ptr<LP::BaseLPSolver> solver = util::createSolver(prog_, opts_);
 
   // Solve the subproblem at the given point

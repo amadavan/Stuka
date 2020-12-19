@@ -5,9 +5,15 @@
 #ifndef STUKA_dLP_BENDERS_H
 #define STUKA_dLP_BENDERS_H
 
+#include <Eigen/Core>
+#include <Eigen/SparseCore>
+
 #include "../constants.h"
+#include "../options.h"
 #include "../util/solver_factory.h"
 #include "../LP/base_solver.h"
+#include "../util/dense_ops.h"
+#include "../util/sparse_ops.h"
 
 #include "base_solver.h"
 #include "benders_cut.h"

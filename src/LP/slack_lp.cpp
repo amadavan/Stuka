@@ -160,30 +160,31 @@ void stuka::LP::SlackLinearProgram::initialize(const stuka::LP::LinearProgram &p
   A_->finalize();
 }
 
-void stuka::LP::SlackLinearProgram::setObjective(const std::shared_ptr<Eigen::VectorXd> &c) {
+void stuka::LP::SlackLinearProgram::setObjective(const std::unique_ptr<Eigen::VectorXd> &c) {
   throw std::runtime_error("LP::SlackLinearProgram::setObjective not implemented");
 
 }
 
-void stuka::LP::SlackLinearProgram::setRHS(const std::shared_ptr<Eigen::VectorXd> &b_ub,
-                                           const std::shared_ptr<Eigen::VectorXd> &b_eq) {
+void stuka::LP::SlackLinearProgram::setRHS(const std::unique_ptr<Eigen::VectorXd> &b_ub,
+                                           const std::unique_ptr<Eigen::VectorXd> &b_eq) {
   throw std::runtime_error("LP::SlackLinearProgram::setRHS not implemented");
 }
 
-void stuka::LP::SlackLinearProgram::setBounds(const std::shared_ptr<Eigen::VectorXd> &lb,
-                                              const std::shared_ptr<Eigen::VectorXd> &ub) {
+void stuka::LP::SlackLinearProgram::setBounds(const std::unique_ptr<Eigen::VectorXd> &lb,
+                                              const std::unique_ptr<Eigen::VectorXd> &ub) {
   throw std::runtime_error("LP::SlackLinearProgram::setBounds not implemented");
 }
 
-void stuka::LP::SlackLinearProgram::addVar(double c, std::shared_ptr<Eigen::VectorXd> a_ub,
-                                           std::shared_ptr<Eigen::VectorXd> a_eq, double lb, double ub) {
+void stuka::LP::SlackLinearProgram::addVar(double c, const std::unique_ptr<Eigen::VectorXd> &a_ub,
+                                           const std::unique_ptr<Eigen::VectorXd> &a_eq, double lb, double ub) {
   throw std::runtime_error("LP::SlackLinearProgram::addVar not implemented");
 }
 
-void stuka::LP::SlackLinearProgram::addVars(std::shared_ptr<Eigen::VectorXd> c,
-                                            std::shared_ptr<Eigen::SparseMatrix<double>> A_ub,
-                                            std::shared_ptr<Eigen::SparseMatrix<double>> A_eq,
-                                            std::shared_ptr<Eigen::VectorXd> lb, std::shared_ptr<Eigen::VectorXd> ub) {
+void stuka::LP::SlackLinearProgram::addVars(const std::unique_ptr<Eigen::VectorXd> &c,
+                                            const std::unique_ptr<Eigen::SparseMatrix<double>> &A_ub,
+                                            const std::unique_ptr<Eigen::SparseMatrix<double>> &A_eq,
+                                            const std::unique_ptr<Eigen::VectorXd> &lb,
+                                            const std::unique_ptr<Eigen::VectorXd> &ub) {
   throw std::runtime_error("LP::SlackLinearProgram::addVars not implemented");
 }
 
@@ -199,12 +200,12 @@ void stuka::LP::SlackLinearProgram::removeBackVars(size_t n_remove) {
   throw std::runtime_error("LP::SlackLinearProgram::removeBackVars not implemented");
 }
 
-void stuka::LP::SlackLinearProgram::addConstr_ub(const std::shared_ptr<Eigen::VectorXd> &a, const double &b) {
+void stuka::LP::SlackLinearProgram::addConstr_ub(const std::unique_ptr<Eigen::VectorXd> &a, const double &b) {
   throw std::runtime_error("LP::SlackLinearProgram::addConstr_ub not implemented");
 }
 
-void stuka::LP::SlackLinearProgram::addConstrs_ub(const std::shared_ptr<Eigen::SparseMatrix<double>> &A,
-                                                  const std::shared_ptr<Eigen::VectorXd> &b) {
+void stuka::LP::SlackLinearProgram::addConstrs_ub(const std::unique_ptr<Eigen::SparseMatrix<double>> &A,
+                                                  const std::unique_ptr<Eigen::VectorXd> &b) {
   throw std::runtime_error("LP::SlackLinearProgram::addConstrs_ub not implemented");
 }
 
@@ -216,12 +217,12 @@ void stuka::LP::SlackLinearProgram::removeConstrs_ub(size_t index, size_t n_remo
   throw std::runtime_error("LP::SlackLinearProgram::removeConstrs_ub not implemented");
 }
 
-void stuka::LP::SlackLinearProgram::addConstr_eq(const std::shared_ptr<Eigen::VectorXd> &a, const double &b) {
+void stuka::LP::SlackLinearProgram::addConstr_eq(const std::unique_ptr<Eigen::VectorXd> &a, const double &b) {
   throw std::runtime_error("LP::SlackLinearProgram::addConstr_eq not implemented");
 }
 
-void stuka::LP::SlackLinearProgram::addConstrs_eq(const std::shared_ptr<Eigen::SparseMatrix<double>> &A,
-                                                  const std::shared_ptr<Eigen::VectorXd> &b) {
+void stuka::LP::SlackLinearProgram::addConstrs_eq(const std::unique_ptr<Eigen::SparseMatrix<double>> &A,
+                                                  const std::unique_ptr<Eigen::VectorXd> &b) {
   throw std::runtime_error("LP::SlackLinearProgram::addConstrs_eq not implemented");
 }
 

@@ -1,20 +1,19 @@
 //
-// Created by Avinash Madavan on 1/3/19.
+// Created by Avinash Madavan on 1/7/19.
 //
 
-#include <stuka/LP/gurobi_lp.h>
+#include <stuka/gurobi/QP/gurobi_qp.h>
 
-stuka::LP::GurobiLinearProgram::~GurobiLinearProgram() {
+stuka::QP::GurobiQuadraticProgram::~GurobiQuadraticProgram() {
   delete[] vars_;
   if (n_con_eq_ > 0) delete[] eqconstr_;
   if (n_con_ub_ > 0) delete[] ubconstr_;
 }
 
-// TODO: use asserts to check for invalid inputs
-stuka::LP::GurobiLinearProgram::GurobiLinearProgram() : env_(), model_(env_) {}
+stuka::QP::GurobiQuadraticProgram::GurobiQuadraticProgram(const stuka::QP::QuadraticProgram &prog)
+    : BaseQuadraticProgram(prog), model_(gurobi_env.getEnv()) {
 
-void stuka::LP::GurobiLinearProgram::initialize(const stuka::LP::LinearProgram &prog) {
-  n_dim_ = prog.c->size();
+  n_dim_ = prog.Q->rows();
   n_con_ub_ = prog.b_ub ? prog.b_ub->size() : 0;
   n_con_eq_ = prog.b_eq ? prog.b_eq->size() : 0;
 
@@ -35,7 +34,28 @@ void stuka::LP::GurobiLinearProgram::initialize(const stuka::LP::LinearProgram &
       ub.coeffRef(i) = (prog.ub->coeff(i) == INF) ? GRB_INFINITY : prog.ub->coeff(i);
 
   // Create variables
-  vars_ = model_.addVars(lb.data(), ub.data(), prog.c->data(), nullptr, nullptr, n_dim_);
+  vars_ = model_.addVars(lb.data(), ub.data(), nullptr, nullptr, nullptr, n_dim_);
+
+  // Set objective
+  // values is well defined for Q; need to convert InnerIndices and OuterStarts to appropriate form
+  prog.Q->makeCompressed();
+  long n_elements = prog.Q->nonZeros();
+  int *inner = prog.Q->innerIndexPtr();
+  int *outer = prog.Q->outerIndexPtr();
+
+  GRBVar inner_var[n_elements], outer_var[n_elements];
+  for (int i = 0; i < n_elements; ++i) inner_var[i] = vars_[inner[i]];
+
+  int outer_count = 0;
+  for (int i = 0; i < n_elements; ++i) {
+    while (outer_count + 1 < prog.Q->cols() && outer[outer_count + 1] <= i) ++outer_count;
+    outer_var[i] = vars_[outer_count];
+  }
+
+  GRBQuadExpr obj;
+  obj.addTerms(prog.Q->valuePtr(), inner_var, outer_var, n_elements);               // Quadratic terms
+  if (prog.c != nullptr) obj.addTerms(prog.c->data(), vars_, (int) n_dim_);         // Linear terms
+  model_.setObjective(obj);
 
   // Create inequality constraints
   if (n_con_ub_ > 0) {
@@ -48,8 +68,6 @@ void stuka::LP::GurobiLinearProgram::initialize(const stuka::LP::LinearProgram &
       for (Eigen::SparseMatrix<double>::InnerIterator it_ub(*prog.A_ub, i); it_ub; ++it_ub)
         model_.chgCoeff(*(ubconstr_ + it_ub.row()), *(vars_ + i), it_ub.value());
     }
-  } else {
-    ubconstr_ = nullptr;
   }
 
   // Create equality constraints
@@ -63,26 +81,41 @@ void stuka::LP::GurobiLinearProgram::initialize(const stuka::LP::LinearProgram &
       for (Eigen::SparseMatrix<double>::InnerIterator it_eq(*prog.A_eq, i); it_eq; ++it_eq)
         model_.chgCoeff(*(eqconstr_ + it_eq.row()), *(vars_ + i), it_eq.value());
     }
-  } else {
-    eqconstr_ = nullptr;
   }
 
   model_.set(GRB_IntParam_OutputFlag, false);
   model_.set(GRB_IntParam_Method, GRB_METHOD_CONCURRENT);
-  model_.set(GRB_DoubleParam_OptimalityTol, GUROBI_TOLERANCE);
-  model_.set(GRB_DoubleParam_FeasibilityTol, GUROBI_TOLERANCE);
+  model_.set(GRB_DoubleParam_OptimalityTol, 1e-9);
+  model_.set(GRB_DoubleParam_FeasibilityTol, 1e-9);
 }
 
-void stuka::LP::GurobiLinearProgram::setObjective(const std::shared_ptr<Eigen::VectorXd> &c) {
-  // Set objective
-  GRBLinExpr obj;
-  obj.addTerms(c->data(), vars_, (int) n_dim_);
+void stuka::QP::GurobiQuadraticProgram::setObjective(const std::unique_ptr<Eigen::SparseMatrix<double>> &Q,
+                                                     const std::unique_ptr<Eigen::VectorXd> &c) {
+  GRBQuadExpr obj;
+  if (Q != nullptr) {
+    Q->makeCompressed();
+    long n_elements = Q->nonZeros();
+    int *inner = Q->innerIndexPtr();
+    int *outer = Q->outerIndexPtr();
+
+    GRBVar inner_var[n_elements], outer_var[n_elements];
+    for (int i = 0; i < n_elements; ++i) inner_var[i] = vars_[inner[i]];
+
+    int outer_count = 0;
+    for (int i = 0; i < n_elements; ++i) {
+      while (outer_count + 1 < Q->cols() && outer[outer_count + 1] <= i) ++outer_count;
+      outer_var[i] = vars_[outer_count];
+    }
+
+    obj.addTerms(Q->valuePtr(), inner_var, outer_var, n_elements);               // Quadratic terms
+  }
+  if (c != nullptr) obj.addTerms(c->data(), vars_, (int) n_dim_);         // Linear terms
   model_.setObjective(obj);
 
 }
 
-void stuka::LP::GurobiLinearProgram::setRHS(const std::shared_ptr<Eigen::VectorXd> &b_ub,
-                                            const std::shared_ptr<Eigen::VectorXd> &b_eq) {
+void stuka::QP::GurobiQuadraticProgram::setRHS(const std::unique_ptr<Eigen::VectorXd> &b_ub,
+                                               const std::unique_ptr<Eigen::VectorXd> &b_eq) {
   if (b_ub && n_con_ub_ > 0)
     for (size_t i = 0; i < n_con_ub_; ++i)
       (ubconstr_ + i)->set(GRB_DoubleAttr_RHS, b_ub->coeff(i));
@@ -92,17 +125,17 @@ void stuka::LP::GurobiLinearProgram::setRHS(const std::shared_ptr<Eigen::VectorX
       (eqconstr_ + i)->set(GRB_DoubleAttr_RHS, b_eq->coeff(i));
 }
 
-void stuka::LP::GurobiLinearProgram::setBounds(const std::shared_ptr<Eigen::VectorXd> &lb,
-                                               const std::shared_ptr<Eigen::VectorXd> &ub) {
+void stuka::QP::GurobiQuadraticProgram::setBounds(const std::unique_ptr<Eigen::VectorXd> &lb,
+                                                  const std::unique_ptr<Eigen::VectorXd> &ub) {
   if (lb) model_.set(GRB_DoubleAttr_LB, vars_, lb->data(), (int) n_dim_);
   if (ub) model_.set(GRB_DoubleAttr_LB, vars_, ub->data(), (int) n_dim_);
 }
 
-void stuka::LP::GurobiLinearProgram::addVar(const double c,
-                                            const std::shared_ptr<Eigen::VectorXd> a_ub,
-                                            const std::shared_ptr<Eigen::VectorXd> a_eq,
-                                            const double lb,
-                                            const double ub) {
+void stuka::QP::GurobiQuadraticProgram::addVar(double c,
+                                               const std::unique_ptr<Eigen::VectorXd> &a_ub,
+                                               const std::unique_ptr<Eigen::VectorXd> &a_eq,
+                                               double lb,
+                                               double ub) {
 
   if (n_dim_ + 1 > n_alloc_) {
     n_alloc_ = n_dim_ + 1;
@@ -132,11 +165,11 @@ void stuka::LP::GurobiLinearProgram::addVar(const double c,
 
 }
 
-void stuka::LP::GurobiLinearProgram::addVars(const std::shared_ptr<Eigen::VectorXd> c,
-                                             const std::shared_ptr<Eigen::SparseMatrix<double>> A_ub,
-                                             const std::shared_ptr<Eigen::SparseMatrix<double>> A_eq,
-                                             const std::shared_ptr<Eigen::VectorXd> lb_,
-                                             const std::shared_ptr<Eigen::VectorXd> ub_) {
+void stuka::QP::GurobiQuadraticProgram::addVars(const std::unique_ptr<Eigen::VectorXd> &c,
+                                                const std::unique_ptr<Eigen::SparseMatrix<double>> &A_ub,
+                                                const std::unique_ptr<Eigen::SparseMatrix<double>> &A_eq,
+                                                const std::unique_ptr<Eigen::VectorXd> &lb_,
+                                                const std::unique_ptr<Eigen::VectorXd> &ub_) {
 
   size_t n_add = (c) ? c->size() : (lb_) ? lb_->size() : (ub_) ? ub_->size() :
                                                          (A_ub) ? A_ub->cols() : (A_eq) ? A_eq->cols() : 0;
@@ -167,6 +200,7 @@ void stuka::LP::GurobiLinearProgram::addVars(const std::shared_ptr<Eigen::Vector
   std::copy(vars_add, vars_add + n_add, vars_ + n_dim_);
   delete[] vars_add;
 
+
   // Add constraints
   if (n_con_ub_ > 0 && A_ub) {
     for (size_t i = 0; i < n_add; ++i) {
@@ -186,13 +220,14 @@ void stuka::LP::GurobiLinearProgram::addVars(const std::shared_ptr<Eigen::Vector
 
 }
 
-void stuka::LP::GurobiLinearProgram::removeVar(const size_t index) {
+void stuka::QP::GurobiQuadraticProgram::removeVar(const size_t index) {
   model_.remove(vars_[index]);
   std::copy(vars_ + index + 1, vars_ + n_dim_, vars_ + index);
+
   n_dim_ -= 1;
 }
 
-void stuka::LP::GurobiLinearProgram::removeVars(const size_t index, const size_t n_remove) {
+void stuka::QP::GurobiQuadraticProgram::removeVars(const size_t index, const size_t n_remove) {
 
   for (size_t i = 0; i < n_remove; ++i)
     model_.remove(vars_[index + i]);
@@ -202,14 +237,14 @@ void stuka::LP::GurobiLinearProgram::removeVars(const size_t index, const size_t
 
 }
 
-void stuka::LP::GurobiLinearProgram::removeBackVars(const size_t n_remove) {
+void stuka::QP::GurobiQuadraticProgram::removeBackVars(const size_t n_remove) {
   for (size_t i = 0; i < n_remove; ++i)
     model_.remove(vars_[n_dim_ - i - 1]);
 
   n_dim_ -= n_remove;
 }
 
-void stuka::LP::GurobiLinearProgram::addConstr_ub(const std::shared_ptr<Eigen::VectorXd> &a, const double &b) {
+void stuka::QP::GurobiQuadraticProgram::addConstr_ub(const std::unique_ptr<Eigen::VectorXd> &a, const double &b) {
 
   if (n_con_ub_ + 1 > n_alloc_ub_) {
     n_alloc_ub_ = n_con_ub_ + 1;
@@ -229,8 +264,8 @@ void stuka::LP::GurobiLinearProgram::addConstr_ub(const std::shared_ptr<Eigen::V
 
 }
 
-void stuka::LP::GurobiLinearProgram::addConstrs_ub(const std::shared_ptr<Eigen::SparseMatrix<double>> &A,
-                                                   const std::shared_ptr<Eigen::VectorXd> &b) {
+void stuka::QP::GurobiQuadraticProgram::addConstrs_ub(const std::unique_ptr<Eigen::SparseMatrix<double>> &A,
+                                                      const std::unique_ptr<Eigen::VectorXd> &b) {
 
   size_t n_add = b->size();
 
@@ -257,14 +292,15 @@ void stuka::LP::GurobiLinearProgram::addConstrs_ub(const std::shared_ptr<Eigen::
   n_con_ub_ += n_add;
 
 }
-void stuka::LP::GurobiLinearProgram::removeConstr_ub(const size_t index) {
+
+void stuka::QP::GurobiQuadraticProgram::removeConstr_ub(const size_t index) {
   model_.remove(ubconstr_[index]);
   std::copy(ubconstr_ + index + 1, ubconstr_ + n_con_ub_, ubconstr_ + index);
 
   n_con_ub_ -= 1;
 }
 
-void stuka::LP::GurobiLinearProgram::removeConstrs_ub(const size_t index, const size_t n_remove) {
+void stuka::QP::GurobiQuadraticProgram::removeConstrs_ub(const size_t index, const size_t n_remove) {
 
   for (size_t i = 0; i < n_remove; ++i)
     model_.remove(ubconstr_[index + i]);
@@ -274,7 +310,7 @@ void stuka::LP::GurobiLinearProgram::removeConstrs_ub(const size_t index, const 
 
 }
 
-void stuka::LP::GurobiLinearProgram::addConstr_eq(const std::shared_ptr<Eigen::VectorXd> &a, const double &b) {
+void stuka::QP::GurobiQuadraticProgram::addConstr_eq(const std::unique_ptr<Eigen::VectorXd> &a, const double &b) {
 
   if (n_con_eq_ + 1 > n_alloc_eq_) {
     n_alloc_eq_ = n_con_eq_ + 1;
@@ -294,8 +330,8 @@ void stuka::LP::GurobiLinearProgram::addConstr_eq(const std::shared_ptr<Eigen::V
 
 }
 
-void stuka::LP::GurobiLinearProgram::addConstrs_eq(const std::shared_ptr<Eigen::SparseMatrix<double>> &A,
-                                                   const std::shared_ptr<Eigen::VectorXd> &b) {
+void stuka::QP::GurobiQuadraticProgram::addConstrs_eq(const std::unique_ptr<Eigen::SparseMatrix<double>> &A,
+                                                      const std::unique_ptr<Eigen::VectorXd> &b) {
 
   size_t n_add = b->size();
 
@@ -323,14 +359,14 @@ void stuka::LP::GurobiLinearProgram::addConstrs_eq(const std::shared_ptr<Eigen::
 
 }
 
-void stuka::LP::GurobiLinearProgram::removeConstr_eq(const size_t index) {
+void stuka::QP::GurobiQuadraticProgram::removeConstr_eq(const size_t index) {
   model_.remove(eqconstr_[index]);
   std::copy(eqconstr_ + index + 1, eqconstr_ + n_con_eq_, eqconstr_ + index);
 
   n_con_eq_ -= 1;
 }
 
-void stuka::LP::GurobiLinearProgram::removeConstrs_eq(const size_t index, const size_t n_remove) {
+void stuka::QP::GurobiQuadraticProgram::removeConstrs_eq(const size_t index, const size_t n_remove) {
 
   for (size_t i = 0; i < n_remove; ++i)
     model_.remove(eqconstr_[index + i]);
@@ -338,12 +374,4 @@ void stuka::LP::GurobiLinearProgram::removeConstrs_eq(const size_t index, const 
 
   n_con_eq_ -= n_remove;
 
-}
-
-Eigen::VectorXd stuka::LP::GurobiLinearProgram::convertState(const Eigen::VectorXd &x) {
-  return x;
-}
-
-Eigen::VectorXd stuka::LP::GurobiLinearProgram::revertState(const Eigen::VectorXd &x) {
-  return x;
 }

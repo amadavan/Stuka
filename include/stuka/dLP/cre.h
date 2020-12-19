@@ -13,6 +13,7 @@
 
 #include "../options.h"
 #include "../util/solver_factory.h"
+#include "../util/dense_ops.h"
 #include "../util/sparse_ops.h"
 #include "../LP/base_solver.h"
 #include "../QP/base_solver.h"
@@ -56,7 +57,7 @@ class CRE : public BaseDLPSolver {
   // Master problem properties
   size_t n_eq_;
   size_t n_ub_;
-  Eigen::Matrix<bool, Eigen::Dynamic, 1> bone_eq_;
+  Eigen::Array<bool, Eigen::Dynamic, 1> bone_eq_;
   Eigen::SparseMatrix<double> eye_;
   Eigen::SparseMatrix<double> negative_eye_;
 

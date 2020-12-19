@@ -17,21 +17,31 @@ stuka::dLP::NaiveCRE::NaiveCRE(const stuka::dLP::DecomposedLinearProgram &dlp,
   n_visit_ = 0;
 
   // Generate master problem
-  master_lp_.c = dlp.c.back();
-  master_lp_.A_ub = dlp.A_ub.back();
-  master_lp_.b_ub = dlp.b_ub.back();
-  master_lp_.A_eq = dlp.A_eq.back();
-  master_lp_.b_eq = dlp.b_eq.back();
-  master_lp_.lb = dlp.lb.back();
-  master_lp_.ub = dlp.ub.back();
+  master_lp_.c = util::DenseOps::unique_copy(dlp.c.back());
+  master_lp_.A_ub = util::SparseOps::unique_copy(dlp.A_ub.back());
+  master_lp_.b_ub = util::DenseOps::unique_copy(dlp.b_ub.back());
+  master_lp_.A_eq = util::SparseOps::unique_copy(dlp.A_eq.back());
+  master_lp_.b_eq = util::DenseOps::unique_copy(dlp.b_eq.back());
+  master_lp_.lb = util::DenseOps::unique_copy(dlp.lb.back());
+  master_lp_.ub = util::DenseOps::unique_copy(dlp.ub.back());
 
   // Set subproblems
   subproblems_.reserve(n_sub_);
-  for (size_t i = 0; i < n_sub_; ++i) {
-    Subproblem sub{dlp.c[i], dlp.A_ub[i], dlp.b_ub[i], dlp.C_ub[i], dlp.A_eq[i], dlp.b_eq[i], dlp.C_eq[i], dlp.lb[i],
-                   dlp.ub[i]};
+  Options opts_sub(opts_);
+  opts_sub.lazy = opts_.lazy_sub;
 
-    subproblems_.push_back({NaiveCRESubproblem(std::move(sub), opts_)});
+  for (size_t i = 0; i < n_sub_; ++i) {
+    subproblems_.emplace_back((Subproblem){
+        util::DenseOps::unique_copy(dlp.c[i]),
+        util::SparseOps::unique_copy(dlp.A_ub[i]),
+        util::DenseOps::unique_copy(dlp.b_ub[i]),
+        util::SparseOps::unique_copy(dlp.C_ub[i]),
+        util::SparseOps::unique_copy(dlp.A_eq[i]),
+        util::DenseOps::unique_copy(dlp.b_eq[i]),
+        util::SparseOps::unique_copy(dlp.C_eq[i]),
+        util::DenseOps::unique_copy(dlp.lb[i]),
+        util::DenseOps::unique_copy(dlp.ub[i])
+    }, opts_sub);
   }
 
   // Set useful constants
@@ -39,14 +49,14 @@ stuka::dLP::NaiveCRE::NaiveCRE(const stuka::dLP::DecomposedLinearProgram &dlp,
   n_ub_ = (master_lp_.b_ub) ? master_lp_.b_ub->size() : 0;
   n_ub_cr_ = 0;
 
-  bone_eq_ = Eigen::Matrix<bool, Eigen::Dynamic, 1>::Constant(n_eq_, true);
+  bone_eq_ = Eigen::Array<bool, Eigen::Dynamic, 1>::Constant(n_eq_, true);
 
   eye_ = Eigen::SparseMatrix<double>(n_dim_master_, n_dim_master_);
   eye_.setIdentity();
   negative_eye_ = -eye_;
 
   // Set current cost to cost of master problem
-  cr_.alpha = 0 * *master_lp_.c;
+  cr_.alpha = *master_lp_.c;
   cr_.beta = 0;
   cr_.n_add = 0;
   critical_regions_ = std::vector<CriticalRegionData>(n_sub_);
@@ -61,13 +71,13 @@ stuka::dLP::NaiveCRE::NaiveCRE(const stuka::dLP::DecomposedLinearProgram &dlp,
   }
 
   // Create residual solver
-  residual_qp_.Q = std::make_shared<Eigen::SparseMatrix<double>>(n_dim_master_, n_dim_master_);
+  residual_qp_.Q = std::make_unique<Eigen::SparseMatrix<double>>(n_dim_master_, n_dim_master_);
   residual_qp_.Q->setIdentity();
-  residual_qp_.A_eq = std::make_shared<Eigen::SparseMatrix<double>>(n_dim_master_, n_dim_master_);
+  residual_qp_.A_eq = std::make_unique<Eigen::SparseMatrix<double>>(n_dim_master_, n_dim_master_);
   residual_qp_.A_eq->setIdentity();
   (*residual_qp_.A_eq) *= -1;
   residual_qp_.A_eq->conservativeResize(n_dim_master_ + 1, n_dim_master_);
-  residual_qp_.b_eq = std::make_shared<Eigen::VectorXd>(n_dim_master_ + 1);
+  residual_qp_.b_eq = std::make_unique<Eigen::VectorXd>(n_dim_master_ + 1);
   residual_qp_.b_eq->setZero();
   residual_qp_.b_eq->coeffRef(n_dim_master_) = 1.;
 
@@ -116,7 +126,7 @@ bool stuka::dLP::NaiveCRE::terminate() {
 const stuka::OptimizeState stuka::dLP::NaiveCRE::getState() {
   OptimizeState res;
 
-  res.fun = (*master_lp_.c + cr_.alpha).transpose() * x_opt_ + cr_.beta;
+  res.fun = (cr_.alpha).transpose() * x_opt_ + cr_.beta;
   res.x = x_opt_;
   res.error = a_opt_.squaredNorm();
   res.status = (res.error < opts_.tol) ? 2 : 1;
@@ -206,14 +216,15 @@ void stuka::dLP::NaiveCRE::addCriticalRegion(stuka::dLP::NaiveCRE::CriticalRegio
 
   mtx_cre_.lock(); // Need a mutex when updating global properties
 
-  const size_t n_con_cr_ = cr_.A.rows();
+  const size_t n_con_cr = cr.b.size();
+  const size_t n_con_cr_ = cr_.b.size();
 
   // Add cost of critical region to aggregate cost
   cr_.alpha += cr.alpha;
   cr_.beta += cr.beta;
 
   // Add constraints associated with critical region
-  Eigen::SparseMatrix<double> A = Eigen::SparseMatrix<double>(n_con_cr_ + cr.A.rows(), n_dim_master_);
+  Eigen::SparseMatrix<double> A = Eigen::SparseMatrix<double>(n_con_cr_ + n_con_cr, n_dim_master_);
   A.reserve(cr_.A.nonZeros() + cr.A.nonZeros());
   // nominal variables
   for (size_t i = 0; i < n_dim_master_; ++i) {
@@ -227,7 +238,7 @@ void stuka::dLP::NaiveCRE::addCriticalRegion(stuka::dLP::NaiveCRE::CriticalRegio
   A.finalize();
 
   // Add additional variables
-  Eigen::SparseMatrix<double> A_add = Eigen::SparseMatrix<double>(n_con_cr_ + cr.A.rows(), cr_.n_add + cr.n_add);
+  Eigen::SparseMatrix<double> A_add = Eigen::SparseMatrix<double>(n_con_cr_ + n_con_cr, cr_.n_add + cr.n_add);
   A_add.reserve(cr_.A_add.nonZeros() + cr.A_add.nonZeros());
   // existing additional variables
   for (size_t i = 0; i < cr_.n_add; ++i) {
@@ -258,47 +269,54 @@ void stuka::dLP::NaiveCRE::addCriticalRegion(stuka::dLP::NaiveCRE::CriticalRegio
   }
 
   // Set constraint index and update total constraints
-  crdata.ind_constr = n_ub_ + n_ub_cr_;
-  n_ub_cr_ += cr.b.size();
+  crdata.ind_constr = n_ub_cr_;
+  n_ub_cr_ += n_con_cr;  
 
   mtx_cre_.unlock();
 }
 
 stuka::OptimizeState stuka::dLP::NaiveCRE::solveMasterProblem() {
 
-  LP::LinearProgram prog(master_lp_);
+  LP::LinearProgram prog;
+  prog.c = std::make_unique<Eigen::VectorXd>(cr_.alpha);
+  prog.A_ub = util::SparseOps::unique_copy(master_lp_.A_ub);
+  prog.b_ub = util::DenseOps::unique_copy(master_lp_.b_ub);
+  prog.A_eq = util::SparseOps::unique_copy(master_lp_.A_eq);
+  prog.b_eq = util::DenseOps::unique_copy(master_lp_.b_eq);
+  prog.lb = util::DenseOps::unique_copy(master_lp_.lb);
+  prog.ub = util::DenseOps::unique_copy(master_lp_.ub);
 
   if (cr_.n_add > 0) {
-    std::shared_ptr<Eigen::VectorXd> c = std::make_shared<Eigen::VectorXd>(*master_lp_.c + cr_.alpha);
+    std::unique_ptr<Eigen::VectorXd> c = std::make_unique<Eigen::VectorXd>(cr_.alpha);
     c->conservativeResize(n_dim_master_ + cr_.n_add);
     for (size_t i = 0; i < cr_.n_add; ++i) c->coeffRef(n_dim_master_ + i) = 0.;
-    prog.c = c;
+    prog.c = std::move(c);
 
     if (master_lp_.A_eq) {
-      std::shared_ptr<Eigen::SparseMatrix<double>>
-          A_eq = std::make_shared<Eigen::SparseMatrix<double>>(*master_lp_.A_eq);
+      std::unique_ptr<Eigen::SparseMatrix<double>>
+          A_eq = std::make_unique<Eigen::SparseMatrix<double>>(*master_lp_.A_eq);
       A_eq->conservativeResize(A_eq->rows(), A_eq->cols() + cr_.n_add);
-      prog.A_eq = A_eq;
+      prog.A_eq = std::move(A_eq);
     }
 
     if (master_lp_.lb) {
-      std::shared_ptr<Eigen::VectorXd> lb = std::make_shared<Eigen::VectorXd>(*master_lp_.lb);
+      std::unique_ptr<Eigen::VectorXd> lb = std::make_unique<Eigen::VectorXd>(*master_lp_.lb);
       lb->conservativeResize(n_dim_master_ + cr_.n_add);
       for (size_t i = 0; i < cr_.n_add; ++i) lb->coeffRef(n_dim_master_ + i) = -INF;
-      prog.lb = lb;
+      prog.lb = std::move(lb);
     }
 
     if (master_lp_.ub) {
-      std::shared_ptr<Eigen::VectorXd> ub = std::make_shared<Eigen::VectorXd>(*master_lp_.ub);
+      std::unique_ptr<Eigen::VectorXd> ub = std::make_unique<Eigen::VectorXd>(*master_lp_.ub);
       ub->conservativeResize(n_dim_master_ + cr_.n_add);
       for (size_t i = 0; i < cr_.n_add; ++i) ub->coeffRef(n_dim_master_ + i) = INF;
-      prog.ub = ub;
+      prog.ub = std::move(ub);
     }
   }
 
   // Combine critical region and master problem
-  std::shared_ptr<Eigen::SparseMatrix<double>>
-      A = std::make_shared<Eigen::SparseMatrix<double>>(n_ub_ + cr_.A.rows(), n_dim_master_ + cr_.n_add);
+  std::unique_ptr<Eigen::SparseMatrix<double>>
+      A = std::make_unique<Eigen::SparseMatrix<double>>(n_ub_ + cr_.A.rows(), n_dim_master_ + cr_.n_add);
   if (master_lp_.A_ub) A->reserve(master_lp_.A_ub->nonZeros() + cr_.A.nonZeros() + cr_.A_add.nonZeros());
   else A->reserve(cr_.A.nonZeros() + cr_.A.nonZeros() + cr_.A_add.nonZeros());
   // nominal variables
@@ -317,14 +335,19 @@ stuka::OptimizeState stuka::dLP::NaiveCRE::solveMasterProblem() {
       A->insertBack(n_ub_ + it.row(), n_dim_master_ + i) = it.value();
   }
   A->finalize();
-  prog.A_ub = A;
+  prog.A_ub = std::move(A);
 
-  std::shared_ptr<Eigen::VectorXd> b = std::make_shared<Eigen::VectorXd>(n_ub_ + cr_.A.rows());
+  std::unique_ptr<Eigen::VectorXd> b = std::make_unique<Eigen::VectorXd>(n_ub_ + cr_.A.rows());
   if (master_lp_.b_ub) b->head(n_ub_) = *master_lp_.b_ub;
   b->tail(cr_.A.rows()) = cr_.b;
-  prog.b_ub = b;
+  prog.b_ub = std::move(b);
 
-  std::unique_ptr<LP::BaseLPSolver> solver = util::createSolver(prog, opts_);
+  Options opts(opts_);
+  opts.active_indices.reserve(n_ub_);
+  for (size_t i = 0; i < n_ub_; ++i)
+    opts.active_indices.push_back(i);
+
+  std::unique_ptr<LP::BaseLPSolver> solver = util::createSolver(prog, opts);
 
   OptimizeState res;
   try {
@@ -383,7 +406,7 @@ stuka::dLP::NaiveCRE::computeResidualFirst(const OptimizeState &res) {
 
   A_activeT_ = A_active.transpose();
   previous_directions_ = Eigen::MatrixXd(n_dim_master_, 1);
-  previous_directions_.col(0) = *master_lp_.c + cr_.alpha;
+  previous_directions_.col(0) = cr_.alpha;
 
   // Determine gradient adjustment
   Eigen::SparseMatrix<double> grad_adjust = Eigen::SparseMatrix<double>(n_dim_master_, n_dim_master_);
@@ -395,22 +418,22 @@ stuka::dLP::NaiveCRE::computeResidualFirst(const OptimizeState &res) {
     grad_adjust.prune(1e-8);
   }
 
-  return grad_adjust * (*master_lp_.c + cr_.alpha);
+  return grad_adjust * cr_.alpha;
 }
 
 const Eigen::VectorXd stuka::dLP::NaiveCRE::computeResidualSubsequent() {
   n_visit_++;
 
   previous_directions_.conservativeResize(n_dim_master_, n_visit_);
-  previous_directions_.col(n_visit_ - 1) = *master_lp_.c + cr_.alpha;
+  previous_directions_.col(n_visit_ - 1) = cr_.alpha;
+  // DEBUG(previous_directions_);
 
   QP::QuadraticProgram prog;
-  prog.Q = std::make_shared<Eigen::SparseMatrix<double>>(*residual_qp_.Q);
+  prog.Q = std::make_unique<Eigen::SparseMatrix<double>>(*residual_qp_.Q);
   prog.Q->conservativeResize(n_dim_master_ + n_active_ + n_visit_, n_dim_master_ + n_active_ + n_visit_);
 
-  prog.A_eq = std::make_shared<Eigen::SparseMatrix<double>>(n_dim_master_ + 1, n_dim_master_ + n_active_ + n_visit_);
-  prog.A_eq->conservativeResize(n_dim_master_ + 1, n_dim_master_ + n_active_ + n_visit_);
-  prog.A_eq->reserve(n_dim_master_ + A_activeT_.nonZeros() + previous_directions_.nonZeros() + n_active_);
+  prog.A_eq = std::make_unique<Eigen::SparseMatrix<double>>(n_dim_master_ + 1, n_dim_master_ + n_active_ + n_visit_);
+  prog.A_eq->reserve((Eigen::Index) n_dim_master_ + A_activeT_.nonZeros() + previous_directions_.nonZeros() + n_active_);
   for (size_t i = 0; i < n_dim_master_; ++i) {
     prog.A_eq->startVec(i);
     prog.A_eq->insertBack(i, i) = -1;
@@ -430,13 +453,13 @@ const Eigen::VectorXd stuka::dLP::NaiveCRE::computeResidualSubsequent() {
   }
   prog.A_eq->finalize();
 
-  prog.b_eq = std::make_shared<Eigen::VectorXd>(n_dim_master_ + 1);
+  prog.b_eq = std::make_unique<Eigen::VectorXd>(n_dim_master_ + 1);
   prog.b_eq->setZero();
   prog.b_eq->coeffRef(n_dim_master_) = 1.;
 
-  prog.lb = std::make_shared<Eigen::VectorXd>(n_dim_master_ + n_active_ + n_visit_);
+  prog.lb = std::make_unique<Eigen::VectorXd>(n_dim_master_ + n_active_ + n_visit_);
   prog.lb->setConstant(-INF);
-  for (size_t i = 0; i < n_active_ + n_visit_; ++i) prog.lb->coeffRef(n_dim_master_ + i) = 0;
+  for (size_t i = 0; i < n_visit_; ++i) prog.lb->coeffRef(n_dim_master_ + n_active_+ i) = 0;
 
   std::unique_ptr<QP::BaseQPSolver> residual_solver = util::createSolver(prog, opts_);
 

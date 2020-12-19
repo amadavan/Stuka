@@ -1,27 +1,28 @@
 //
-// Created by Avinash on 8/19/2020.
+// Created by Avinash Madavan on 1/7/19.
 //
 
-#ifndef STUKA_INCLUDE_STUKA_LP_LAZY_LP_H_
-#define STUKA_INCLUDE_STUKA_LP_LAZY_LP_H_
+#ifndef STUKA_QP_GUROBI_QP_H
+#define STUKA_QP_GUROBI_QP_H
 
-#include <iostream>
+#include <algorithm>
 
-#include "base_lp.h"
-#include "../util/dense_ops.h"
-#include "../util/sparse_ops.h"
+#include <gurobi_c++.h>
 
-namespace stuka { namespace LP {
+#include "../gurobi_env.h"
+#include "../../QP/qp.h"
+#include "../../QP/base_qp.h"
+#include "../../constants.h"
 
-class LazyLinearProgram : public BaseLinearProgram {
+namespace stuka { namespace QP {
+class GurobiQuadraticProgram : public BaseQuadraticProgram {
  public:
-  LazyLinearProgram();
+  ~GurobiQuadraticProgram() override;
 
-  ~LazyLinearProgram() override = default;
+  explicit GurobiQuadraticProgram(const QuadraticProgram &prog);
 
-  void initialize(const LinearProgram &prog) override;
-
-  void setObjective(const std::unique_ptr<Eigen::VectorXd> &c) override;
+  void setObjective(const std::unique_ptr<Eigen::SparseMatrix<double>> &Q,
+                    const std::unique_ptr<Eigen::VectorXd> &c) override;
 
   void setRHS(const std::unique_ptr<Eigen::VectorXd> &b_ub, const std::unique_ptr<Eigen::VectorXd> &b_eq) override;
 
@@ -63,43 +64,23 @@ class LazyLinearProgram : public BaseLinearProgram {
 
   void removeConstrs_eq(size_t index, size_t n_remove) override;
 
-  Eigen::VectorXd convertState(const Eigen::VectorXd &x) override;
-
-  Eigen::VectorXd revertState(const Eigen::VectorXd &x) override;
-
-  void setLP(BaseLinearProgram *prog);
-
-  bool isActive(size_t index);
-
-  void setConstrActive(size_t index);
-
-  void setConstrsActive(size_t index, size_t n_active);
-
-  void setConstrsActive(Eigen::Array<bool, Eigen::Dynamic, 1> activity);
-
-  void setConstrsActive(std::vector<size_t> activity);
-
-  bool isViolated(const Eigen::VectorXd &x);
-
-  size_t addViolatedConstraints(const Eigen::VectorXd &x);
-
-  bool addRandomConstraint();
-
-  Eigen::VectorXd getDualUB(const Eigen::VectorXd &active_dual);
-
  private:
-  std::unique_ptr<Eigen::SparseMatrix<double>> A_ub_;
-  std::unique_ptr<Eigen::VectorXd> b_ub_;
+  GRBModel model_;
 
-  size_t n_dim_;
-  size_t n_ub_;
-  size_t n_active_;
-  Eigen::Array<bool, Eigen::Dynamic, 1> ub_activity_;
-  Eigen::Array<size_t, Eigen::Dynamic, 1> ub_index_;
+  GRBVar *vars_;
+  GRBConstr *eqconstr_;
+  GRBConstr *ubconstr_;
 
-  BaseLinearProgram *prog_;
+  long n_dim_;
+  long n_con_ub_;
+  long n_con_eq_;
+
+  long n_alloc_;                // Number of allocated variables (to prevent unnecessary copies)
+  long n_alloc_ub_;             // Number of allocated ub constraints (to prevent unnecessary copies)
+  long n_alloc_eq_;             // Number of allocated eq constraints (to prevent unnecessary copies)
+
+  friend class GurobiSolver;
 };
-
 }}
 
-#endif //STUKA_INCLUDE_STUKA_LP_LAZY_LP_H_
+#endif //STUKA_QP_GUROBI_QP_H

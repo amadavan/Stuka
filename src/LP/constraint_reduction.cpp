@@ -16,15 +16,15 @@ void stuka::LP::LinearProgram::ConstraintReductionBounds() {
   }
 
   Eigen::VectorXd U = A_ub->cwiseMax(zero) * *ub + A_ub->cwiseMin(zero) * *lb;
-  Eigen::Matrix<bool, Eigen::Dynamic, 1> redundancy = (*b_ub - U).array() > 0;
+  Eigen::Array<bool, Eigen::Dynamic, 1> redundancy = (*b_ub - U).array() > 0;
 
   size_t n_dim = c->size();
   size_t n_ub = b_ub->size();
   size_t n_redundant = redundancy.count();
 
-  std::shared_ptr<Eigen::SparseMatrix<double>>
-      A_ub_reduced = std::make_shared<Eigen::SparseMatrix<double>>(n_ub - n_redundant, n_dim);
-  std::shared_ptr<Eigen::VectorXd> b_ub_reduced = std::make_shared<Eigen::VectorXd>(n_ub - n_redundant);
+  std::unique_ptr<Eigen::SparseMatrix<double>>
+      A_ub_reduced = std::make_unique<Eigen::SparseMatrix<double>>(n_ub - n_redundant, n_dim);
+  std::unique_ptr<Eigen::VectorXd> b_ub_reduced = std::make_unique<Eigen::VectorXd>(n_ub - n_redundant);
   A_ub_reduced->reserve(A_ub->nonZeros());
 
   // Count all previous active constraints at each index. This will be used in the next step to construct the complete
@@ -51,6 +51,6 @@ void stuka::LP::LinearProgram::ConstraintReductionBounds() {
     if (!redundancy.coeff(i))
       b_ub_reduced->coeffRef(active_count.coeff(i)) = b_ub->coeff(i);
 
-  A_ub = A_ub_reduced;
-  b_ub = b_ub_reduced;
+  A_ub = std::move(A_ub_reduced);
+  b_ub = std::move(b_ub_reduced);
 }

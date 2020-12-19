@@ -6,10 +6,10 @@
 #define STUKA_INCLUDE_STUKA_DLP_NAIVE_BENDERS_H_
 
 #include "../constants.h"
-#include "../util/dense_ops.h"
-#include "../util/sparse_ops.h"
 #include "../util/solver_factory.h"
 #include "../LP/base_solver.h"
+#include "../util/dense_ops.h"
+#include "../util/sparse_ops.h"
 
 #include "base_solver.h"
 #include "benders_cut.h"

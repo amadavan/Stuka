@@ -12,6 +12,8 @@
 #include <Eigen/SparseCore>
 #include <Eigen/SPQRSupport>
 
+#include "../options.h"
+#include "../constants.h"
 #include "../util/sparse_ops.h"
 #include "../util/dense_ops.h"
 #include "../util/solver_factory.h"
@@ -23,9 +25,10 @@
 namespace stuka { namespace dLP {
 class NaiveCRESubproblem {
  public:
-  explicit NaiveCRESubproblem(Subproblem sub, const Options = Options());
+  explicit NaiveCRESubproblem(Subproblem &&sub, const Options & = Options());
+  NaiveCRESubproblem(NaiveCRESubproblem &&sub);
 
-  CriticalRegion computeCriticalRegion(const Eigen::VectorXd &x);
+  [[nodiscard]] CriticalRegion computeCriticalRegion(const Eigen::VectorXd &x);
  private:
   LP::LinearProgram prog_;
   Options opts_;

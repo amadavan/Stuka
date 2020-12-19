@@ -29,35 +29,35 @@ class PyDecomposedLinearProgram : public DecomposedLinearProgram {
     size_t n = _c.size();
     size_t n_sub = n - 1;
 
-    c = std::vector<std::shared_ptr<Eigen::VectorXd >>(n);
-    A_ub = std::vector<std::shared_ptr<Eigen::SparseMatrix<double >>>(n);
-    b_ub = std::vector<std::shared_ptr<Eigen::VectorXd >>(n);
-    C_ub = std::vector<std::shared_ptr<Eigen::SparseMatrix<double >>>(n_sub);
-    A_eq = std::vector<std::shared_ptr<Eigen::SparseMatrix<double >>>(n);
-    b_eq = std::vector<std::shared_ptr<Eigen::VectorXd >>(n);
-    C_eq = std::vector<std::shared_ptr<Eigen::SparseMatrix<double >>>(n_sub);
-    lb = std::vector<std::shared_ptr<Eigen::VectorXd >>(n);
-    ub = std::vector<std::shared_ptr<Eigen::VectorXd >>(n);
+    c = std::vector<std::unique_ptr<Eigen::VectorXd >>(n);
+    A_ub = std::vector<std::unique_ptr<Eigen::SparseMatrix<double >>>(n);
+    b_ub = std::vector<std::unique_ptr<Eigen::VectorXd >>(n);
+    C_ub = std::vector<std::unique_ptr<Eigen::SparseMatrix<double >>>(n_sub);
+    A_eq = std::vector<std::unique_ptr<Eigen::SparseMatrix<double >>>(n);
+    b_eq = std::vector<std::unique_ptr<Eigen::VectorXd >>(n);
+    C_eq = std::vector<std::unique_ptr<Eigen::SparseMatrix<double >>>(n_sub);
+    lb = std::vector<std::unique_ptr<Eigen::VectorXd >>(n);
+    ub = std::vector<std::unique_ptr<Eigen::VectorXd >>(n);
 
     for (size_t i = 0; i < n_sub; ++i) {
-      c[i] = std::make_shared<Eigen::VectorXd>(_c[i]);
-      A_ub[i] = std::make_shared<Eigen::SparseMatrix<double >>(_A_ub[i]);
-      b_ub[i] = std::make_shared<Eigen::VectorXd>(_b_ub[i]);
-      C_ub[i] = std::make_shared<Eigen::SparseMatrix<double >>(_C_ub[i]);
-      A_eq[i] = std::make_shared<Eigen::SparseMatrix<double >>(_A_eq[i]);
-      b_eq[i] = std::make_shared<Eigen::VectorXd>(_b_eq[i]);
-      C_eq[i] = std::make_shared<Eigen::SparseMatrix<double >>(_C_eq[i]);
-      lb[i] = std::make_shared<Eigen::VectorXd>(_lb[i]);
-      ub[i] = std::make_shared<Eigen::VectorXd>(_ub[i]);
+      c[i] = std::make_unique<Eigen::VectorXd>(_c[i]);
+      A_ub[i] = std::make_unique<Eigen::SparseMatrix<double >>(_A_ub[i]);
+      b_ub[i] = std::make_unique<Eigen::VectorXd>(_b_ub[i]);
+      C_ub[i] = std::make_unique<Eigen::SparseMatrix<double >>(_C_ub[i]);
+      A_eq[i] = std::make_unique<Eigen::SparseMatrix<double >>(_A_eq[i]);
+      b_eq[i] = std::make_unique<Eigen::VectorXd>(_b_eq[i]);
+      C_eq[i] = std::make_unique<Eigen::SparseMatrix<double >>(_C_eq[i]);
+      lb[i] = std::make_unique<Eigen::VectorXd>(_lb[i]);
+      ub[i] = std::make_unique<Eigen::VectorXd>(_ub[i]);
     }
 
-    c[n_sub] = std::make_shared<Eigen::VectorXd>(_c[n_sub]);
-    A_ub[n_sub] = std::make_shared<Eigen::SparseMatrix<double >>(_A_ub[n_sub]);
-    b_ub[n_sub] = std::make_shared<Eigen::VectorXd>(_b_ub[n_sub]);
-    A_eq[n_sub] = std::make_shared<Eigen::SparseMatrix<double >>(_A_eq[n_sub]);
-    b_eq[n_sub] = std::make_shared<Eigen::VectorXd>(_b_eq[n_sub]);
-    lb[n_sub] = std::make_shared<Eigen::VectorXd>(_lb[n_sub]);
-    ub[n_sub] = std::make_shared<Eigen::VectorXd>(_ub[n_sub]);
+    c[n_sub] = std::make_unique<Eigen::VectorXd>(_c[n_sub]);
+    A_ub[n_sub] = std::make_unique<Eigen::SparseMatrix<double >>(_A_ub[n_sub]);
+    b_ub[n_sub] = std::make_unique<Eigen::VectorXd>(_b_ub[n_sub]);
+    A_eq[n_sub] = std::make_unique<Eigen::SparseMatrix<double >>(_A_eq[n_sub]);
+    b_eq[n_sub] = std::make_unique<Eigen::VectorXd>(_b_eq[n_sub]);
+    lb[n_sub] = std::make_unique<Eigen::VectorXd>(_lb[n_sub]);
+    ub[n_sub] = std::make_unique<Eigen::VectorXd>(_ub[n_sub]);
   }
 
 };

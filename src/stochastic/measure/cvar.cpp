@@ -55,7 +55,7 @@ Eigen::MatrixXd stuka::stochastic::ConditionalValueAtRisk::dg(const Program &p,
   Eigen::MatrixXd dg = Eigen::MatrixXd::Zero(xu.size(), m_g_);
   Eigen::MatrixXd prog_dg = p.dg(x, xi);
 
-  Eigen::Matrix<bool, Eigen::Dynamic, 1> gpos((p.g(x, xi) - u).array() >= 0.);
+  Eigen::Array<bool, Eigen::Dynamic, 1> gpos((p.g(x, xi) - u).array() >= 0.);
   for (size_t i = 0; i < m_g_; ++i) {
     dg.coeffRef(n_ + 1 + i, i) = 1.;
     if (gpos.coeff(i)) {

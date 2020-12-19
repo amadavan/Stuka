@@ -9,14 +9,19 @@
 
 namespace stuka { namespace util { namespace DenseOps {
 
-using ActiveSet = Eigen::Matrix<bool, Eigen::Dynamic, 1>;
+using ActiveSet = Eigen::Array<bool, Eigen::Dynamic, 1>;
 using MatRowPairD = std::pair<const Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>,
-                              const Eigen::Matrix<bool, Eigen::Dynamic, 1>>;
-using VecRowPairD = std::pair<const Eigen::VectorXd, const Eigen::Matrix<bool, Eigen::Dynamic, 1>>;
+                              const Eigen::Array<bool, Eigen::Dynamic, 1>>;
+using VecRowPairD = std::pair<const Eigen::VectorXd, const Eigen::Array<bool, Eigen::Dynamic, 1>>;
+
+template<typename T, int Rows = Eigen::Dynamic, int Cols = Eigen::Dynamic>
+std::unique_ptr<Eigen::Matrix<T, Rows, Cols>> unique_copy(const std::unique_ptr<Eigen::Matrix<T, Rows, Cols>> &mat) {
+  return (mat) ? std::make_unique<Eigen::Matrix<T, Rows, Cols>>(*mat) : nullptr;
+}
 
 template<typename T, int Rows = Eigen::Dynamic, int Cols = Eigen::Dynamic>
 Eigen::Matrix<T, Eigen::Dynamic, Cols> get_rows(const Eigen::Matrix<T, Rows, Cols> &mat,
-                                                const Eigen::Matrix<bool, Rows, 1> &rows) {
+                                                const Eigen::Array<bool, Rows, 1> &rows) {
 
   Eigen::Matrix<T, Eigen::Dynamic, Cols> ret(rows.count());
 
@@ -50,7 +55,7 @@ Eigen::Matrix<T, Eigen::Dynamic, Cols> vstack(const std::vector<const Eigen::Mat
 
 template<typename T, int Rows = Eigen::Dynamic, int Cols = Eigen::Dynamic>
 Eigen::Matrix<T, Eigen::Dynamic, Cols> vstack_rows(const std::vector<std::pair<const Eigen::Matrix<T, Rows, Cols>,
-                                                                               const Eigen::Matrix<bool, Rows, 1>>
+                                                                               const Eigen::Array<bool, Rows, 1>>
 > &mat_rows) {
 
   size_t n_mats = mat_rows.size(), n_col = mat_rows.begin()->first.cols(), n_row_out = 0;
@@ -58,10 +63,10 @@ Eigen::Matrix<T, Eigen::Dynamic, Cols> vstack_rows(const std::vector<std::pair<c
   std::vector<Eigen::VectorXi> prev_row_counts(n_mats);
   size_t n = 0;
 
-  for (const std::pair<const Eigen::Matrix<T, Rows, Cols>, const Eigen::Matrix<bool, Eigen::Dynamic, 1>>
+  for (const std::pair<const Eigen::Matrix<T, Rows, Cols>, const Eigen::Array<bool, Eigen::Dynamic, 1>>
         &mat_row:mat_rows) {
     const Eigen::Matrix<T, Rows, Cols> &mat = mat_row.first;
-    const Eigen::Matrix<bool, Eigen::Dynamic, 1> &rows = mat_row.second;
+    const Eigen::Array<bool, Eigen::Dynamic, 1> &rows = mat_row.second;
 
     size_t n_row_in = mat.rows();
 
@@ -83,10 +88,10 @@ Eigen::Matrix<T, Eigen::Dynamic, Cols> vstack_rows(const std::vector<std::pair<c
 
   for (size_t i = 0; i < n_col; ++i) {
     size_t row_offset = 0, n = 0;
-    for (const std::pair<const Eigen::Matrix<T, Rows, Cols>, const Eigen::Matrix<bool, Eigen::Dynamic, 1>>
+    for (const std::pair<const Eigen::Matrix<T, Rows, Cols>, const Eigen::Array<bool, Eigen::Dynamic, 1>>
           &mat_row : mat_rows) {
       const Eigen::Matrix<T, Rows, Cols> &mat = mat_row.first;
-      const Eigen::Matrix<bool, Eigen::Dynamic, 1> &rows = mat_row.second;
+      const Eigen::Array<bool, Eigen::Dynamic, 1> &rows = mat_row.second;
 
       for (size_t j = 0; j < mat.rows(); ++j)
         if (rows.coeff(j))

@@ -7,8 +7,8 @@
 
 #include <gurobi_c++.h>
 
-#include "base_solver.h"
-#include "lp.h"
+#include "../../LP/base_solver.h"
+#include "../../LP/lp.h"
 #include "gurobi_lp.h"
 
 namespace stuka { namespace LP {

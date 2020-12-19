@@ -14,13 +14,13 @@
 
 namespace stuka { namespace LP {
 struct LinearProgram {
-  std::shared_ptr<Eigen::VectorXd> c;
-  std::shared_ptr<Eigen::SparseMatrix<double>> A_ub;
-  std::shared_ptr<Eigen::VectorXd> b_ub;
-  std::shared_ptr<Eigen::SparseMatrix<double>> A_eq;
-  std::shared_ptr<Eigen::VectorXd> b_eq;
-  std::shared_ptr<Eigen::VectorXd> lb;
-  std::shared_ptr<Eigen::VectorXd> ub;
+  std::unique_ptr<Eigen::VectorXd> c;
+  std::unique_ptr<Eigen::SparseMatrix<double>> A_ub;
+  std::unique_ptr<Eigen::VectorXd> b_ub;
+  std::unique_ptr<Eigen::SparseMatrix<double>> A_eq;
+  std::unique_ptr<Eigen::VectorXd> b_eq;
+  std::unique_ptr<Eigen::VectorXd> lb;
+  std::unique_ptr<Eigen::VectorXd> ub;
 
   void reduceConstraints(ConstraintReductionMethods method = BOUNDS) {
     switch (method) {

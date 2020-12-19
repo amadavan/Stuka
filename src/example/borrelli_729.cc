@@ -3,7 +3,6 @@
 //
 
 #include "borrelli_729.h"
-#include <iostream>
 
 stuka::dLP::DecomposedLinearProgram stuka::example::Borrelli729::gen() {
   typedef Eigen::Triplet<double> T;
@@ -11,7 +10,7 @@ stuka::dLP::DecomposedLinearProgram stuka::example::Borrelli729::gen() {
   dLP::DecomposedLinearProgram dlp(1);
 
   // Master problem
-  dlp.c[1] = std::make_shared<Eigen::VectorXd>(2);
+  dlp.c[1] = std::make_unique<Eigen::VectorXd>(2);
 
   *dlp.c[1] << 0, 0;
 
@@ -20,16 +19,16 @@ stuka::dLP::DecomposedLinearProgram stuka::example::Borrelli729::gen() {
   dlp.A_eq[1] = nullptr;
   dlp.b_eq[1] = nullptr;
 
-  dlp.lb[1] = std::make_shared<Eigen::VectorXd>(2);
+  dlp.lb[1] = std::make_unique<Eigen::VectorXd>(2);
   *dlp.lb[1] << -2.5, -2.5;
 
-  dlp.ub[1] = std::make_shared<Eigen::VectorXd>(2);
+  dlp.ub[1] = std::make_unique<Eigen::VectorXd>(2);
   *dlp.ub[1] << 2.5, 2.5;
   // Subproblem
-  dlp.c[0] = std::make_shared<Eigen::VectorXd>(4);
+  dlp.c[0] = std::make_unique<Eigen::VectorXd>(4);
   *dlp.c[0] << 1, 1, 0, 0;
 
-  dlp.A_ub[0] = std::make_shared<Eigen::SparseMatrix < double>>
+  dlp.A_ub[0] = std::make_unique<Eigen::SparseMatrix < double>>
   (8, 4);
   std::vector<T> A_ub1_triplet(16);
   A_ub1_triplet.emplace_back(T(0, 0, -1.));
@@ -50,10 +49,10 @@ stuka::dLP::DecomposedLinearProgram stuka::example::Borrelli729::gen() {
   A_ub1_triplet.emplace_back(T(7, 3, 1.));
   dlp.A_ub[0]->setFromTriplets(A_ub1_triplet.begin(), A_ub1_triplet.end());
 
-  dlp.b_ub[0] = std::make_shared<Eigen::VectorXd>(8);
+  dlp.b_ub[0] = std::make_unique<Eigen::VectorXd>(8);
   dlp.b_ub[0]->setZero();
 
-  dlp.C_ub[0] = std::make_shared<Eigen::SparseMatrix < double>>
+  dlp.C_ub[0] = std::make_unique<Eigen::SparseMatrix < double>>
   (8, 2);
   std::vector<T> C_ub1_triplet(12);
   C_ub1_triplet.emplace_back(T(0, 0, -1.));
@@ -74,10 +73,10 @@ stuka::dLP::DecomposedLinearProgram stuka::example::Borrelli729::gen() {
   dlp.b_eq[0] = nullptr;
   dlp.C_eq[0] = nullptr;
 
-  dlp.lb[0] = std::make_shared<Eigen::VectorXd>(4);
+  dlp.lb[0] = std::make_unique<Eigen::VectorXd>(4);
   *dlp.lb[0] << -stuka::INF, -stuka::INF, -1, -1;
 
-  dlp.ub[0] = std::make_shared<Eigen::VectorXd>(4);
+  dlp.ub[0] = std::make_unique<Eigen::VectorXd>(4);
   *dlp.ub[0] << stuka::INF, stuka::INF, 1, 1;
 
   return dlp;
@@ -88,7 +87,7 @@ stuka::LP::LinearProgram stuka::example::Borrelli729::full() {
 
   LP::LinearProgram lp;
 
-  lp.c = std::make_shared<Eigen::VectorXd>(6);
+  lp.c = std::make_unique<Eigen::VectorXd>(6);
   *lp.c << 1, 1, 0, 0, 0, 0;
 
   Eigen::SparseMatrix<double> A_ub1 = Eigen::SparseMatrix<double>(8, 4);
@@ -128,7 +127,7 @@ stuka::LP::LinearProgram stuka::example::Borrelli729::full() {
   C_ub1_triplet.emplace_back(T(7, 1, 1.));
   C_ub1.setFromTriplets(C_ub1_triplet.begin(), C_ub1_triplet.end());
 
-  lp.A_ub = std::make_shared<Eigen::SparseMatrix < double>>
+  lp.A_ub = std::make_unique<Eigen::SparseMatrix < double>>
   (8, 6);
 
   lp.A_ub->setZero();
@@ -144,16 +143,16 @@ stuka::LP::LinearProgram stuka::example::Borrelli729::full() {
   }
   lp.A_ub->finalize();
 
-  lp.b_ub = std::make_shared<Eigen::VectorXd>(8);
+  lp.b_ub = std::make_unique<Eigen::VectorXd>(8);
   lp.b_ub->setZero();
 
   lp.A_eq = nullptr;
   lp.b_eq = nullptr;
 
-  lp.lb = std::make_shared<Eigen::VectorXd>(6);
+  lp.lb = std::make_unique<Eigen::VectorXd>(6);
   *lp.lb << -stuka::INF, -stuka::INF, -1, -1, -2.5, -2.5;
 
-  lp.ub = std::make_shared<Eigen::VectorXd>(6);
+  lp.ub = std::make_unique<Eigen::VectorXd>(6);
   *lp.ub << stuka::INF, stuka::INF, 1, 1, 2.5, 2.5;
 
   return lp;

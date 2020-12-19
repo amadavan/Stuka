@@ -6,6 +6,8 @@
 #define STUKA_LP_BOUNDS_DEDICATED_H
 
 #include "base_preconditioner.h"
+#include "../../util/dense_ops.h"
+#include "../../util/sparse_ops.h"
 
 namespace stuka { namespace LP {
 class BoundsDedicated : public BasePreconditioner {
@@ -14,18 +16,18 @@ class BoundsDedicated : public BasePreconditioner {
 
   void initialize(const LinearProgram &prog) override;
 
-  void setObjective(const std::shared_ptr<Eigen::VectorXd> &c) override;
+  void setObjective(const std::unique_ptr<Eigen::VectorXd> &c) override;
 
-  void setRHS(const std::shared_ptr<Eigen::VectorXd> &b_ub, const std::shared_ptr<Eigen::VectorXd> &b_eq) override;
+  void setRHS(const std::unique_ptr<Eigen::VectorXd> &b_ub, const std::unique_ptr<Eigen::VectorXd> &b_eq) override;
 
-  void setBounds(const std::shared_ptr<Eigen::VectorXd> &lb, const std::shared_ptr<Eigen::VectorXd> &ub) override;
+  void setBounds(const std::unique_ptr<Eigen::VectorXd> &lb, const std::unique_ptr<Eigen::VectorXd> &ub) override;
 
-  void addVar(double c, std::shared_ptr<Eigen::VectorXd> a_ub, std::shared_ptr<Eigen::VectorXd> a_eq, double lb,
+  void addVar(double c, const std::unique_ptr<Eigen::VectorXd> &a_ub, const std::unique_ptr<Eigen::VectorXd> &a_eq, double lb,
               double ub) override;
 
-  void addVars(std::shared_ptr<Eigen::VectorXd> c, std::shared_ptr<Eigen::SparseMatrix<double>> A_ub,
-               std::shared_ptr<Eigen::SparseMatrix<double>> A_eq, std::shared_ptr<Eigen::VectorXd> lb,
-               std::shared_ptr<Eigen::VectorXd> ub) override;
+  void addVars(const std::unique_ptr<Eigen::VectorXd> &c, const std::unique_ptr<Eigen::SparseMatrix<double>> &A_ub,
+               const std::unique_ptr<Eigen::SparseMatrix<double>> &A_eq, const std::unique_ptr<Eigen::VectorXd> &lb,
+               const std::unique_ptr<Eigen::VectorXd> &ub) override;
 
   void removeVar(size_t var) override;
 
@@ -33,19 +35,19 @@ class BoundsDedicated : public BasePreconditioner {
 
   void removeBackVars(size_t n_remove) override;
 
-  void addConstr_ub(const std::shared_ptr<Eigen::VectorXd> &a, const double &b) override;
+  void addConstr_ub(const std::unique_ptr<Eigen::VectorXd> &a, const double &b) override;
 
-  void addConstrs_ub(const std::shared_ptr<Eigen::SparseMatrix<double>> &A,
-                     const std::shared_ptr<Eigen::VectorXd> &b) override;
+  void addConstrs_ub(const std::unique_ptr<Eigen::SparseMatrix<double>> &A,
+                     const std::unique_ptr<Eigen::VectorXd> &b) override;
 
   void removeConstr_ub(size_t index) override;
 
   void removeConstrs_ub(size_t index, size_t n_remove) override;
 
-  void addConstr_eq(const std::shared_ptr<Eigen::VectorXd> &a, const double &b) override;
+  void addConstr_eq(const std::unique_ptr<Eigen::VectorXd> &a, const double &b) override;
 
-  void addConstrs_eq(const std::shared_ptr<Eigen::SparseMatrix<double>> &A,
-                     const std::shared_ptr<Eigen::VectorXd> &b) override;
+  void addConstrs_eq(const std::unique_ptr<Eigen::SparseMatrix<double>> &A,
+                     const std::unique_ptr<Eigen::VectorXd> &b) override;
 
   void removeConstr_eq(size_t index) override;
 
@@ -67,10 +69,10 @@ class BoundsDedicated : public BasePreconditioner {
   size_t n_ub_;
   size_t n_bounds_;
 
-  std::shared_ptr<Eigen::SparseMatrix<double>> A_bounds_;
-  std::shared_ptr<Eigen::VectorXd> b_bounds_;
-  std::shared_ptr<Eigen::SparseMatrix<double>> A_ub_;
-  std::shared_ptr<Eigen::VectorXd> b_ub_;
+  std::unique_ptr<Eigen::SparseMatrix<double>> A_bounds_;
+  std::unique_ptr<Eigen::VectorXd> b_bounds_;
+  std::unique_ptr<Eigen::SparseMatrix<double>> A_ub_;
+  std::unique_ptr<Eigen::VectorXd> b_ub_;
 };
 }}
 

@@ -20,8 +20,8 @@
 namespace stuka { namespace dLP {
 class NaiveBendersSubproblem {
  public:
-  explicit NaiveBendersSubproblem(Subproblem sub, const Options = Options());
-  NaiveBendersSubproblem(NaiveBendersSubproblem &&sub) noexcept;
+  explicit NaiveBendersSubproblem(Subproblem &&sub, const Options & = Options());
+  NaiveBendersSubproblem(NaiveBendersSubproblem &&sub);
 
   BendersCut getBendersCut(const Eigen::VectorXd &x);
 

@@ -38,6 +38,15 @@ enum Solver {
   NAIVE_CRE
 };
 
+enum GurobiMethod {
+  PRIMAL_SIMPLEX = 0,
+  DUAL_SIMPLEX = 1,
+  BARRIER = 2,
+  CONCURRENT = 3,
+  DETERMINISTIC_CONCURRENT = 4,
+  DETERMINISTIC_CONCURRENT_SIMPLEX = 5
+};
+
 enum ConstraintReductionMethods {
   BOUNDS
 };

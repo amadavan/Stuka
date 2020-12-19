@@ -12,14 +12,14 @@
 
 namespace stuka { namespace QP {
 struct QuadraticProgram {
-  std::shared_ptr<Eigen::SparseMatrix<double>> Q;
-  std::shared_ptr<Eigen::VectorXd> c;
-  std::shared_ptr<Eigen::SparseMatrix<double>> A_ub;
-  std::shared_ptr<Eigen::VectorXd> b_ub;
-  std::shared_ptr<Eigen::SparseMatrix<double>> A_eq;
-  std::shared_ptr<Eigen::VectorXd> b_eq;
-  std::shared_ptr<Eigen::VectorXd> lb;
-  std::shared_ptr<Eigen::VectorXd> ub;
+  std::unique_ptr<Eigen::SparseMatrix<double>> Q;
+  std::unique_ptr<Eigen::VectorXd> c;
+  std::unique_ptr<Eigen::SparseMatrix<double>> A_ub;
+  std::unique_ptr<Eigen::VectorXd> b_ub;
+  std::unique_ptr<Eigen::SparseMatrix<double>> A_eq;
+  std::unique_ptr<Eigen::VectorXd> b_eq;
+  std::unique_ptr<Eigen::VectorXd> lb;
+  std::unique_ptr<Eigen::VectorXd> ub;
 
  private:
   // Hack for cleaner python implementation

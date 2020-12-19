@@ -10,15 +10,21 @@ stuka::LP::LazyConstraints::LazyConstraints(const stuka::LP::LinearProgram &lp, 
   stuka::Options _opts(opts);
   _opts.lazy = false;
 
-  LinearProgram lp2(lp);
+  LinearProgram lp2;
+  lp2.c = util::DenseOps::unique_copy(lp.c);
   lp2.A_ub = nullptr;
   lp2.b_ub = nullptr;
+  lp2.A_eq = util::SparseOps::unique_copy(lp.A_eq);
+  lp2.b_eq = util::DenseOps::unique_copy(lp.b_eq);
+  lp2.lb = util::DenseOps::unique_copy(lp.lb);
+  lp2.ub = util::DenseOps::unique_copy(lp.ub);
   solver_ = util::createSolver(lp2, _opts);
 
   lp_.setLP(&solver_->getLP());
   lp_.initialize(lp);
+  lp_.setConstrsActive(_opts.active_indices);
 
-  nit = 0;
+  nit_ = 0;
 }
 
 void stuka::LP::LazyConstraints::iterate() {
@@ -34,18 +40,18 @@ void stuka::LP::LazyConstraints::iterate() {
   // TODO: Determine a better way to evaluate constraint generation for unbounded solutions.
   if (state_.status != 2) lp_.addRandomConstraint(); // If unbounded, then constraints need to be added.
 
-  lp_.addViolatedConstraints(state_.x);
+  constraints_added_ = lp_.addViolatedConstraints(state_.x);
 }
 
 bool stuka::LP::LazyConstraints::terminate() {
   // TODO: This is a very brittle termination criterion. Should verify that all constraints have been added instead.
-  return (state_.x.size() == 0 || !lp_.isViolated(state_.x)) && state_.status == 2;
+  return state_.status == 2 && (nit_ > 0) && !constraints_added_;
 }
 
 const stuka::OptimizeState stuka::LP::LazyConstraints::getState() {
   OptimizeState state(state_);
   if (state.status == 2) state.dual_ub = lp_.getDualUB(state.dual_ub);
-  state.nit_con_gen = nit;
+  state.nit_con_gen = nit_;
   return state;
 }
 

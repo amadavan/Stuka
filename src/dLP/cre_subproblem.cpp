@@ -4,7 +4,8 @@
 
 #include <stuka/dLP/cre_subproblem.h>
 
-stuka::dLP::CRESubproblem::CRESubproblem(const stuka::dLP::Subproblem sub, const stuka::Options opts) : sub_(sub) {
+stuka::dLP::CRESubproblem::CRESubproblem(stuka::dLP::Subproblem &&sub, const stuka::Options &opts)
+    : sub_(std::move(sub)), opts_(opts) {
   n_dim_ = sub_.c->size();
   n_dim_master_ = (sub_.C_ub) ? sub_.C_ub->cols() : (sub_.C_eq) ? sub_.C_eq->cols() : 0;
 
@@ -49,21 +50,46 @@ stuka::dLP::CRESubproblem::CRESubproblem(const stuka::dLP::Subproblem sub, const
   }
 
   LP::LinearProgram lp;
-  lp.c = sub_.c;
-  lp.A_ub = sub_.A_ub;
-  lp.b_ub = sub_.b_ub;
-  lp.A_eq = sub_.A_eq;
-  lp.b_eq = sub_.b_eq;
-  lp.lb = sub_.lb;
-  lp.ub = sub_.ub;
+  lp.c = util::DenseOps::unique_copy(sub_.c);
+  lp.A_ub = util::SparseOps::unique_copy(sub_.A_ub);
+  lp.b_ub = util::DenseOps::unique_copy(sub_.b_ub);
+  lp.A_eq = util::SparseOps::unique_copy(sub_.A_eq);
+  lp.b_eq = util::DenseOps::unique_copy(sub_.b_eq);
+  lp.lb = util::DenseOps::unique_copy(sub_.lb);
+  lp.ub = util::DenseOps::unique_copy(sub_.ub);
 
   solver_ = util::createSolver(lp, opts);
 }
 
-stuka::dLP::CriticalRegion stuka::dLP::CRESubproblem::computeCriticalRegion(const Eigen::VectorXd &x) const {
+stuka::dLP::CRESubproblem::CRESubproblem(CRESubproblem &&sub) : opts_(sub.opts_),
+                                                                sub_{
+                                                                    util::DenseOps::unique_copy(sub.sub_.c),
+                                                                    util::SparseOps::unique_copy(sub.sub_.A_ub),
+                                                                    util::DenseOps::unique_copy(sub.sub_.b_ub),
+                                                                    util::SparseOps::unique_copy(sub.sub_.C_ub),
+                                                                    util::SparseOps::unique_copy(sub.sub_.A_eq),
+                                                                    util::DenseOps::unique_copy(sub.sub_.b_eq),
+                                                                    util::SparseOps::unique_copy(sub.sub_.C_eq),
+                                                                    util::DenseOps::unique_copy(sub.sub_.lb),
+                                                                    util::DenseOps::unique_copy(sub.sub_.ub)} {
+  solver_ = std::move(sub.solver_);
+  n_dim_ = sub.n_dim_;
+  n_dim_master_ = sub.n_dim_master_;
+  n_bounds_ = sub.n_bounds_;
+  b_lb_ = std::move(sub.b_lb_);
+  b_ub_ = std::move(sub.b_ub_);
+  bone_eq_ = std::move(sub.bone_eq_);
+  xlb_constraints_ = std::move(sub.xlb_constraints_);
+  xub_constraints_ = std::move(sub.xub_constraints_);
+  A_xlb_ = std::move(sub.A_xlb_);
+  A_xub_ = std::move(sub.A_xub_);
 
-  solver_->getLP().setRHS((sub_.b_ub) ? std::make_shared<Eigen::VectorXd>(*sub_.b_ub - *sub_.C_ub * x) : nullptr,
-                          (sub_.b_eq) ? std::make_shared<Eigen::VectorXd>(*sub_.b_eq - *sub_.C_eq * x) : nullptr);
+}
+
+stuka::dLP::CriticalRegion stuka::dLP::CRESubproblem::computeCriticalRegion(const Eigen::VectorXd &x) {
+
+  solver_->getLP().setRHS((sub_.b_ub) ? std::make_unique<Eigen::VectorXd>(*sub_.b_ub - *sub_.C_ub * x) : nullptr,
+                          (sub_.b_eq) ? std::make_unique<Eigen::VectorXd>(*sub_.b_eq - *sub_.C_eq * x) : nullptr);
 
   // Solve the subproblem at the given point
   OptimizeState res;

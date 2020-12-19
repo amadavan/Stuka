@@ -8,25 +8,45 @@
 
 #include <stuka/dLP/naive_benders_subproblem.h>
 
-stuka::dLP::NaiveBendersSubproblem::NaiveBendersSubproblem(const stuka::dLP::Subproblem sub, const Options opts) : sub_(sub), opts_(opts) {
+stuka::dLP::NaiveBendersSubproblem::NaiveBendersSubproblem(stuka::dLP::Subproblem &&sub, const Options &opts) : sub_(std::move(sub)), opts_(opts) {
   current_value_ = INF;
 
-  prog_.c = sub.c;
-  prog_.A_ub = sub.A_ub;
-  prog_.b_ub = sub.b_ub;
-  prog_.A_eq = sub.A_eq;
-  prog_.b_eq = sub.b_eq;
-  prog_.lb = sub.lb;
-  prog_.ub = sub.ub;
+  prog_.c = util::DenseOps::unique_copy(sub_.c);
+  prog_.A_ub = util::SparseOps::unique_copy(sub_.A_ub);
+  prog_.b_ub = util::DenseOps::unique_copy(sub_.b_ub);
+  prog_.A_eq = util::SparseOps::unique_copy(sub_.A_eq);
+  prog_.b_eq = util::DenseOps::unique_copy(sub_.b_eq);
+  prog_.lb = util::DenseOps::unique_copy(sub_.lb);
+  prog_.ub = util::DenseOps::unique_copy(sub_.ub);
 }
 
-stuka::dLP::NaiveBendersSubproblem::NaiveBendersSubproblem(stuka::dLP::NaiveBendersSubproblem &&sub) noexcept :
-    NaiveBendersSubproblem(sub.sub_, sub.opts_) {}
+stuka::dLP::NaiveBendersSubproblem::NaiveBendersSubproblem(NaiveBendersSubproblem &&sub) : opts_(sub.opts_),
+                                                                                           sub_{
+                                                                                               util::DenseOps::unique_copy(sub.sub_.c),
+                                                                                               util::SparseOps::unique_copy(sub.sub_.A_ub),
+                                                                                               util::DenseOps::unique_copy(sub.sub_.b_ub),
+                                                                                               util::SparseOps::unique_copy(sub.sub_.C_ub),
+                                                                                               util::SparseOps::unique_copy(sub.sub_.A_eq),
+                                                                                               util::DenseOps::unique_copy(sub.sub_.b_eq),
+                                                                                               util::SparseOps::unique_copy(sub.sub_.C_eq),
+                                                                                               util::DenseOps::unique_copy(sub.sub_.lb),
+                                                                                               util::DenseOps::unique_copy(sub.sub_.ub)} {
+  current_value_ = sub.current_value_;
+
+  prog_.c = util::DenseOps::unique_copy(sub.sub_.c);
+  prog_.A_ub = util::SparseOps::unique_copy(sub.sub_.A_ub);
+  prog_.b_ub = util::DenseOps::unique_copy(sub.sub_.b_ub);
+  prog_.A_eq = util::SparseOps::unique_copy(sub.sub_.A_eq);
+  prog_.b_eq = util::DenseOps::unique_copy(sub.sub_.b_eq);
+  prog_.lb = util::DenseOps::unique_copy(sub.sub_.lb);
+  prog_.ub = util::DenseOps::unique_copy(sub.sub_.ub);
+  
+}
 
 stuka::dLP::BendersCut stuka::dLP::NaiveBendersSubproblem::getBendersCut(const Eigen::VectorXd &x) {
 
-  if (sub_.b_ub) prog_.b_ub = std::make_shared<Eigen::VectorXd>(*sub_.b_ub - *sub_.C_ub * x);
-  if (sub_.b_eq) prog_.b_eq = std::make_shared<Eigen::VectorXd>(*sub_.b_eq - *sub_.C_eq * x);
+  if (sub_.b_ub) prog_.b_ub = std::make_unique<Eigen::VectorXd>(*sub_.b_ub - *sub_.C_ub * x);
+  if (sub_.b_eq) prog_.b_eq = std::make_unique<Eigen::VectorXd>(*sub_.b_eq - *sub_.C_eq * x);
 
   std::unique_ptr<LP::BaseLPSolver> solver = stuka::util::createSolver(prog_, opts_);
 

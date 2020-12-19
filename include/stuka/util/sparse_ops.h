@@ -6,13 +6,19 @@
 #define STUKA_UTIL_SPARSE_OPS_H_
 
 #include <Eigen/SparseCore>
+#include "../constants.h"
 
 namespace stuka { namespace util { namespace SparseOps {
 
-using MatRowPairD = std::pair<const Eigen::SparseMatrix<double>, const Eigen::Matrix<bool, Eigen::Dynamic, 1>>;
+using MatRowPairD = std::pair<const Eigen::SparseMatrix<double>, const Eigen::Array<bool, Eigen::Dynamic, 1>>;
 
 template<typename T>
-Eigen::SparseMatrix<T> get_rows(const Eigen::SparseMatrix<T> mat, const Eigen::Matrix<bool, Eigen::Dynamic, 1> rows) {
+std::unique_ptr<Eigen::SparseMatrix<T>> unique_copy(const std::unique_ptr<Eigen::SparseMatrix<T>> &mat) {
+  return (mat) ? std::make_unique<Eigen::SparseMatrix<T>>(*mat) : nullptr;
+}
+
+template<typename T>
+Eigen::SparseMatrix<T> get_rows(const Eigen::SparseMatrix<T> mat, const Eigen::Array<bool, Eigen::Dynamic, 1> rows) {
   size_t n_row_in = mat.rows(), n_col = mat.cols(), n_row_out = rows.count();
 
   Eigen::VectorXi prev_row_count(n_row_in);
@@ -42,7 +48,8 @@ template<typename T>
 Eigen::SparseMatrix<T> vstack(std::initializer_list<const Eigen::SparseMatrix<T>> mats) {
 
   // Iterate once to get system properties
-  size_t n_row = 0, n_col = mats.begin()->cols(), nnz = 0;
+  size_t n_row = 0, n_col = mats.begin()->cols();
+  Eigen::Index nnz = 0;
   for (const Eigen::SparseMatrix<T> &mat : mats) {
     n_row += mat.rows();
     nnz += mat.nonZeros();
@@ -69,17 +76,17 @@ Eigen::SparseMatrix<T> vstack(std::initializer_list<const Eigen::SparseMatrix<T>
 
 template<typename T>
 Eigen::SparseMatrix<T> vstack_rows(const std::vector<
-std::pair<const Eigen::SparseMatrix<T>, const Eigen::Matrix<bool, Eigen::Dynamic, 1>>> &mat_rows) {
+std::pair<const Eigen::SparseMatrix<T>, const Eigen::Array<bool, Eigen::Dynamic, 1>>> &mat_rows) {
 
   size_t n_mats = mat_rows.size(), n_col = mat_rows.begin()->first.cols(), n_row_out = 0, nnz = 0;
 
   std::vector<Eigen::VectorXi> prev_row_counts(n_mats);
   size_t n = 0;
 
-  for (const std::pair<const Eigen::SparseMatrix<T>, const Eigen::Matrix<bool, Eigen::Dynamic, 1>>
+  for (const std::pair<const Eigen::SparseMatrix<T>, const Eigen::Array<bool, Eigen::Dynamic, 1>>
         &mat_row : mat_rows) {
     const Eigen::SparseMatrix<T> &mat = mat_row.first;
-    const Eigen::Matrix<bool, Eigen::Dynamic, 1> &rows = mat_row.second;
+    const Eigen::Array<bool, Eigen::Dynamic, 1> &rows = mat_row.second;
 
     size_t n_row_in = mat.rows();
 
@@ -105,10 +112,10 @@ std::pair<const Eigen::SparseMatrix<T>, const Eigen::Matrix<bool, Eigen::Dynamic
     ret.startVec(i);
 
     size_t row_offset = 0, n = 0;
-    for (const std::pair<const Eigen::SparseMatrix<T>, const Eigen::Matrix<bool, Eigen::Dynamic, 1>>
+    for (const std::pair<const Eigen::SparseMatrix<T>, const Eigen::Array<bool, Eigen::Dynamic, 1>>
           &mat_row : mat_rows) {
       const Eigen::SparseMatrix<T> &mat = mat_row.first;
-      const Eigen::Matrix<bool, Eigen::Dynamic, 1> &rows = mat_row.second;
+      const Eigen::Array<bool, Eigen::Dynamic, 1> &rows = mat_row.second;
 
       for (typename Eigen::SparseMatrix<T>::InnerIterator it(mat, i); it; ++it)
         if (rows.coeff(it.row()))
