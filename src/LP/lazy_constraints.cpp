@@ -28,7 +28,7 @@ stuka::LP::LazyConstraints::LazyConstraints(const stuka::LP::LinearProgram &lp, 
 }
 
 void stuka::LP::LazyConstraints::iterate() {
-  nit++;
+  nit_++;
 
   try {
     state_ = solver_->solve();

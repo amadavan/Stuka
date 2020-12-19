@@ -30,6 +30,7 @@ class BendersSubproblem {
   std::unique_ptr<LP::BaseLPSolver> solver_;
   const Subproblem sub_;
   double current_value_;
+  const Options opts_;
 };
 }}
 

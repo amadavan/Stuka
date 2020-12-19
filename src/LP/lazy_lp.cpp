@@ -210,6 +210,7 @@ void stuka::LP::LazyLinearProgram::removeConstrs_ub(size_t index, size_t n_remov
   b_ub->head(index) = b_ub_->head(index);
   b_ub->tail(b_ub->size() - index) = b_ub_->tail(b_ub_->size() - index - n_remove);
 
+  A_ub_ = std::move(A_ub);
   b_ub_ = std::move(b_ub);
 
   size_t n_deactivated = 0;
@@ -226,6 +227,7 @@ void stuka::LP::LazyLinearProgram::removeConstrs_ub(size_t index, size_t n_remov
     }
   }
 
+  Eigen::Array<bool, Eigen::Dynamic, 1> ub_activity(n_ub_ - n_remove);
   Eigen::Array<size_t, Eigen::Dynamic, 1> ub_index(n_ub_ - n_remove);
   ub_activity.head(index) = ub_activity_.head(index);
   ub_index.head(index) = ub_index_.head(index);
